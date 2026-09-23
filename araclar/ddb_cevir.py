@@ -14,6 +14,7 @@ değişebilir. Karakterin Beyond'da "Public" olması gerekir.
 import json
 import math
 import os
+import re
 import sys
 import time
 import urllib.request
@@ -132,7 +133,12 @@ def convert(d, oyuncu=""):
                            for m in mods if m["type"] == "bonus" and m["subType"] == "initiative")
 
     speed = d["race"].get("weightSpeeds", {}).get("normal", {}).get("walk") or 30
-    senses = {m["subType"]: m.get("value") for m in mods if m["type"] == "sense"}
+    # duyular: 2024 species'lerinde "set-base" olarak gelir (ör. darkvision 120)
+    SENSES = {"darkvision", "blindsight", "tremorsense", "truesight"}
+    senses = {}
+    for m in mods:
+        if (m["type"] == "sense" or (m["type"] == "set-base" and m["subType"] in SENSES)) and m.get("value"):
+            senses[m["subType"]] = max(senses.get(m["subType"], 0), m["value"])
     languages = sorted({m["subType"].replace("-", " ").title() for m in mods if m["type"] == "language"})
 
     # Silahlar
@@ -145,6 +151,16 @@ def convert(d, oyuncu=""):
         props = [p["name"] for p in (w.get("properties") or [])]
         finesse, ranged = "Finesse" in props, w.get("attackType") == 2
         ab = "dex" if ranged else ("dex" if finesse and am["dex"] > am["str"] else "str")
+        # Monk (2024 Martial Arts): Monk silahlarında Dex ve Martial Arts zarı (hangisi büyükse)
+        zar = w["damage"]["diceString"]
+        monk_sv = next((c["level"] for c in d["classes"] if c["definition"]["name"] == "Monk"), 0)
+        if monk_sv and not ranged and (w.get("categoryId") == 1 or "Light" in props) and "Heavy" not in props and "Two-Handed" not in props:
+            if am["dex"] > am[ab]:
+                ab = "dex"
+            ma = 6 if monk_sv < 5 else 8 if monk_sv < 11 else 10 if monk_sv < 17 else 12
+            m_z = re.match(r"(\d+)d(\d+)$", zar)
+            if m_z and int(m_z.group(1)) == 1 and int(m_z.group(2)) < ma:
+                zar = f"1d{ma}"
         slug = (w.get("type") or w["name"]).lower().replace(", ", "-").replace(" ", "-")
         prof = (simple and w.get("categoryId") == 1) or (martial and w.get("categoryId") == 2) or has("proficiency", slug)
         magic = sum((m.get("value") or 0) for m in w.get("grantedModifiers", []) if m["type"] == "bonus" and m["subType"] == "magic")
@@ -152,7 +168,7 @@ def convert(d, oyuncu=""):
         attacks.append({
             "ad": w["name"], "tip": w.get("type") or "", "kusanili": bool(it.get("equipped")),
             "isabet": am[ab] + (pb if prof else 0) + magic,
-            "hasar": w["damage"]["diceString"] + (f"{dmg_bonus:+d}" if dmg_bonus else ""),
+            "hasar": zar + (f"{dmg_bonus:+d}" if dmg_bonus else ""),
             "tur": w.get("damageType") or "",
             "menzil": f'{w["range"]}/{w["longRange"]} ft' if ranged or "Thrown" in props else "5 ft",
             "mastery": next((p for p in props if p in MASTERIES), None),

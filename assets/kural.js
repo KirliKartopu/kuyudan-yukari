@@ -42,6 +42,8 @@ const buyuk = (s) => { // "sprig of mistletoe" -> "Sprig of Mistletoe" (veride d
   if (x) return x.name;
   return String(s).split(" ").map((w, i) => (i && KUCUK.has(w.toLowerCase()) ? w.toLowerCase() : w.replace(/^[a-z]/, (c) => c.toUpperCase()))).join(" ");
 };
+// eşya adı: oyuncular ve D&D Beyond kısa yazabilir ("Leather", "Studded Leather", "Arrows")
+const esyaBul = (ad) => V.esya[n(ad)] || V.esya[n(ad + " armor")] || V.esya[n(String(ad).replace(/s$/, ""))] || null;
 const mod = (p) => Math.floor((p - 10) / 2);
 const pb = (L) => 2 + Math.floor((L - 1) / 4);
 const etiketsiz = (s) => String(s).replace(/\{@\w+ ([^|}]+)[^}]*\}/g, "$1");
@@ -636,11 +638,11 @@ export function hesapla(Y, S, ek) {
   }
   tumEtki(B, "esya").forEach((x) => x.e.esya.forEach((a) => { if (!envanter.some((e) => e.ad === a)) koy(a, 1, tipAd(V.esya[n(a)] || {})); }));
   const oyun = !!(ek && ek.env);
-  if (oyun) { envanter.length = 0; ek.env.forEach(([ad, adet, k]) => envanter.push({ ad, adet, tip: tipAd(V.esya[n(ad)] || {}), kusanili: !!k })); }
+  if (oyun) { envanter.length = 0; ek.env.forEach(([ad, adet, k]) => envanter.push({ ad, adet, tip: tipAd(esyaBul(ad) || {}), kusanili: !!k })); }
   // AC: başlangıçta zırhlı/zırhsız seçeneklerden en iyisi kuşanılır; oyunda oyuncunun kuşandığı esas alınır
   const dexMax = (x) => { const t = String(x.type).split("|")[0]; if (t === "LA") return m.dex; if (t === "MA") return Math.min(tumEtki(B, "ortaZirhDex3").length && puan.dex >= 16 ? 3 : 2, m.dex); return 0; };
-  const zirhlar = envanter.map((e) => [e, V.esya[n(e.ad)]]).filter(([e, x]) => x && x.armor && String(x.type).split("|")[0] !== "S" && (!oyun || e.kusanili));
-  const kalkan = envanter.find((e) => { const x = V.esya[n(e.ad)]; return x && String(x.type).split("|")[0] === "S" && (!oyun || e.kusanili); });
+  const zirhlar = envanter.map((e) => [e, esyaBul(e.ad)]).filter(([e, x]) => x && x.armor && String(x.type).split("|")[0] !== "S" && (!oyun || e.kusanili));
+  const kalkan = envanter.find((e) => { const x = esyaBul(e.ad); return x && String(x.type).split("|")[0] === "S" && (!oyun || e.kusanili); });
   const kalkanOk = !!(kalkan && zirh.has("shield"));
   const acEkHer = tumEtki(B, "acEk").filter((x) => x.e.acEk.kosul === "her").reduce((t, x) => t + x.e.acEk.deger, 0);
   const acEkZirh = tumEtki(B, "acEk").filter((x) => x.e.acEk.kosul === "zirhli").reduce((t, x) => t + x.e.acEk.deger, 0);
@@ -658,7 +660,7 @@ export function hesapla(Y, S, ek) {
   if (!oyun) { if (enIyi.zirh) enIyi.zirh.kusanili = true; if (kalkan && kalkanOk && enIyi.kalkanSerbest) kalkan.kusanili = true; }
   const ac = enIyi.toplam + acEkHer;
   const agirZirh = enIyi.x && String(enIyi.x.type).startsWith("HA"), zirhsizKalkansiz = !enIyi.zirh && !(kalkan && kalkan.kusanili);
-  if (!oyun) envanter.forEach((e) => { const x = V.esya[n(e.ad)]; if (x && x.weapon) e.kusanili = true; });
+  if (!oyun) envanter.forEach((e) => { const x = esyaBul(e.ad); if (x && x.weapon) e.kusanili = true; });
   // hız, hareket, duyular
   const turV = B.turV;
   let hiz = (turV && (typeof turV.speed === "object" ? turV.speed.walk : turV.speed)) || 30;
@@ -703,7 +705,7 @@ export function hesapla(Y, S, ek) {
       menzil: x.range ? x.range + " ft" : props.includes("R") ? "10 ft" : "5 ft", mastery: ms && (mastery.has(x.name) || adOver) ? ms : null,
       ozellikler: props.map((p) => OZELLIK[p]).filter(Boolean) };
   };
-  envanter.forEach((e) => { const x = V.esya[n(e.ad)]; if (x && x.weapon && x.dmg1) saldirilar.push(Object.assign(silahSatir(x), { kusanili: e.kusanili })); });
+  envanter.forEach((e) => { const x = esyaBul(e.ad); if (x && x.weapon && x.dmg1) saldirilar.push(Object.assign(silahSatir(x), { kusanili: e.kusanili })); });
   saldirilar.sort((a, b) => b.kusanili - a.kusanili);
   esyaStat.forEach((e) => { const x = V.esya[n(e.name)]; if (x && x.dmg1) saldirilar.push(silahSatir(x, x.name)); });
   for (const x of tumEtki(B, "saldiri")) for (const s of x.e.saldiri) saldirilar.push({ ad: s.ad, tip: "", kusanili: true, isabet: m[s.ab] + P, hasar: s.zar + sgn(m[s.ab]), tur: s.tur, menzil: s.menzil, mastery: null, ozellikler: s.props });
