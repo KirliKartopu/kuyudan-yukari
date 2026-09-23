@@ -41,11 +41,17 @@
     }
 
     // 3D zar penceresinden gelen tek bir çarpışma: dosya adı ve hıza göre ses seviyesi
-    var sonZarZar = 0;
+    var sonZarZar = 0, sonMasa = 0;
     function calDosya(dosya, guc) {
       if (!hazir()) return;
       var masa = dosya.indexOf("surfaces/") === 0;
-      if (!masa) {
+      if (masa) {
+        // Zar yuvarlanırken yüzü masaya her değdiğinde çarpışma sayılıyor; hepsi çalınınca
+        // tek zarda bile tıkırtılı bir yuvarlanma oluyordu. Sadece gerçek sekmeler duyulsun.
+        var an = ctx.currentTime;
+        if ((guc || 0) < 0.12 || an - sonMasa < 0.15) return;
+        sonMasa = an;
+      } else {
         // zar-zar temasları: çok yumuşak ya da çok sık olanlar çalkalama gibi duyuluyor
         var simdi = ctx.currentTime;
         if ((guc || 0) < 0.08 || simdi - sonZarZar < 0.12) return;
@@ -54,8 +60,9 @@
       }
       var buf = tampon[dosya];
       if (!buf) return;
-      var seviye = Math.max(0.05, Math.min(1, (guc || 0.5) * 1.4));
-      calTek(buf, 0, masa ? seviye * 0.5 : seviye); // masa sesi yarıya
+      var seviye = Math.min(1, (guc || 0.5) * 1.4);
+      if (masa) seviye = Math.pow(seviye, 1.6) * 0.5; // sert düşüş belirgin, sonraki sekmeler hızla söner; masa sesi yarıya
+      calTek(buf, 0, Math.max(0.03, seviye));
     }
 
     // 3D kapalıyken: fizik yok, yaklaşık bir çarpma dizisi
