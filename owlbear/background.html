@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Kuyudan Yukarı arka plan</title></head>
+<body>
+<script type="module">
+  // Panel kapalıyken bile başkalarının zarlarını bildirim olarak gösterir.
+  import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
+  const KANAL = "com.kuyudan-yukari/zar";
+  OBR.onReady(() => {
+    OBR.broadcast.onMessage(KANAL, ({ data }) => {
+      const r = data || {};
+      const kim = r.kimden || r.karakter || "?";
+      const variant = r.sinif === "crit" ? "SUCCESS" : r.sinif === "fail" ? "ERROR" : "DEFAULT";
+      OBR.notification.show(`${kim} · ${r.baslik}: ${r.toplam}  (${r.detay})`, variant);
+    });
+  });
+</script>
+</body>
+</html>
