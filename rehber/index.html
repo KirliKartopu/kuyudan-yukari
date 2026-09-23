@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maceraya Hazırlık</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../assets/stil.css">
+</head>
+<body>
+<div class="wrap">
+<nav class="toc" aria-label="İçindekiler">
+  <p class="brand">Maceraya Hazırlık</p>
+  <ol>
+    <li><a href="#hosgeldin">Hoş geldin</a></li>
+    <li><a href="#zar">Zar nasıl çalışır</a></li>
+    <li><a href="#tur">Senin turun</a></li>
+    <li><a href="#yetenekler">Yetenekler</a></li>
+    <li><a href="#karakter">Karakter yaratma</a></li>
+    <li><a href="#siniflar">Sınıflar</a></li>
+    <li><a href="#sozluk">Keyword sözlüğü</a></li>
+    <li><a href="#masa">Masa kuralları</a></li>
+    <li><a href="#hazirlik">Seans 0'dan önce</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="intro">
+  <div class="eyebrow">D&amp;D 2024 · Seans 0 için oyuncu rehberi</div>
+  <h1>Maceraya Hazırlık</h1>
+  <p class="lede">Seans 0'dan önce bu sayfayı bir kez oku. Her şeyi ezberlemen gerekmiyor; oyunda unuttuğun her şeyi birlikte hatırlayacağız. Amaç, masaya oturduğunda kelimelerin yabancı gelmemesi.</p>
+</header>
+
+<section id="hosgeldin">
+  <h2>Hoş geldin</h2>
+  <p class="sub">Baldur's Gate 3 oynadıysan bu oyunu zaten tanıyorsun.</p>
+  <p>BG3, <b>Dungeons &amp; Dragons</b>'ın kurallarıyla yapılmış bir bilgisayar oyunu. Burada aynı kuralları masada oynuyoruz, sadece bilgisayarın yaptığı işleri bir insan yapıyor: <b>DM</b> (Dungeon Master). DM dünyayı anlatır, bütün diğer karakterleri oynar ve kuralları yorumlar. Sen de tek bir karakteri oynarsın.</p>
+  <p>Farkı şu: BG3'te oyunun izin verdiği seçenekler vardı. Burada <b>aklına gelen her şeyi deneyebilirsin.</b> Kapıyı kırmak yerine bekçiyi rüşvetle ikna etmek, düşmanla pazarlık etmek, planı tamamen değiştirmek. DM "zar at" der, sonuca göre hikâye ilerler.</p>
+  <div class="note"><b>Bu sayfadaki terimler hakkında</b>Oyunun terimlerini İngilizce bırakıyoruz, kart oyunlarındaki keyword'ler gibi. <span class="kw" title="İki d20 at, yüksek olanı al">Advantage</span>, <span class="kw" title="Görülmüyor">Invisible</span> gibi. Böylece D&amp;D Beyond'da ve BG3'te gördüğün kelimelerle aynı. Kutulu bir kelimenin üstüne gelirsen kısa açıklaması çıkar; tam listesi <a href="#sozluk">sözlükte</a>.</div>
+</section>
+
+<section id="zar">
+  <h2>Zar nasıl çalışır</h2>
+  <p class="sub">Oyunun %90'ı tek bir kurala dayanıyor.</p>
+  <p>Sonucu belirsiz bir şey yaptığında <b>bir d20 atarsın</b> (20 yüzlü zar), üstüne bir sayı eklersin ve bir hedefi geçmeye çalışırsın. Buna <span class="kw" title="Ability check, attack roll ve saving throw'un ortak adı">D20 Test</span> denir. Üç çeşidi var:</p>
+  <div class="roll">
+    <div><strong>Ability Check</strong><small>Bir şeyi denemek: kilidi açmak, yalan söylemek, uçurumdan tırmanmak. Hedef: DM'in belirlediği <span class="kw" title="Difficulty Class: geçilmesi gereken sayı">DC</span>.</small></div>
+    <div><strong>Attack Roll</strong><small>Birine saldırmak. Hedef: onun <span class="kw" title="Armor Class: vurulmak için geçilmesi gereken sayı">AC</span>'si.</small></div>
+    <div><strong>Saving Throw</strong><small>Sana gelen bir şeye karşı koymak: zehir, tuzak, büyü. Hedef: DC.</small></div>
+  </div>
+  <p><b>Formül:</b> <span class="dice">d20 + yetenek modifier'ı + (varsa) proficiency bonus</span> ≥ hedef → başarılı.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>DC</th><th>Zorluk</th><th>Örnek</th></tr></thead>
+    <tbody>
+      <tr><td class="num">5</td><td>Çok kolay</td><td>Alçak bir çitin üstünden atlamak</td></tr>
+      <tr><td class="num">10</td><td>Kolay</td><td>Paslı bir kapıyı zorlamak</td></tr>
+      <tr><td class="num">15</td><td>Orta</td><td>Sıradan bir kilidi açmak</td></tr>
+      <tr><td class="num">20</td><td>Zor</td><td>Kaygan, ıslak bir duvara tırmanmak</td></tr>
+      <tr><td class="num">25</td><td>Çok zor</td><td>Bir muhafızı gözünün önünde soymak</td></tr>
+      <tr><td class="num">30</td><td>Neredeyse imkânsız</td><td>Bir ejderhayı yalanla ikna etmek</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Advantage ve Disadvantage</h3>
+  <p>Durum senin lehineyse <span class="kw" title="İki d20 at, yüksek olanı al">Advantage</span>: iki d20 atar, <b>yüksek olanı</b> alırsın. Aleyhineyse <span class="kw" title="İki d20 at, düşük olanı al">Disadvantage</span>: iki d20 atar, <b>düşük olanı</b> alırsın. İkisi birden varsa birbirini götürür; tek zar atarsın. BG3'teki çift zar animasyonu tam olarak bu.</p>
+  <h3>Kritik vuruş</h3>
+  <p>Saldırıda zar <b>20</b> gelirse, ne olursa olsun vurursun ve hasar zarlarını <b>iki kez</b> atarsın. <b>1</b> gelirse ne olursa olsun ıskalarsın. Ability check ve saving throw'da 20 ve 1'in özel bir etkisi yok.</p>
+</section>
+
+<section id="tur">
+  <h2>Senin turun</h2>
+  <p class="sub">Dövüşte herkes sırayla oynar. Sıra <span class="kw" title="Dövüş başında atılan d20 + Dexterity; sırayı belirler">Initiative</span> zarıyla belirlenir.</p>
+  <p>Bir tur, oyun dünyasında yaklaşık <b>6 saniye</b>. Kendi turunda şunları yapabilirsin, istediğin sırayla:</p>
+  <div class="turn">
+    <div><strong>Hareket</strong><small><span class="kw" title="Bir turda gidebileceğin mesafe, genelde 30 ft">Speed</span>'in kadar yürürsün (genelde 30 ft, yani 6 kare). Parçalayabilirsin: biraz yürü, saldır, biraz daha yürü.</small></div>
+    <div><strong>1 Action</strong><small>Asıl yaptığın şey. Aşağıdaki listeden biri.</small></div>
+    <div><strong>1 Bonus Action</strong><small>Sadece bir özelliğin ya da büyün izin veriyorsa. İksir içmek de bir Bonus Action.</small></div>
+    <div><strong>1 Reaction</strong><small>Başkasının turunda, bir tetikleyiciye tepki. En yaygını <span class="kw" title="Yanından kaçan düşmana bedava saldırı">Opportunity Attack</span>.</small></div>
+  </div>
+  <p>Ayrıca turunda <b>bir nesneyle bedava etkileşim</b> yapabilirsin: kılıcını çekmek, kapıyı açmak, yerden bir şey almak. Konuşmak da serbest.</p>
+  <h3>Action'lar</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Action</th><th>Ne yapar</th></tr></thead>
+    <tbody>
+      <tr><td><span class="kw">Attack</span></td><td>Silahla ya da çıplak elle saldırı. Grapple ve Shove da buradan yapılır.</td></tr>
+      <tr><td><span class="kw">Magic</span></td><td>Büyü yapmak ya da büyülü bir eşya kullanmak.</td></tr>
+      <tr><td><span class="kw">Dash</span></td><td>Bu tur bir kez daha Speed'in kadar hareket.</td></tr>
+      <tr><td><span class="kw">Disengage</span></td><td>Bu tur hareket ederken sana Opportunity Attack yapılamaz. Kaçarken kullanılır.</td></tr>
+      <tr><td><span class="kw">Dodge</span></td><td>Sıradaki turuna kadar sana yapılan saldırılar Disadvantage, Dexterity saving throw'ların Advantage.</td></tr>
+      <tr><td><span class="kw">Help</span></td><td>Bir arkadaşının sıradaki zarına Advantage ver.</td></tr>
+      <tr><td><span class="kw">Hide</span></td><td>Saklanmayı dene. Görüş dışında ve örtünün arkasında olmalısın; Dexterity (Stealth) DC 15. Bkz. <a href="#masa">masa kuralları</a>.</td></tr>
+      <tr><td><span class="kw">Influence</span></td><td>Bir karakteri ikna etmek, kandırmak ya da korkutmak.</td></tr>
+      <tr><td><span class="kw">Search</span></td><td>Bir şeyi fark etmeye çalışmak: tuzak, iz, yalan. Wisdom zarı.</td></tr>
+      <tr><td><span class="kw">Study</span></td><td>Bir şeyi hatırlamak ya da incelemek: bir sembol, bir canavar, bir mekanizma. Intelligence zarı.</td></tr>
+      <tr><td><span class="kw">Ready</span></td><td>Bir tetikleyici belirle: "Kapı açılınca vururum." Tetiklenince Reaction'ınla yaparsın.</td></tr>
+      <tr><td><span class="kw">Utilize</span></td><td>Büyülü olmayan bir nesneyi kullanmak: kolu çekmek, ipi kesmek.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Listede yoksa da yapabilirsin</b>Masayı devirmek, avizeye atlamak, düşmanın gözüne kum atmak... Ne yapmak istediğini söyle; DM hangi zarı atacağını söyler.</div>
+  <h3>0 HP'ye düşersen</h3>
+  <p>Hemen ölmezsin; bayılırsın. Her turunun başında bir <span class="kw" title="0 HP'deyken her tur atılan d20; 10+ başarı">Death Saving Throw</span> atarsın: <b>10 ve üstü başarı</b>, altı başarısızlık. 3 başarı → stabil olursun. 3 başarısızlık → ölürsün. 20 gelirse 1 HP ile ayağa kalkarsın, 1 gelirse iki başarısızlık sayılır. Bir arkadaşın seni iyileştirirse hemen kalkarsın.</p>
+</section>
+
+<section id="yetenekler">
+  <h2>Altı yetenek ve skill'ler</h2>
+  <p class="sub">Her karakterin altı temel yeteneği var. Her zarın başında "hangi yetenek?" sorusu yatar.</p>
+  <p>Yetenek puanı genelde 8 ile 17 arasında başlar. Zara eklediğin sayı puanın kendisi değil, <b>modifier</b>'ı: 10–11 → +0, 12–13 → +1, 14–15 → +2, 16–17 → +3, 8–9 → −1.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Yetenek</th><th>Neyi ölçer</th><th>Skill'ler</th></tr></thead>
+    <tbody>
+      <tr><td><span class="kw">Strength</span></td><td>Kas gücü</td><td>Athletics</td></tr>
+      <tr><td><span class="kw">Dexterity</span></td><td>Çeviklik, refleks</td><td>Acrobatics, Sleight of Hand, Stealth</td></tr>
+      <tr><td><span class="kw">Constitution</span></td><td>Dayanıklılık, can</td><td><i>Skill yok; HP'ni ve zehre dayanıklılığını belirler</i></td></tr>
+      <tr><td><span class="kw">Intelligence</span></td><td>Bilgi, mantık</td><td>Arcana, History, Investigation, Nature, Religion</td></tr>
+      <tr><td><span class="kw">Wisdom</span></td><td>Sezgi, dikkat</td><td>Animal Handling, Insight, Medicine, Perception, Survival</td></tr>
+      <tr><td><span class="kw">Charisma</span></td><td>Kişilik, etki</td><td>Deception, Intimidation, Performance, Persuasion</td></tr>
+    </tbody>
+  </table></div>
+  <p>Bir skill'de <span class="kw" title="Bir şeyde eğitimli olmak: zara Proficiency Bonus eklenir">Proficiency</span>'n varsa zara ayrıca <b>+2</b> eklersin (seviye 1–4'te). Örnek: Dexterity'si 16 olan, Stealth'te eğitimli bir rogue gizlenirken <span class="dice">d20 + 3 + 2</span> atar.</p>
+</section>
+
+<section id="karakter">
+  <h2>Karakter yaratma</h2>
+  <p class="sub">Seans 0'da birlikte yapacağız. Önceden fikir sahibi olman yeterli.</p>
+  <ol class="steps">
+    <li><div><b>Sınıf seç.</b> Ne yapmak istiyorsun: vurmak, büyü yapmak, sinsilik, iyileştirmek? Aşağıdaki <a href="#siniflar">sınıf kartlarına</a> bak.</div></li>
+    <li><div><b>Kökenini seç: background ve tür.</b> <span class="kw" title="Karakterin maceradan önceki hayatı">Background</span> karakterinin geçmişi (asker, denizci, tüccar, rahip...) ve sana yetenek puanı artışı, iki skill ve bir <span class="kw" title="Özel bir yetenek; background'dan 1 tane gelir">Origin Feat</span> verir. <span class="kw" title="Karakterin ırkı: ork, elf, cüce...">Species</span> ise türün: Aasimar, Dragonborn, Dwarf, Elf, Gnome, Goliath, Halfling, Human, Orc, Tiefling.</div></li>
+    <li><div><b>Yetenek puanlarını dağıt.</b> Şu altı sayıyı altı yeteneğe istediğin gibi yerleştir: <span class="dice">15, 14, 13, 12, 10, 8</span>. Sonra background'unun üç yeteneğinden birine +2, diğerine +1 ekle (ya da üçüne +1).</div></li>
+    <li><div><b>Karakterini tanımla.</b> Adı, görünüşü, kişiliği, neyi istediği, neden korktuğu. Uzun bir hikâye yazmana gerek yok; birkaç cümle yeterli, gerisi oyunda ortaya çıkar.</div></li>
+    <li><div><b>Detaylar.</b> HP, AC, ekipman. Bunları D&amp;D Beyond hesaplar.</div></li>
+  </ol>
+  <div class="note"><b>Seviye 1'den başlıyoruz</b>Az özellikle başlayıp yavaş yavaş öğreneceksin. İlk seanstan sonra seviye 2, üç seans sonra seviye 3 olacaksın. Seviye 3'te her sınıf kendi uzmanlık dalını, yani <span class="kw" title="Sınıf içinde uzmanlaşma; 3. seviyede seçilir">Subclass</span>'ını seçer.</div>
+</section>
+
+<section id="siniflar">
+  <h2>Sınıflar</h2>
+  <p class="sub">Grubun şu an düşündüğü üç sınıf. Seviye 1–3 arasında neler geldiğiyle.</p>
+  <div class="cards">
+    <article class="card">
+      <header><h3>Fighter</h3><span class="hd">d10 · Str/Con</span></header>
+      <p class="role">Silahların ustası. En sağlam, en anlaşılır sınıf.</p>
+      <dl>
+        <dt>Sv 1</dt><dd><b>Fighting Style:</b> bir dövüş tarzı seç. <b>Second Wind:</b> Bonus Action ile <span class="dice">1d10 + seviye</span> HP kazan. <b>Weapon Mastery:</b> 3 silahın özel yeteneği.</dd>
+        <dt>Sv 2</dt><dd><b>Action Surge:</b> dinlenene kadar bir kez, bir turda iki Action. <b>Tactical Mind:</b> başarısız bir ability check'e Second Wind'le <span class="dice">1d10</span> ekle.</dd>
+        <dt>Sv 3</dt><dd>Subclass: Battle Master, Champion, Eldritch Knight, Psi Warrior.</dd>
+      </dl>
+      <p class="tip"><b>Acemi ipucu:</b> Action Surge'ü saklama; zor bir dövüşte ilk turda kullan.</p>
+    </article>
+    <article class="card">
+      <header><h3>Wizard</h3><span class="hd">d6 · Int/Wis</span></header>
+      <p class="role">Büyü kitabından çalışan akademik büyücü. En çok seçeneği olan sınıf.</p>
+      <dl>
+        <dt>Sv 1</dt><dd><b>Spellcasting:</b> 3 cantrip (sınırsız), kitabında 6 büyü, her gün 4'ünü hazırlarsın. <b>Ritual Adept:</b> ritüel büyüleri hazırlamadan yap. <b>Arcane Recovery:</b> kısa dinlenmede büyü hakkı geri al.</dd>
+        <dt>Sv 2</dt><dd><b>Scholar:</b> bir bilgi skill'inde uzmanlık (Arcana, History gibi).</dd>
+        <dt>Sv 3</dt><dd>Subclass: Abjurer, Diviner, Evoker, Illusionist.</dd>
+      </dl>
+      <p class="tip"><b>Acemi ipucu:</b> HP'n düşük. Önde durma; <i>Mage Armor</i> ve <i>Shield</i> seni hayatta tutar.</p>
+    </article>
+    <article class="card">
+      <header><h3>Rogue</h3><span class="hd">d8 · Dex/Int</span></header>
+      <p class="role">Gölgelerin, kilitlerin ve tek ölümcül darbenin ustası.</p>
+      <dl>
+        <dt>Sv 1</dt><dd><b>Sneak Attack:</b> Finesse ya da menzilli silahla vururken, Advantage'ın varsa ya da hedefin yanında bir arkadaşın varsa <span class="dice">+1d6</span> hasar. <b>Expertise:</b> 2 skill'de çift proficiency. <b>Thieves' Cant</b> ve <b>Weapon Mastery</b> (2 silah).</dd>
+        <dt>Sv 2</dt><dd><b>Cunning Action:</b> Dash, Disengage ya da Hide'ı Bonus Action olarak yap.</dd>
+        <dt>Sv 3</dt><dd><b>Steady Aim</b> ve Sneak Attack <span class="dice">2d6</span>. Subclass: Arcane Trickster, Assassin, Soulknife, Thief.</dd>
+      </dl>
+      <p class="tip"><b>Acemi ipucu:</b> Tek güçlü darbe vurursun. Fighter'ın yanındaki düşmana saldır; Sneak Attack otomatik gelir.</p>
+    </article>
+  </div>
+  <h3>İki rogue varsa</h3>
+  <p>Sorun değil, sadece farklı yönlere gidin. 3. seviyede biri <b>Thief</b> ya da <b>Assassin</b> (dövüş, eşya), diğeri <b>Arcane Trickster</b> (büyü) seçebilir. Böylece aynı işi yapan iki karakter olmaz.</p>
+  <h3>Grupta iyileştirici yok</h3>
+  <p>Kimseyi zorlamıyoruz; hikâyede bir yardımcı olacak. Ama biri farklı bir şey denemek isterse:</p>
+  <div class="alts">
+    <div><strong>Bard</strong><br>Müzikle büyü yapar, arkadaşlarına <span class="kw" title="Bard'ın arkadaşına verdiği ek zar">Bardic Inspiration</span> verir, iyileştirir, konuşmada rakipsizdir.</div>
+    <div><strong>Cleric</strong><br>Tanrısının gücüyle iyileştirir ve korur. Grubun en sağlam destekçisi.</div>
+    <div><strong>Ranger</strong><br>Yay ve iz sürme ustası. Weapon Mastery ve birkaç doğa büyüsü.</div>
+  </div>
+</section>
+
+<section id="sozluk">
+  <h2>Keyword sözlüğü</h2>
+  <p class="sub">Oyunda duyacağın terimler. Çeviri değil, ne işe yaradıkları.</p>
+  <div class="gl-tools">
+    <label for="gl-q" class="eyebrow">Ara</label>
+    <input id="gl-q" type="search" placeholder="Örn. prone, rest, hasar…" autocomplete="off">
+    <span class="gl-count" id="gl-count"></span>
+  </div>
+  <dl class="gloss" id="gloss"></dl>
+</section>
+
+<section id="masa">
+  <h2>Masa kuralları</h2>
+  <p class="sub">2024 kurallarının boş bıraktığı yerlerde bizim kararlarımız.</p>
+  <ol class="steps">
+    <li><div><b>Saklandıktan sonra açığa çıkarsan bulunursun.</b> Hide ile Invisible olduktan sonra, bir düşmanın seni net görebileceği bir yere çıkarsan (örtü yok, gölge yok) bulunmuş sayılırsın.</div></li>
+    <li><div><b>Görünmezlik büyüsü farklı.</b> <i>Invisibility</i> büyüsüyle açıkta dolaşabilirsin. Ama ses çıkarır ya da iz bırakırsan <b>yerin bilinir</b>; seni göremezler ama nereye vuracaklarını bilirler.</div></li>
+    <li><div><b>Terimler İngilizce.</b> Keyword'ler çevrilmez; bu sayfadaki gibi.</div></li>
+  </ol>
+  <h3>Sınırlar ve güvenlik</h3>
+  <p>Bu bir karanlık fantezi macerası; zor temalar olacak. Herkes rahat etsin diye:</p>
+  <ul>
+    <li><b>Lines:</b> Oyunda hiç olmayacak şeyler.</li>
+    <li><b>Veils:</b> Olan ama anlatılmayan şeyler; "perde iner".</li>
+    <li><b>X:</b> Oyun sırasında bir sahne seni rahatsız ederse sohbete <code>X</code> yaz ya da DM'e özel mesaj at. Açıklama gerekmez, sahne değişir.</li>
+  </ul>
+  <p>Seans 0'da herkes kendi listesini DM'e özel mesajla gönderecek.</p>
+</section>
+
+<section id="hazirlik">
+  <h2>Seans 0'dan önce</h2>
+  <p class="sub">Düşünmen gereken birkaç soru, hazırlaman gereken birkaç şey.</p>
+  <div class="note warn"><b>Macera bir esaretle başlıyor</b>Karakterlerin, karanlık bir yerde zincirli olarak uyanacak. Nerede ve kim tarafından, oyunda öğreneceksiniz.</div>
+  <ul class="qs">
+    <li><b>Nerede, nasıl yakalandın?</b><br>Kıyıda bir köy, bir kervan, bir gemi, bir han... Background'un fikir verebilir.</li>
+    <li><b>Hücrede kimi tanıyorsun?</b><br>Diğer oyuncuların karakterlerinden en az birini önceden tanıyorsun. Nereden? (Seans 0'da birlikte karar vereceğiz.)</li>
+    <li><b>Yakalanmadan önce son gördüğün şey neydi?</b></li>
+    <li><b>Kurtulunca ilk ne yapacaksın?</b></li>
+    <li><b>Karakterin neyi istiyor, neden korkuyor?</b> Birer cümle yeter.</li>
+  </ul>
+  <h3>Teknik hazırlık</h3>
+  <ul class="check">
+    <li>Kulaklık ve mikrofon (hoparlörden yankı yapar)</li>
+    <li><a href="https://www.dndbeyond.com" target="_blank" rel="noopener">D&amp;D Beyond</a>'da ücretsiz bir hesap</li>
+    <li>Discord sunucusuna katıl</li>
+    <li>Harita linkini DM paylaşacak; tarayıcıdan açılıyor, kurulum yok</li>
+    <li>Sessiz bir yer ve yaklaşık 3 saat</li>
+  </ul>
+</section>
+</main>
+</div>
+
+<script src="../assets/sozluk.js"></script>
+<script src="../assets/sozluk-arama.js"></script>
+</body>
+</html>

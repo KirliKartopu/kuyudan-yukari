@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Keyword Sözlüğü</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../assets/stil.css">
+<style>
+  /* Dar panel (Owlbear yan paneli ~400px) için sade düzen */
+  body{font-size:16px}
+  .panel{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:16px 40px}
+  .panel h1{font-size:28px;margin:4px 0 2px}
+  .panel .sub{margin:0 0 10px;font-size:15px}
+  .gl-tools{position:sticky;top:env(safe-area-inset-top,0px);background:var(--ground);padding-block:8px;margin:0;z-index:1}
+  .gl-tools input{width:100%}
+  dl.gloss{grid-template-columns:1fr}
+  dl.gloss dt{border-bottom:0;padding-bottom:0}
+  dl.gloss dd{padding-top:2px}
+  .back{font-size:14px}
+</style>
+</head>
+<body>
+<div class="panel">
+  <a class="back" href="../">← Masa</a>
+  <h1>Keyword Sözlüğü</h1>
+  <p class="sub">Oyunda duyacağın terimler. Çeviri değil, ne işe yaradıkları.</p>
+  <div class="gl-tools">
+    <label for="gl-q" hidden>Ara</label>
+    <input id="gl-q" type="search" placeholder="Ara: prone, rest, hasar…" autocomplete="off" autofocus>
+    <span class="gl-count" id="gl-count"></span>
+  </div>
+  <dl class="gloss" id="gloss"></dl>
+</div>
+<script src="../assets/sozluk.js"></script>
+<script src="../assets/sozluk-arama.js"></script>
+</body>
+</html>
