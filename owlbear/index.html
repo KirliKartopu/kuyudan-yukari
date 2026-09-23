@@ -36,7 +36,7 @@
   dl.gloss dd{padding-top:2px}
   .sira-bas{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-family:var(--display);font-size:19px}
   ol.sira{list-style:none;margin:0 0 10px;padding:0}
-  ol.sira li{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:var(--surface);max-width:none}
+  ol.sira li{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:var(--surface);max-width:none}
   ol.sira li.aktif{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
   ol.sira .deg{font-family:var(--mono);font-size:18px;min-width:2.2em;text-align:right}
   ol.sira input{width:4.2em;font:inherit;font-family:var(--mono);padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink)}
@@ -70,7 +70,7 @@
 
   <section data-panel="sira" hidden>
     <div class="sira-bas"><b id="sira-tur">Savaş yok</b>
-      <span class="gmonly" hidden><button class="btn" id="sira-sonraki">Sonraki ▶</button> <button class="btn" id="sira-bitir">Bitir</button></span></div>
+      <span class="gmonly" hidden><button class="btn" id="sira-sonraki">Başlat ▶</button> <button class="btn" id="sira-bitir">Bitir</button></span></div>
     <ol class="sira" id="sira-liste"></ol>
     <p class="feat" id="sira-ipucu"><small>GM, token'lara sağ tıklayıp <b>Sıraya ekle</b> der. Oyuncular karakter sayfasından <b>Initiative</b> atınca değer buraya kendiliğinden yazılır.</small></p>
   </section>
@@ -163,6 +163,15 @@ if (!OBR.isAvailable) {
     const gm = rol === "GM";
     document.querySelectorAll(".gmonly").forEach((x) => { x.hidden = !gm; });
     const sirala = (l) => l.slice().sort((a, b) => (b.deger ?? -99) - (a.deger ?? -99));
+    // Listeden çıkar; aktif olan çıkarsa sıra bir sonrakine geçer
+    const siraCikar = (s, ids) => {
+      const i = s.liste.findIndex((x) => x.id === s.aktifId);
+      if (s.aktifId && ids.includes(s.aktifId)) {
+        const kalan = s.liste.slice(i + 1).concat(s.liste.slice(0, i)).find((x) => !ids.includes(x.id));
+        s.aktifId = kalan ? kalan.id : null;
+      }
+      s.liste = s.liste.filter((x) => !ids.includes(x.id));
+    };
     const siraYaz = async (fn) => {
       const m = await OBR.room.getMetadata();
       const s = m[K_SIRA] || { tur: 1, aktifId: null, liste: [] };
@@ -172,13 +181,16 @@ if (!OBR.isAvailable) {
     };
     const siraCiz = (s) => {
       const ol = document.getElementById("sira-liste");
-      if (!s || !s.liste || !s.liste.length) { ol.innerHTML = ""; document.getElementById("sira-tur").textContent = "Savaş yok"; return; }
+      const dugme = document.getElementById("sira-sonraki");
+      if (!s || !s.liste || !s.liste.length) { ol.innerHTML = ""; document.getElementById("sira-tur").textContent = "Savaş yok"; dugme.textContent = "Başlat ▶"; return; }
       document.getElementById("sira-tur").textContent = s.aktifId ? "Tur " + s.tur : "Initiative bekleniyor";
+      dugme.textContent = s.aktifId ? "Sonraki ▶" : "Başlat ▶";
       ol.innerHTML = s.liste.map((x) => `<li class="${x.id === s.aktifId ? "aktif" : ""}"><span>${x.id === s.aktifId ? "▶" : ""}</span>` +
         `<span>${esc(x.ad)} ${x.karakter ? '<span class="pc">PC</span>' : ""}</span>` +
         (gm ? `<input type="number" data-deg="${esc(x.id)}" value="${x.deger ?? ""}" aria-label="${esc(x.ad)} initiative">` +
-              `<button class="btn" data-d20="${esc(x.id)}" title="d20 at (bonussuz)">d20</button>`
-            : `<span class="deg">${x.deger ?? "–"}</span><span></span>`) + `</li>`).join("");
+              `<button class="btn" data-d20="${esc(x.id)}" title="d20 at (bonussuz)">d20</button>` +
+              `<button class="btn" data-sil="${esc(x.id)}" title="Sıradan çıkar" aria-label="${esc(x.ad)} sıradan çıkar">✕</button>`
+            : `<span class="deg">${x.deger ?? "–"}</span><span></span><span></span>`) + `</li>`).join("");
     };
     siraCiz((await OBR.room.getMetadata())[K_SIRA]);
     OBR.room.onMetadataChange((m) => { if (!document.activeElement || !document.activeElement.dataset.deg) siraCiz(m[K_SIRA]); });
@@ -188,6 +200,8 @@ if (!OBR.isAvailable) {
       siraYaz((s) => { const x = s.liste.find((y) => y.id === id); if (x) x.deger = v; });
     });
     document.getElementById("sira-liste").addEventListener("click", (e) => {
+      const silId = e.target.dataset?.sil;
+      if (silId) { siraYaz((s) => siraCikar(s, [silId])); return; }
       const id = e.target.dataset?.d20; if (!id) return;
       const v = 1 + Math.floor(Math.random() * 20);
       siraYaz((s) => { const x = s.liste.find((y) => y.id === id); if (x) x.deger = v; });

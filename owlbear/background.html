@@ -92,6 +92,22 @@ OBR.onReady(async () => {
         }
       }
       for (const e of etiketler) if (!tokenlar.some((t) => t.id === e.attachedTo)) sil.push(e.id);
+      // haritadan silinen token'lar initiative sırasından da düşsün
+      const oda = await OBR.room.getMetadata();
+      const sira = oda[K_SIRA];
+      if (sira && sira.liste && sira.liste.length) {
+        const varOlan = new Set(items.map((i) => i.id));
+        const gitmis = sira.liste.filter((x) => !varOlan.has(x.id)).map((x) => x.id);
+        if (gitmis.length) {
+          const i = sira.liste.findIndex((x) => x.id === sira.aktifId);
+          if (sira.aktifId && gitmis.includes(sira.aktifId)) {
+            const kalan = sira.liste.slice(i + 1).concat(sira.liste.slice(0, i)).find((x) => !gitmis.includes(x.id));
+            sira.aktifId = kalan ? kalan.id : null;
+          }
+          sira.liste = sira.liste.filter((x) => !gitmis.includes(x.id));
+          await OBR.room.setMetadata({ [K_SIRA]: sira });
+        }
+      }
       if (ekle.length) await OBR.scene.items.addItems(ekle);
       const ids = Object.keys(guncelle);
       if (ids.length) await OBR.scene.items.updateItems(ids, (list) => {
