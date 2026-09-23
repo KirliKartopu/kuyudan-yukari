@@ -19,7 +19,6 @@ OBR.onReady(async () => {
   // --- bildirimler
   const benimBaglanti = await OBR.player.getConnectionId();
   const zar3dAcik = () => { try { return localStorage.getItem("ky-zar3d") !== "0"; } catch (e) { return true; } };
-  const sesAcik = () => { try { return localStorage.getItem("ky-zar-ses") !== "0"; } catch (e) { return true; } };
   OBR.broadcast.onMessage(NS + "/zar", async ({ data, connectionId }) => {
     const r = data || {};
     const sahne = zar3dAcik() && r.zar;
@@ -27,7 +26,7 @@ OBR.onReady(async () => {
       const W = await OBR.viewport.getWidth(), H = await OBR.viewport.getHeight();
       const id = NS + "/zar-sahne";
       OBR.popover.open({
-        id, url: YOL + "owlbear/zar.html#" + new URLSearchParams({ z: r.zar, t: r.sinif || "normal", s: sesAcik() ? "1" : "0", id }),
+        id, url: YOL + "owlbear/zar.html#" + new URLSearchParams({ z: r.zar, t: r.sinif || "normal", s: "0", id }),
         width: Math.min(W, 900), height: Math.min(H, 600),
         anchorReference: "POSITION", anchorPosition: { left: W / 2, top: H / 2 },
         anchorOrigin: { horizontal: "CENTER", vertical: "CENTER" }, transformOrigin: { horizontal: "CENTER", vertical: "CENTER" },

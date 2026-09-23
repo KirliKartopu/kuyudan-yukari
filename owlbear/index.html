@@ -103,6 +103,7 @@
 <script src="../assets/sozluk.js"></script>
 <script src="../assets/sozluk-arama.js"></script>
 <script src="../assets/karakter.js"></script>
+<script src="../assets/zar-ses.js"></script>
 <script type="module">
 import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
 
@@ -168,6 +169,9 @@ if (!OBR.isAvailable) {
     const zs = document.getElementById("zarses");
     try { zs.checked = localStorage.getItem("ky-zar-ses") !== "0"; } catch (e) {}
     zs.addEventListener("change", () => { try { localStorage.setItem("ky-zar-ses", zs.checked ? "1" : "0"); } catch (e) {} });
+    // Sesi panel çalar: tarayıcı, tıklanmış pencerede sese izin verir
+    const ses = ZarSesi(new URL("../assets/", location.href).href);
+    OBR.broadcast.onMessage(KANAL, ({ data }) => { if (zs.checked && data) ses.cal(data.zar, data.sinif); });
     const onRoll = async (r) => {
       const gizli = rol === "GM" && document.getElementById("gizli").checked;
       r.kimden = (r.karakter || oyuncuAdi) + (gizli ? " (gizli)" : "");
