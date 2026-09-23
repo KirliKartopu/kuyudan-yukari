@@ -12,6 +12,9 @@ import { Alici, oku, gonder, hepsi, sil } from "../assets/handout-aktar.js";
 
 const NS = "com.kuyudan-yukari";
 const K_DURUM = NS + "/durum", K_SIRA = NS + "/sira", K_BAG = NS + "/karakter", K_ETIKET = NS + "/hp-etiket", K_NPC = NS + "/npc";
+const K_GOZLEM = NS + "/gozlem-etiket"; // oyuncuların gördüğü NPC durumu (sayısız)
+// Karakterlerin gözlemleyebileceği durum; tam HP'de etiket yok. Bloodied: 2024 resmi durumu (HP yarı ya da altı)
+const gozlem = (hp, max) => hp <= 0 ? ["Yere yığıldı", "#3A2A2A"] : hp <= max / 4 ? ["Ağır yaralı", "#8A2E2E"] : hp <= max / 2 ? ["Bloodied", "#9A4A1C"] : hp < max ? ["Yaralı", "#7A6A2A"] : null;
 const BASE = new URL("../", import.meta.url).href; // .../kuyudan-yukari/
 const YOL = new URL("../", import.meta.url).pathname; // /kuyudan-yukari/
 const ICON = YOL + "owlbear/icon.svg";
@@ -165,6 +168,7 @@ OBR.onReady(async () => {
       const tokenlar = items.filter((i) => i.layer === "CHARACTER" && i.metadata[K_BAG]);
       const npcTokenlar = items.filter((i) => i.layer === "CHARACTER" && i.metadata[K_NPC] && !i.metadata[K_BAG]);
       const etiketler = items.filter((i) => i.metadata[K_ETIKET]);
+      const gozlemler = items.filter((i) => i.metadata[K_GOZLEM]);
       const ekle = [], guncelle = {}, sil = [];
       for (const t of tokenlar) {
         const c = await karakter(t.metadata[K_BAG]);
@@ -199,6 +203,23 @@ OBR.onReady(async () => {
             .locked(true).disableHit(true).metadata({ [K_ETIKET]: true }).name("HP").build());
         }
       }
+      // Oyuncuların gördüğü durum etiketi (token'ın üstünde, herkes görür)
+      const gGuncelle = {};
+      for (const t of npcTokenlar) {
+        const n = t.metadata[K_NPC], g = gozlem(n.hp, n.hpMax);
+        const mevcut = gozlemler.find((e) => e.attachedTo === t.id);
+        if (!g) { if (mevcut) sil.push(mevcut.id); continue; }
+        if (mevcut) {
+          if (mevcut.text?.plainText !== g[0] || mevcut.style?.backgroundColor !== g[1]) gGuncelle[mevcut.id] = { metin: g[0], renk: g[1] };
+        } else {
+          const b = await OBR.scene.items.getItemBounds([t.id]);
+          ekle.push(buildLabel().plainText(g[0]).backgroundColor(g[1]).backgroundOpacity(0.85).fillColor("#FFFFFF")
+            .fontSize(13).padding(3).cornerRadius(6).pointerHeight(0)
+            .position({ x: b.center.x, y: b.min.y - 22 }).attachedTo(t.id).layer("TEXT")
+            .locked(true).disableHit(true).metadata({ [K_GOZLEM]: true }).name("Durum").build());
+        }
+      }
+      for (const e of gozlemler) if (!npcTokenlar.some((t) => t.id === e.attachedTo)) sil.push(e.id);
       for (const e of etiketler) if (!tokenlar.some((t) => t.id === e.attachedTo) && !npcTokenlar.some((t) => t.id === e.attachedTo)) sil.push(e.id);
       // haritadan silinen token'lar initiative sırasından da düşsün
       const oda = await OBR.room.getMetadata();
@@ -229,6 +250,7 @@ OBR.onReady(async () => {
         catch (e) { console.warn("Token sahibi değiştirilemedi:", e); }
       }
       if (ekle.length) await OBR.scene.items.addItems(ekle);
+      Object.assign(guncelle, gGuncelle);
       const ids = Object.keys(guncelle);
       if (ids.length) await OBR.scene.items.updateItems(ids, (list) => {
         for (const l of list) { l.text.plainText = guncelle[l.id].metin; l.style.backgroundColor = guncelle[l.id].renk; }
