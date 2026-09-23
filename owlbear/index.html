@@ -41,6 +41,10 @@
   ol.sira .deg{font-family:var(--mono);font-size:18px;min-width:2.2em;text-align:right}
   ol.sira input{width:4.2em;font:inherit;font-family:var(--mono);padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink)}
   ol.sira .pc{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .sahiplen{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .sahiplen li{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);max-width:none}
+  .sahiplen img{width:40px;height:40px;border-radius:6px;object-fit:cover;background:var(--ground)}
+  .sahiplen small{color:var(--muted)}
   .outside{padding:24px 0}
   .outside code{font-family:var(--mono);font-size:13px;background:var(--surface);padding:2px 6px;border-radius:4px;word-break:break-all}
 </style>
@@ -64,6 +68,9 @@
         <button class="btn" data-mode="adv" title="Advantage: iki d20, yükseği">Adv</button>
       </div>
       <label class="gm" id="gm-gizli" hidden><input type="checkbox" id="gizli"> Gizli zar (sadece GM görür)</label>
+      <span class="gm" id="sahip-bilgi" hidden></span>
+      <button class="btn" id="sahip-kaldir" hidden>Sahipliği kaldır</button>
+      <button class="btn" id="birak" hidden title="Yanlış karakteri seçtiysen">Karakteri bırak</button>
     </div>
     <div id="root"><p class="empty">Yükleniyor…</p></div>
   </section>
@@ -119,6 +126,8 @@ if (!OBR.isAvailable) {
     applyTheme(await OBR.theme.getTheme()); OBR.theme.onChange(applyTheme);
 
     const rol = await OBR.player.getRole();
+    const benimId = await OBR.player.getId();
+    let benimKarakter = null; // oyuncunun sahiplendiği karakter
     const oyuncuAdi = await OBR.player.getName();
     if (rol === "GM") document.getElementById("gm-gizli").hidden = false;
 
@@ -126,6 +135,7 @@ if (!OBR.isAvailable) {
     const store = {
       async load(id) { const m = await OBR.room.getMetadata(); return (m[K_DURUM] || {})[id] || null; },
       async save(id, s) {
+        if (rol !== "GM" && String(id) !== String(benimKarakter)) return; // başkasının karakterine dokunma
         const m = await OBR.room.getMetadata();
         const all = { ...(m[K_DURUM] || {}), [id]: s };
         await OBR.room.setMetadata({ [K_DURUM]: all });
@@ -221,18 +231,84 @@ if (!OBR.isAvailable) {
     });
     document.getElementById("sira-bitir").addEventListener("click", () => OBR.room.setMetadata({ [K_SIRA]: undefined }));
 
+    // --- Sahiplik: oda metadata'sı {karakterId: {oyuncu: playerId, ad}}
+    const K_SAHIP = NS + "/sahipler";
+    const pick = document.getElementById("pick"), root = document.getElementById("root");
+    const sahipleriOku = async () => (await OBR.room.getMetadata())[K_SAHIP] || {};
+    const benimkiniBul = (sahip) => Object.keys(sahip).find((id) => sahip[id].oyuncu === benimId) || null;
+
     const ks = KarakterSayfasi({
-      root: document.getElementById("root"), pick: document.getElementById("pick"), mode: document.getElementById("mode"),
-      base: "../", store, onRoll,
-      onSelect: (id) => OBR.player.setMetadata({ [K_SECIM]: id })
+      root, pick, mode: document.getElementById("mode"), base: "../", store, onRoll,
+      onSelect: async (id) => {
+        if (rol !== "GM") return;
+        OBR.player.setMetadata({ [K_SECIM]: id });
+        const sahip = (await sahipleriOku())[id];
+        const bilgi = document.getElementById("sahip-bilgi");
+        bilgi.hidden = false; bilgi.textContent = sahip ? "Sahibi: " + sahip.ad : "Sahibi yok";
+        document.getElementById("sahip-kaldir").hidden = !sahip;
+      }
     });
-    const secili = (await OBR.player.getMetadata())[K_SECIM];
-    try {
-      const items = await ks.list();
-      const want = ks.fill(items, secili);
+
+    let karakterler = [];
+    async function gmBaslat() {
+      const sahip = await sahipleriOku();
+      const liste = karakterler.map((k) => ({ ...k, oyuncu: sahip[k.id] ? sahip[k.id].ad : k.oyuncu, ornek: sahip[k.id] ? false : k.ornek }));
+      const secili = pick.value || (await OBR.player.getMetadata())[K_SECIM];
+      const want = ks.fill(liste, secili);
       if (want) await ks.open(want);
+    }
+    async function oyuncuBaslat() {
+      pick.hidden = true;
+      const sahip = await sahipleriOku();
+      const mine = benimkiniBul(sahip);
+      benimKarakter = mine && karakterler.some((k) => String(k.id) === mine) ? mine : null;
+      document.getElementById("birak").hidden = !benimKarakter;
+      if (benimKarakter) {
+        ks.fill(karakterler.filter((k) => String(k.id) === benimKarakter), benimKarakter);
+        await ks.open(benimKarakter);
+        return;
+      }
+      root.innerHTML = '<h2 style="margin-top:6px">Karakterini seç</h2><p class="sub">Bir kez seçersin; sonra bu panelde sadece kendi karakterin görünür.</p><ul class="sahiplen">' +
+        karakterler.map((k) => {
+          const s = sahip[k.id];
+          return `<li><img alt="" src="${esc(k.avatar || "")}"><span><b>${esc(k.ad)}</b><br><small>${esc(k.siniflar.map((c) => c.ad + " " + c.seviye).join(" / "))}${k.ornek ? " · örnek" : ""}</small></span>` +
+            (s ? `<small>${esc(s.ad)}</small>` : `<button class="btn" data-sahiplen="${k.id}">Bu benim</button>`) + "</li>";
+        }).join("") + "</ul>";
+    }
+    root.addEventListener("click", async (e) => {
+      const id = e.target.dataset?.sahiplen; if (!id) return;
+      const sahip = await sahipleriOku();
+      if (sahip[id]) { OBR.notification.show("Bu karakteri " + sahip[id].ad + " seçmiş.", "WARNING"); return oyuncuBaslat(); }
+      const mine = benimkiniBul(sahip);
+      const yeni = { ...sahip, [id]: { oyuncu: benimId, ad: oyuncuAdi } };
+      if (mine) delete yeni[mine];
+      await OBR.room.setMetadata({ [K_SAHIP]: yeni });
+      await oyuncuBaslat();
+    });
+    document.getElementById("birak").addEventListener("click", async () => {
+      const sahip = await sahipleriOku(); const mine = benimkiniBul(sahip);
+      if (mine) { delete sahip[mine]; await OBR.room.setMetadata({ [K_SAHIP]: sahip }); }
+      await oyuncuBaslat();
+    });
+    document.getElementById("sahip-kaldir").addEventListener("click", async () => {
+      const sahip = await sahipleriOku(); delete sahip[pick.value];
+      await OBR.room.setMetadata({ [K_SAHIP]: sahip });
+      await gmBaslat();
+    });
+    // GM bir oyuncunun sahipliğini kaldırırsa oyuncunun paneli de güncellensin
+    let sonSahip = JSON.stringify(await sahipleriOku());
+    OBR.room.onMetadataChange((m) => {
+      const yeni = JSON.stringify(m[K_SAHIP] || {});
+      if (yeni === sonSahip) return;
+      sonSahip = yeni;
+      if (rol === "GM") gmBaslat(); else oyuncuBaslat();
+    });
+
+    try {
+      karakterler = await ks.list();
+      if (rol === "GM") await gmBaslat(); else await oyuncuBaslat();
     } catch (e) {
-      document.getElementById("root").innerHTML = '<p class="empty">Karakter listesi yüklenemedi.</p>';
+      root.innerHTML = '<p class="empty">Karakter listesi yüklenemedi.</p>';
     }
   });
 }

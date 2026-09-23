@@ -45,6 +45,20 @@ OBR.onReady(async () => {
     },
   });
   await OBR.contextMenu.create({
+    id: NS + "/oyuncu-bagla",
+    icons: [{ icon: ICON, label: "Karakterimi bağla", filter: { roles: ["PLAYER"], max: 1, every: [{ key: "layer", value: "CHARACTER" }, bagsiz] } }],
+    onClick: async (ctx) => {
+      const benimId = await OBR.player.getId();
+      const sahip = (await OBR.room.getMetadata())[NS + "/sahipler"] || {};
+      const mine = Object.keys(sahip).find((id) => sahip[id].oyuncu === benimId);
+      if (!mine) { OBR.notification.show("Önce Kuyudan Yukarı panelinden karakterini seç.", "WARNING"); return; }
+      try {
+        await OBR.scene.items.updateItems(ctx.items.map((i) => i.id), (items) => { for (const it of items) it.metadata[K_BAG] = Number(mine); });
+        OBR.notification.show("Token karakterine bağlandı.", "SUCCESS");
+      } catch (e) { OBR.notification.show("Bu token'ı değiştirme iznin yok. GM'den bağlamasını iste.", "ERROR"); }
+    },
+  });
+  await OBR.contextMenu.create({
     id: NS + "/sira-ekle",
     icons: [{ icon: ICON, label: "Sıraya ekle / çıkar", filter: { roles: ["GM"], every: [{ key: "layer", value: "CHARACTER" }] } }],
     onClick: async (ctx) => {
