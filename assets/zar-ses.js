@@ -6,8 +6,10 @@
 //   ses.cal("2d20@14,7", "crit");                       // 3D kapalıyken yaklaşık çarpma dizisi
 (function () {
   var liste = function (onek, n) { var l = []; for (var i = 1; i <= n; i++) l.push(onek + i + ".mp3"); return l; };
+  // plastic 8-12 çift tık içeriyor (ölçüldü); kulağa zar çalkalama gibi geliyordu, çıkarıldı
+  var TEK_TIK = [1, 2, 3, 4, 5, 6, 7, 13, 14, 15].map(function (n) { return "dicehit/dicehit_plastic" + n + ".mp3"; });
   var DOSYALAR = [].concat(
-    liste("dicehit/dicehit_plastic", 15),
+    TEK_TIK,
     liste("dicehit/dicehit_metal", 12),
     liste("surfaces/surface_wood_table", 7)
   );
@@ -39,10 +41,21 @@
     }
 
     // 3D zar penceresinden gelen tek bir çarpışma: dosya adı ve hıza göre ses seviyesi
+    var sonZarZar = 0;
     function calDosya(dosya, guc) {
       if (!hazir()) return;
+      var masa = dosya.indexOf("surfaces/") === 0;
+      if (!masa) {
+        // zar-zar temasları: çok yumuşak ya da çok sık olanlar çalkalama gibi duyuluyor
+        var simdi = ctx.currentTime;
+        if ((guc || 0) < 0.08 || simdi - sonZarZar < 0.12) return;
+        sonZarZar = simdi;
+        if (dosya.indexOf("dicehit_plastic") > -1 && TEK_TIK.indexOf(dosya) === -1) dosya = TEK_TIK[Math.floor(Math.random() * TEK_TIK.length)];
+      }
       var buf = tampon[dosya];
-      if (buf) calTek(buf, 0, Math.max(0.05, Math.min(1, (guc || 0.5) * 1.4)));
+      if (!buf) return;
+      var seviye = Math.max(0.05, Math.min(1, (guc || 0.5) * 1.4));
+      calTek(buf, 0, masa ? seviye * 0.5 : seviye); // masa sesi yarıya
     }
 
     // 3D kapalıyken: fizik yok, yaklaşık bir çarpma dizisi
@@ -60,7 +73,7 @@
           var t = t0 + z * 0.09 + Math.random() * 0.1, guc = 0.6;
           for (var h = 0; h < 3; h++) {
             var b = rastgele(h === 0 ? "surfaces/surface_wood_table" : malzeme);
-            if (b) calTek(b, t, guc);
+            if (b) calTek(b, t, h === 0 ? guc * 0.5 : guc);
             t += 0.18 + h * 0.12 + Math.random() * 0.1;
             guc *= 0.45;
           }
