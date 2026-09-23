@@ -57,6 +57,59 @@ def fetch(cid):
     return body["data"]
 
 
+# D&D Beyond API'si subclass'ların "her zaman hazır" büyülerini (Life Domain Spells vb.) göndermiyor;
+# 5e.tools verisinden subclass adına göre tamamlanır. Ağ yoksa sessizce atlanır.
+VERI = "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data/"
+_veri = {}
+
+
+def _cek(yol):
+    if yol not in _veri:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(VERI + yol, headers={"User-Agent": "kuyudan-yukari/1.0"}), timeout=30) as r:
+                _veri[yol] = json.load(r)
+        except Exception:  # noqa: BLE001
+            _veri[yol] = None
+    return _veri[yol]
+
+
+def subclass_hazir(d):
+    out = []
+    for c in d["classes"]:
+        sub = (c.get("subclassDefinition") or {}).get("name")
+        if not sub:
+            continue
+        veri = _cek(f'class/class-{c["definition"]["name"].lower()}.json')
+        if not veri:
+            continue
+        # 2024 sürümü önce (aynı adla 2014 kitabından kopyalanmış kayıt da var)
+        adaylar = sorted([x for x in veri.get("subclass", []) if x["name"] == sub and x.get("classSource") in ("XPHB", "EFA")],
+                         key=lambda x: x["source"] not in ("XPHB", "EFA", "FRHoF", "AU", "RHW"))
+        if not adaylar:
+            continue
+        ek = adaylar[0].get("additionalSpells") or []
+        if len(ek) != 1:  # birden çok set (ör. Circle of the Land) seçime bağlı; D&D Beyond onları zaten gönderiyor
+            continue
+        for tur in ("prepared", "known"):
+            for sv, liste in (ek[0].get(tur) or {}).items():
+                if not isinstance(liste, list) or int(re.sub(r"\D", "", sv) or 1) > c["level"]:
+                    continue
+                for ad in liste:
+                    if isinstance(ad, str):
+                        out.append(ad.split("|")[0].split("#")[0])
+    buyuler = {}
+    for kaynak in ("spells/spells-xphb.json",):
+        for sp in (_cek(kaynak) or {}).get("spell", []):
+            buyuler[sp["name"].lower()] = sp
+    sonuc = []
+    for ad in out:
+        sp = buyuler.get(ad.lower())
+        if sp:
+            sonuc.append({"ad": sp["name"], "seviye": sp["level"], "konsantrasyon": any(x.get("concentration") for x in sp.get("duration", [])),
+                          "ritual": bool((sp.get("meta") or {}).get("ritual"))})
+    return sonuc
+
+
 def mod(score):
     return math.floor((score - 10) / 2)
 
@@ -127,12 +180,17 @@ def convert(d, oyuncu=""):
     if shield:
         ac += 2
     ac += sum((m.get("value") or 0) for m in mods if m["type"] == "bonus" and m["subType"] == "armor-class")
+    # Defense gibi koşullu bonuslar: zırhlıyken / zırhsızken
+    ac += sum((m.get("value") or 0) for m in mods if m["type"] == "bonus" and m["subType"] == ("armored-armor-class" if armor else "unarmored-armor-class"))
 
     # Initiative: Dex + (Alert gibi değersiz bonus = proficiency)
     init = am["dex"] + sum((m.get("value") if m.get("value") is not None else pb)
                            for m in mods if m["type"] == "bonus" and m["subType"] == "initiative")
 
     speed = d["race"].get("weightSpeeds", {}).get("normal", {}).get("walk") or 30
+    speed += sum((m.get("value") or 0) for m in mods if m["type"] == "bonus" and m["subType"] in ("speed", "speed-walking"))
+    if not armor and not shield:  # Monk: Unarmored Movement
+        speed += sum((m.get("value") or 0) for m in mods if m["type"] == "bonus" and m["subType"] == "unarmored-movement")
     # duyular: 2024 species'lerinde "set-base" olarak gelir (ör. darkvision 120)
     SENSES = {"darkvision", "blindsight", "tremorsense", "truesight"}
     senses = {}
@@ -194,16 +252,21 @@ def convert(d, oyuncu=""):
         spells = []
         for cs in d["classSpells"]:
             for s in cs["spells"]:
-                sd = s["definition"]
+                sd = s.get("definition")
+                if not sd:  # D&D Beyond bazen boş büyü kaydı gönderiyor (ör. Wizard subclass seçimi)
+                    continue
                 if sd["level"] == 0 or s.get("prepared") or s.get("alwaysPrepared") or cname in ("Sorcerer", "Bard", "Warlock", "Ranger"):
                     spells.append({"ad": sd["name"], "seviye": sd["level"],
                                    "konsantrasyon": bool(sd.get("concentration")),
                                    "ritual": bool(sd.get("ritual"))})
         for src in (d.get("spells") or {}).values():
             for s in src or []:
-                sd = s["definition"]
+                sd = s.get("definition")
+                if not sd:  # D&D Beyond bazen boş büyü kaydı gönderiyor (ör. Wizard subclass seçimi)
+                    continue
                 spells.append({"ad": sd["name"], "seviye": sd["level"],
                                "konsantrasyon": bool(sd.get("concentration")), "ritual": bool(sd.get("ritual"))})
+        spells += subclass_hazir(d)
         spells = sorted({(s["seviye"], s["ad"]): s for s in spells}.values(), key=lambda s: (s["seviye"], s["ad"]))
         spellcasting = {"sinif": cname, "yetenek": sab, "save_dc": 8 + pb + am[sab],
                         "isabet": pb + am[sab], "slotlar": slots, "buyuler": spells}

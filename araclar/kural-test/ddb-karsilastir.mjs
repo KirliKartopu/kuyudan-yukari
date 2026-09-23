@@ -14,10 +14,14 @@ for (const dosya of readdirSync(DIZIN).filter((f) => /^k_\d+\.json$/.test(f))) {
   const Y = Object.assign(K.bosYapi(), { sinif: d.sinif, seviye: d.seviye, secim: d.subclass ? { subclass: [d.subclass] } : {}, background: d.bg + "|XPHB", tur: d.tur + "|XPHB", yontem: "elle", ad: d.ad });
   AB.forEach((a, i) => (Y.temel[a] = d.temel[i]));
   // D&D Beyond seçimlerinden havuz: seçenek adı havuzdaysa seçilir
-  const havuz = new Set(d.secim.map(low).concat(d.buyuler.map(low)));
+  const deger = d.secim.map((x) => x[1]), etiketli = (re) => new Set(d.secim.filter((x) => re.test(x[0])).map((x) => low(x[1])));
+  const havuz = new Set(deger.map(low).concat(d.buyuler.map(low)));
+  // etikete göre özel havuzlar: aynı değer başka bir soruya kaymasın
+  const ozel = [[/^dil$/, etiketli(/^Select a Standard Language/)], [/Deft_Explorer:dil$/, etiketli(/Standard or Rare Language/)],
+    [/^sinif:exp:/, etiketli(/Skill Expertise/)], [/^sinif:skill$/, etiketli(/Skill Proficiency/)]];
   const hazir = new Set(d.hazir.map(low));
   const ab = { strength: "str", dexterity: "dex", constitution: "con", intelligence: "int", wisdom: "wis", charisma: "cha" };
-  const artis = d.secim.filter((x) => / Score$/.test(x)).map((x) => ab[low(x).replace(" score", "")]);
+  const artis = deger.filter((x) => / Score$/.test(x)).map((x) => ab[low(x).replace(" score", "")]);
   for (let tur = 0; tur < 6; tur++) {
     for (const q of K.secimler(Y, S)) {
       if (q.tamam) continue;
@@ -28,6 +32,8 @@ for (const dosya of readdirSync(DIZIN).filter((f) => /^k_\d+\.json$/.test(f))) {
       const aday = q.secenekler.filter((o) => !o.devre && (havuz.has(low(o.ad)) || havuz.has(low(o.d)) ||
         [...havuz].some((h) => h.startsWith(low(o.ad) + " (") || h.includes("(" + low(o.ad).replace(" ancestry", "") + ")") || low(o.ad).startsWith(h.split(" (")[0] + " "))));
       let secilen = aday;
+      const oz = ozel.find(([re]) => re.test(q.k));
+      if (oz) secilen = q.secenekler.filter((o) => !o.devre && oz[1].has(low(o.ad)));
       if (/^bg:feat:sp:/.test(q.k)) { // feat büyüleri D&D Beyond'un feat listesinden
         const fb = new Set((d.featBuyu || []).map(low));
         secilen = aday.filter((o) => fb.has(low(o.ad)));
