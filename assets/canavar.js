@@ -99,8 +99,9 @@ function etiket(t, icerik) {
     case "actSaveSuccessOrFail": return "<i>Failure or Success:</i>";
     case "actTrigger": return "<i>Trigger:</i>";
     case "actResponse": return "<i>Response:</i>";
-    case "spell": return `<i>${esc(ilk)}</i>`;
-    case "condition": case "status": return `<span class="kw">${esc(ilk)}</span>`;
+    case "spell": return `<i data-ack="buyu|${esc(ilk)}">${esc(ilk)}</i>`;
+    case "condition": return `<span class="kw" data-ack="cond|${esc(ilk)}">${esc(ilk)}</span>`;
+    case "status": return `<span class="kw">${esc(ilk)}</span>`;
     default: { const ps = (icerik || "").split("|"); return esc(ps[2] || ps[0]); } // {@item ad|kaynak|görünen}
   }
 }

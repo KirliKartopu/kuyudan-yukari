@@ -148,7 +148,7 @@ def convert(d, oyuncu=""):
         magic = sum((m.get("value") or 0) for m in w.get("grantedModifiers", []) if m["type"] == "bonus" and m["subType"] == "magic")
         dmg_bonus = am[ab] + magic
         attacks.append({
-            "ad": w["name"], "kusanili": bool(it.get("equipped")),
+            "ad": w["name"], "tip": w.get("type") or "", "kusanili": bool(it.get("equipped")),
             "isabet": am[ab] + (pb if prof else 0) + magic,
             "hasar": w["damage"]["diceString"] + (f"{dmg_bonus:+d}" if dmg_bonus else ""),
             "tur": w.get("damageType") or "",
@@ -217,7 +217,7 @@ def convert(d, oyuncu=""):
         "hp_max": hp_max, "ac": ac, "initiative": init, "hiz": speed, "duyular": senses,
         "diller": languages, "saldirilar": uniq, "buyu": spellcasting,
         "ozellikler": features, "featler": [f["definition"]["name"] for f in d["feats"]],
-        "envanter": [{"ad": i["definition"]["name"], "adet": i.get("quantity", 1), "kusanili": bool(i.get("equipped"))}
+        "envanter": [{"ad": i["definition"]["name"], "tip": i["definition"].get("type") or "", "adet": i.get("quantity", 1), "kusanili": bool(i.get("equipped"))}
                      for i in d["inventory"]],
         "para": d.get("currencies", {}), "avatar": avatar,
         "beyond_url": f"https://www.dndbeyond.com/characters/{d['id']}",
