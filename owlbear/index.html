@@ -54,6 +54,27 @@
   .ho-liste .kucuk{width:44px;height:44px;border-radius:4px;object-fit:cover;background:var(--ground);display:flex;align-items:center;justify-content:center;font-size:20px}
   .ho-liste small{color:var(--muted)}
   .ho-liste .dug{display:flex;gap:4px}
+  .npc-paket{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .npc-paket small{color:var(--muted)}
+  #npc-q{width:100%;box-sizing:border-box;font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);margin-top:8px}
+  .npc-sonuc{list-style:none;margin:4px 0;padding:0;max-height:180px;overflow:auto}
+  .npc-sonuc button{width:100%;display:flex;justify-content:space-between;gap:8px;font:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:5px 2px;color:var(--ink);cursor:pointer}
+  .npc-sonuc button:hover,.npc-sonuc button:focus-visible{background:var(--accent-soft);outline:none}
+  .npc-sonuc small{color:var(--muted);white-space:nowrap}
+  .npc-tok{border:1px solid var(--accent);border-radius:8px;padding:8px 10px;margin:8px 0;background:var(--surface)}
+  .npc-tok .ust{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .npc-tok .hp{font-family:var(--mono);font-size:22px}
+  .npc-tok .ctl{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+  .npc-tok input{width:4.5em;font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink)}
+  .sb{border-top:2px solid var(--brass);margin-top:10px;padding-top:6px;font-size:14px;line-height:1.45}
+  .sb h2{margin:0;font-size:22px}
+  .sb h3{font-size:16px;color:var(--brass);border-bottom:1px solid var(--line);margin:12px 0 4px;padding-bottom:2px}
+  .sb p{margin:4px 0;max-width:none}
+  .sb ul{margin:4px 0;padding-left:18px}
+  .sb .sb-alt{color:var(--muted);font-style:italic}
+  .sb-yet{width:100%;border-collapse:collapse;min-width:0;font-size:13px;margin:6px 0}
+  .sb-yet th,.sb-yet td{text-align:center;padding:2px;border:0;background:none}
+  .sb .npc-z{font-size:12px;padding:1px 6px;margin:0 1px}
   .outside{padding:24px 0}
   .outside code{font-family:var(--mono);font-size:13px;background:var(--surface);padding:2px 6px;border-radius:4px;word-break:break-all}
 </style>
@@ -62,6 +83,7 @@
 <div class="sheet">
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="karakter">Karakter</button>
+    <button role="tab" aria-selected="false" data-tab="npc" class="gmonly" hidden>NPC</button>
     <button role="tab" aria-selected="false" data-tab="sira">Sıra</button>
     <button role="tab" aria-selected="false" data-tab="zarlar">Zarlar</button>
     <button role="tab" aria-selected="false" data-tab="handout">Handout</button>
@@ -88,6 +110,18 @@
     </div>
     <p class="note warn" id="izin-uyari" hidden><b>Oyuncular her token'ı hareket ettirebiliyor</b>Owlbear'da oda ayarlarından (Room settings → Player permissions) <b>Characters</b> için <b>Owner only</b> seçeneğini aç. Böylece oyuncular sadece kendi karakterlerine bağlı token'ları oynatabilir.</p>
     <div id="root"><p class="empty">Yükleniyor…</p></div>
+  </section>
+
+  <section data-panel="npc" hidden>
+    <div class="npc-paket"><small id="npc-paket-durum">Canavar paketi yükleniyor…</small>
+      <button class="btn" type="button" id="npc-paket-sec">Paketi yükle</button>
+      <input type="file" id="npc-paket-dosya" accept=".json,application/json" hidden></div>
+    <label class="gm" style="margin:6px 0"><input type="checkbox" id="npc-gizli" checked> NPC zarları gizli (sadece sen görürsün)</label>
+    <div id="npc-secili"></div>
+    <label for="npc-q" hidden>Canavar ara</label>
+    <input id="npc-q" type="search" placeholder="Canavar ara: goblin, drow, troll…" autocomplete="off">
+    <ul class="npc-sonuc" id="npc-sonuc"></ul>
+    <div id="npc-sb"></div>
   </section>
 
   <section data-panel="sira" hidden>
@@ -150,6 +184,7 @@
 <script type="module">
 import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
 import { kucult, kaydet, oku as hoOkuGorsel, gonder as hoGonder } from "../assets/handout-aktar.js";
+import { paketYukle, paketOku, ara as cAra, bul as cBul, statBlok, zarIfade } from "../assets/canavar.js";
 
 const NS = "com.kuyudan-yukari";
 const K_DURUM = NS + "/durum", K_ZARLAR = NS + "/zarlar", K_SECIM = NS + "/karakter", KANAL = NS + "/zar";
@@ -223,8 +258,8 @@ if (!OBR.isAvailable) {
     document.getElementById("sestest").addEventListener("click", async () => {
       document.getElementById("sesdurum").textContent = await ses.test();
     });
-    const onRoll = async (r) => {
-      const gizli = rol === "GM" && document.getElementById("gizli").checked;
+    const onRoll = async (r, gizliZorla) => {
+      const gizli = rol === "GM" && (gizliZorla ?? document.getElementById("gizli").checked);
       r.kimden = (r.karakter || oyuncuAdi) + (gizli ? " (gizli)" : "");
       r.id = Math.random().toString(36).slice(2);
       sesCal(r); // kendi zarım: yayının geri dönmesini bekleme
@@ -269,7 +304,7 @@ if (!OBR.isAvailable) {
       ol.innerHTML = s.liste.map((x) => `<li class="${x.id === s.aktifId ? "aktif" : ""}"><span>${x.id === s.aktifId ? "▶" : ""}</span>` +
         `<span>${esc(x.ad)} ${x.karakter ? '<span class="pc">PC</span>' : ""}</span>` +
         (gm ? `<input type="number" data-deg="${esc(x.id)}" value="${x.deger ?? ""}" aria-label="${esc(x.ad)} initiative">` +
-              `<button class="btn" data-d20="${esc(x.id)}" title="d20 at (bonussuz)">d20</button>` +
+              `<button class="btn" data-d20="${esc(x.id)}" title="d20 at${x.ini ? " (" + (x.ini > 0 ? "+" : "") + x.ini + ")" : ""}">d20${x.ini ? (x.ini > 0 ? "+" : "") + x.ini : ""}</button>` +
               `<button class="btn" data-sil="${esc(x.id)}" title="Sıradan çıkar" aria-label="${esc(x.ad)} sıradan çıkar">✕</button>`
             : `<span class="deg">${x.deger ?? "–"}</span><span></span><span></span>`) + `</li>`).join("");
     };
@@ -284,8 +319,8 @@ if (!OBR.isAvailable) {
       const silId = e.target.dataset?.sil;
       if (silId) { siraYaz((s) => siraCikar(s, [silId])); return; }
       const id = e.target.dataset?.d20; if (!id) return;
-      const v = 1 + Math.floor(Math.random() * 20);
-      siraYaz((s) => { const x = s.liste.find((y) => y.id === id); if (x) x.deger = v; });
+      const d = 1 + Math.floor(Math.random() * 20);
+      siraYaz((s) => { const x = s.liste.find((y) => y.id === id); if (x) x.deger = d + (x.ini || 0); });
     });
     document.getElementById("sira-sonraki").addEventListener("click", async () => {
       const s = await siraYaz((s) => {
@@ -397,6 +432,89 @@ if (!OBR.isAvailable) {
       };
       document.getElementById("ho-goster").addEventListener("click", () => hoYeni(true));
       document.getElementById("ho-kaydet").addEventListener("click", () => hoYeni(false));
+    }
+
+    // --- NPC (sadece GM): canavar paketi tarayıcıda, HP token'ın kendi verisinde
+    if (gm) {
+      const K_NPC = NS + "/npc";
+      const durumYaz = async () => {
+        const p = await paketOku();
+        document.getElementById("npc-paket-durum").textContent = p ? `Canavar paketi: ${p.adet} canavar` : "Canavar paketi yok. Bilgisayarında araclar\\canavar-paketi.json dosyasını seç.";
+      };
+      durumYaz();
+      document.getElementById("npc-paket-sec").addEventListener("click", () => document.getElementById("npc-paket-dosya").click());
+      document.getElementById("npc-paket-dosya").addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0]; if (!f) return;
+        try { const p = await paketYukle(f); OBR.notification.show(`Canavar paketi yüklendi: ${p.adet}`, "SUCCESS"); }
+        catch (err) { OBR.notification.show("Paket okunamadı: " + err.message, "ERROR"); }
+        e.target.value = ""; durumYaz();
+      });
+      let gosterilen = null; // stat block'u açık canavar
+      const sbGoster = (m, baslik) => {
+        gosterilen = { m, baslik: baslik || m.name };
+        document.getElementById("npc-sb").innerHTML = statBlok(m);
+      };
+      let sonuc = [];
+      document.getElementById("npc-q").addEventListener("input", async (e) => {
+        sonuc = await cAra(e.target.value, 30);
+        document.getElementById("npc-sonuc").innerHTML = sonuc.map((m, i) => `<li><button data-ci="${i}"><span>${esc(m.name)}</span><small>CR ${esc(typeof m.cr === "object" ? m.cr.cr : m.cr ?? "—")} · ${esc(m.source)}</small></button></li>`).join("");
+      });
+      document.getElementById("npc-sonuc").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-ci]"); if (b) sbGoster(sonuc[+b.dataset.ci]);
+      });
+      // stat block zarları
+      const npcZar = (r) => onRoll({ ...r, karakter: gosterilen ? gosterilen.baslik : "NPC" }, document.getElementById("npc-gizli").checked);
+      const d20 = (baslik, bonus, atak) => {
+        const a = 1 + Math.floor(Math.random() * 20);
+        npcZar({ baslik, toplam: a + bonus, detay: `d20 (${a}) ${bonus >= 0 ? "+" : ""}${bonus}` + (atak && a === 20 ? " · KRİTİK!" : atak && a === 1 ? " · Iska" : ""), sinif: atak && a === 20 ? "crit" : atak && a === 1 ? "fail" : "", zar: "1d20@" + a });
+      };
+      document.getElementById("npc-sb").addEventListener("click", (e) => {
+        const b = e.target.closest(".npc-z"); if (!b) return;
+        const eylem = b.closest("p") && b.closest("p").querySelector("b i");
+        const ad = eylem ? eylem.textContent.replace(/\.$/, "") : "";
+        if (b.dataset.hit != null) d20((ad || "Saldırı") + " attack", +b.dataset.hit, true);
+        else if (b.dataset.dmg != null) { const z = zarIfade(b.dataset.dmg); npcZar({ baslik: (ad || "Hasar") + " hasar", toplam: z.toplam, detay: z.detay, zar: z.zar }); }
+        else if (b.dataset.ini != null) d20("Initiative", +b.dataset.ini);
+        else if (b.dataset.chk != null) d20(b.dataset.ad + " check", +b.dataset.chk);
+      });
+      // seçili NPC token'ları: HP yönetimi
+      const seciliCiz = async () => {
+        const sel = (await OBR.player.getSelection()) || [];
+        const items = sel.length ? await OBR.scene.items.getItems(sel) : [];
+        const npcs = items.filter((i) => i.metadata[K_NPC]);
+        const kap = document.getElementById("npc-secili");
+        if (document.activeElement && document.activeElement.dataset && document.activeElement.dataset.npchp) return; // yazarken bozma
+        kap.innerHTML = npcs.map((t) => {
+          const n = t.metadata[K_NPC];
+          return `<div class="npc-tok"><div class="ust"><b>${esc(t.text?.plainText || t.name || n.ad)}</b><small>${esc(n.ad)} · AC ${n.ac}</small></div>` +
+            `<div class="hp">${n.hp} <small>/ ${n.hpMax}${n.temp ? " · temp " + n.temp : ""}</small></div>` +
+            `<div class="ctl"><input type="number" min="0" data-npchp="${t.id}" placeholder="5" aria-label="Miktar">` +
+            `<button class="btn" data-npcop="dmg" data-id="${t.id}">Hasar</button><button class="btn" data-npcop="heal" data-id="${t.id}">İyileş</button>` +
+            `<button class="btn" data-npcop="temp" data-id="${t.id}">Temp</button><button class="btn" data-npcop="sb" data-id="${t.id}">Stat block</button></div></div>`;
+        }).join("");
+        if (npcs.length === 1 && (!gosterilen || gosterilen.id !== npcs[0].id)) {
+          const n = npcs[0].metadata[K_NPC], m = await cBul(n.ad, n.kaynak);
+          if (m) { sbGoster(m, npcs[0].text?.plainText || npcs[0].name || n.ad); gosterilen.id = npcs[0].id; }
+        }
+      };
+      document.getElementById("npc-secili").addEventListener("click", async (e) => {
+        const b = e.target.closest("[data-npcop]"); if (!b) return;
+        const id = b.dataset.id, op = b.dataset.npcop;
+        if (op === "sb") { const [t] = await OBR.scene.items.getItems([id]); const n = t.metadata[K_NPC], m = await cBul(n.ad, n.kaynak); if (m) sbGoster(m, t.text?.plainText || t.name || n.ad); return; }
+        const inp = document.querySelector(`[data-npchp="${id}"]`), v = Math.max(0, parseInt(inp && inp.value, 10) || 0);
+        await OBR.scene.items.updateItems([id], (items) => {
+          const n = { ...items[0].metadata[K_NPC] };
+          if (op === "dmg") { let kalan = v; if (n.temp) { const u = Math.min(n.temp, kalan); n.temp -= u; kalan -= u; } n.hp = Math.max(0, n.hp - kalan); }
+          if (op === "heal") n.hp = Math.min(n.hpMax, n.hp + v);
+          if (op === "temp") n.temp = Math.max(n.temp || 0, v);
+          items[0].metadata[K_NPC] = n;
+        });
+        if (inp) inp.value = "";
+        seciliCiz();
+      });
+      OBR.player.onChange(() => seciliCiz());
+      OBR.scene.items.onChange(() => seciliCiz());
+      seciliCiz();
     }
 
     const ks = KarakterSayfasi({

@@ -11,7 +11,7 @@ import OBR, { buildLabel } from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk
 import { Alici, oku, gonder, hepsi, sil } from "../assets/handout-aktar.js";
 
 const NS = "com.kuyudan-yukari";
-const K_DURUM = NS + "/durum", K_SIRA = NS + "/sira", K_BAG = NS + "/karakter", K_ETIKET = NS + "/hp-etiket";
+const K_DURUM = NS + "/durum", K_SIRA = NS + "/sira", K_BAG = NS + "/karakter", K_ETIKET = NS + "/hp-etiket", K_NPC = NS + "/npc";
 const BASE = new URL("../", import.meta.url).href; // .../kuyudan-yukari/
 const YOL = new URL("../", import.meta.url).pathname; // /kuyudan-yukari/
 const ICON = YOL + "owlbear/icon.svg";
@@ -85,10 +85,25 @@ OBR.onReady(async () => {
   // --- sağ tık menüleri (sadece GM görür)
   const bagli = { key: ["metadata", K_BAG], value: undefined, operator: "!=" };
   const bagsiz = { key: ["metadata", K_BAG], value: undefined };
+  const npcsiz = { key: ["metadata", K_NPC], value: undefined };
+  const npcli = { key: ["metadata", K_NPC], value: undefined, operator: "!=" };
   await OBR.contextMenu.create({
     id: NS + "/bagla",
-    icons: [{ icon: ICON, label: "Karakter bağla", filter: { roles: ["GM"], max: 1, every: [{ key: "layer", value: "CHARACTER" }, bagsiz] } }],
+    icons: [{ icon: ICON, label: "Karakter bağla", filter: { roles: ["GM"], max: 1, every: [{ key: "layer", value: "CHARACTER" }, bagsiz, npcsiz] } }],
     embed: { url: YOL + "owlbear/bagla.html", height: 220 },
+  });
+  await OBR.contextMenu.create({
+    id: NS + "/npc-bagla",
+    icons: [{ icon: ICON, label: "NPC bağla", filter: { roles: ["GM"], every: [{ key: "layer", value: "CHARACTER" }, bagsiz, npcsiz] } }],
+    embed: { url: YOL + "owlbear/npc-bagla.html", height: 250 },
+  });
+  await OBR.contextMenu.create({
+    id: NS + "/npc-coz",
+    icons: [{ icon: ICON, label: "NPC bağını kaldır", filter: { roles: ["GM"], every: [{ key: "layer", value: "CHARACTER" }, npcli] } }],
+    onClick: async (ctx) => {
+      const ids = ctx.items.map((i) => i.id);
+      await OBR.scene.items.updateItems(ids, (items) => { for (const it of items) delete it.metadata[K_NPC]; });
+    },
   });
   await OBR.contextMenu.create({
     id: NS + "/coz",
@@ -123,7 +138,10 @@ OBR.onReady(async () => {
       for (const it of ctx.items) {
         const i = sira.liste.findIndex((x) => x.id === it.id);
         if (i > -1) sira.liste.splice(i, 1);
-        else sira.liste.push({ id: it.id, ad: it.text?.plainText || it.name || "Token", karakter: it.metadata[K_BAG] || null, deger: null });
+        else {
+          const npc = it.metadata[K_NPC];
+          sira.liste.push({ id: it.id, ad: it.text?.plainText || it.name || (npc && npc.ad) || "Token", karakter: it.metadata[K_BAG] || null, ini: npc ? npc.ini || 0 : 0, npc: !!npc, deger: null });
+        }
       }
       await OBR.room.setMetadata({ [K_SIRA]: sira });
     },
@@ -145,6 +163,7 @@ OBR.onReady(async () => {
       const sahipler = oda0[NS + "/sahipler"] || {};
       const items = await OBR.scene.items.getItems();
       const tokenlar = items.filter((i) => i.layer === "CHARACTER" && i.metadata[K_BAG]);
+      const npcTokenlar = items.filter((i) => i.layer === "CHARACTER" && i.metadata[K_NPC] && !i.metadata[K_BAG]);
       const etiketler = items.filter((i) => i.metadata[K_ETIKET]);
       const ekle = [], guncelle = {}, sil = [];
       for (const t of tokenlar) {
@@ -164,7 +183,23 @@ OBR.onReady(async () => {
             .locked(true).disableHit(true).metadata({ [K_ETIKET]: true }).name("HP").build());
         }
       }
-      for (const e of etiketler) if (!tokenlar.some((t) => t.id === e.attachedTo)) sil.push(e.id);
+      // NPC: HP token'ın kendi verisinde; etiket gizli (visible:false = sadece GM görür)
+      for (const t of npcTokenlar) {
+        const n = t.metadata[K_NPC];
+        const metin = `HP ${n.hp}/${n.hpMax}` + (n.temp ? ` +${n.temp}` : "");
+        const renk = n.hp <= 0 ? "#8A2E2E" : n.hp <= n.hpMax / 2 ? "#9A6E1C" : "#2F5D3A";
+        const mevcut = etiketler.find((e) => e.attachedTo === t.id);
+        if (mevcut) {
+          if (mevcut.text?.plainText !== metin || mevcut.style?.backgroundColor !== renk) guncelle[mevcut.id] = { metin, renk };
+        } else {
+          const b = await OBR.scene.items.getItemBounds([t.id]);
+          ekle.push(buildLabel().plainText(metin).backgroundColor(renk).backgroundOpacity(0.9).fillColor("#FFFFFF")
+            .fontSize(14).padding(4).cornerRadius(6).pointerHeight(0)
+            .position({ x: b.center.x, y: b.max.y + 4 }).attachedTo(t.id).layer("TEXT").visible(false)
+            .locked(true).disableHit(true).metadata({ [K_ETIKET]: true }).name("HP").build());
+        }
+      }
+      for (const e of etiketler) if (!tokenlar.some((t) => t.id === e.attachedTo) && !npcTokenlar.some((t) => t.id === e.attachedTo)) sil.push(e.id);
       // haritadan silinen token'lar initiative sırasından da düşsün
       const oda = await OBR.room.getMetadata();
       const sira = oda[K_SIRA];

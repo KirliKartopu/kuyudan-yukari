@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>NPC bağla</title>
+<style>
+  body{margin:0;font:14px "Segoe UI",system-ui,sans-serif;color:#fff;background:transparent}
+  body.light{color:#1B211E}
+  .ust{display:flex;gap:6px;padding:6px 6px 2px}
+  input[type=search]{flex:1;min-width:0;font:inherit;padding:5px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.25);color:inherit}
+  body.light input[type=search]{border-color:rgba(0,0,0,.2);background:rgba(255,255,255,.6)}
+  label{display:flex;align-items:center;gap:4px;font-size:12px;opacity:.85;white-space:nowrap}
+  ul{list-style:none;margin:0;padding:2px 4px;max-height:190px;overflow:auto}
+  button.s{display:flex;justify-content:space-between;gap:8px;width:100%;padding:5px 8px;border:0;border-radius:6px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+  button.s:hover,button.s:focus-visible{background:rgba(255,255,255,.12);outline:none}
+  body.light button.s:hover{background:rgba(0,0,0,.08)}
+  small{opacity:.7;white-space:nowrap}
+  p{margin:8px;opacity:.8}
+</style>
+</head>
+<body>
+<div class="ust">
+  <label for="q" hidden>Canavar ara</label>
+  <input id="q" type="search" placeholder="Canavar ara: goblin, drow…" autocomplete="off" autofocus>
+  <label title="İşaretliyse HP formülle zarlanır; değilse ortalama"><input type="checkbox" id="zarla"> HP zarla</label>
+</div>
+<ul id="l"><li><p>Aramaya başla.</p></li></ul>
+<script type="module">
+import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
+import { paketOku, ara, acDeger, iniBonus, hpZarla } from "../assets/canavar.js";
+const K_NPC = "com.kuyudan-yukari/npc";
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+OBR.onReady(async () => {
+  if ((await OBR.theme.getTheme()).mode === "LIGHT") document.body.classList.add("light");
+  const ul = document.getElementById("l");
+  if (!(await paketOku())) { ul.innerHTML = "<li><p>Canavar paketi yok. Paneldeki NPC sekmesinden yükle.</p></li>"; return; }
+  let sonuc = [];
+  document.getElementById("q").addEventListener("input", async (e) => {
+    sonuc = await ara(e.target.value, 30);
+    ul.innerHTML = sonuc.length ? sonuc.map((m, i) => `<li><button class="s" data-i="${i}"><span>${esc(m.name)}</span><small>CR ${esc(typeof m.cr === "object" ? m.cr.cr : m.cr ?? "—")} · ${esc(m.source)}</small></button></li>`).join("") : "<li><p>Bulunamadı.</p></li>";
+  });
+  ul.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-i]"); if (!b) return;
+    const m = sonuc[+b.dataset.i];
+    const secim = await OBR.player.getSelection(); if (!secim || !secim.length) return;
+    const zarla = document.getElementById("zarla").checked;
+    await OBR.scene.items.updateItems(secim, (items) => {
+      for (const it of items) {
+        const hp = zarla ? hpZarla(m) : (m.hp.average || 1);
+        it.metadata[K_NPC] = { ad: m.name, kaynak: m.source, hp, hpMax: hp, temp: 0, ac: acDeger(m), ini: iniBonus(m) };
+      }
+    });
+    await OBR.player.deselect();
+  });
+});
+</script>
+</body>
+</html>
