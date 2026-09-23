@@ -3,8 +3,10 @@
 Kullanım:
     python araclar/ddb_cevir.py karakterler.json _site/karakterler
 
-karakterler.json:  [{"id": 158776848, "oyuncu": "Ali"}, ...]
+karakterler.json:  [{"id": 158776848, "oyuncu": "Ali"}, {"id": 1790000000, "oyuncu": "Ayşe", "yerel": true}, ...]
 Her karakter için <çıktı>/<id>.json ve bir <çıktı>/liste.json yazılır.
+"yerel": true olanlar sitenin karakter üreticisinde yapılmıştır; dosyaları
+karakterler-yerel/<id>.json'dadır ve olduğu gibi kopyalanır.
 
 Not: D&D Beyond'un resmi bir API'si yok; bu servis gayriresmi ve bir gün
 değişebilir. Karakterin Beyond'da "Public" olması gerekir.
@@ -232,7 +234,12 @@ def main():
     ozet, hata = [], 0
     for k in liste:
         try:
-            c = convert(fetch(k["id"]), k.get("oyuncu", ""))
+            if k.get("yerel"):
+                c = json.load(open(os.path.join(os.path.dirname(liste_yolu) or ".", "karakterler-yerel", f'{k["id"]}.json'), encoding="utf-8"))
+                c["id"] = k["id"]
+                c["oyuncu"] = k.get("oyuncu") or c.get("oyuncu", "")
+            else:
+                c = convert(fetch(k["id"]), k.get("oyuncu", ""))
             json.dump(c, open(os.path.join(cikti, f'{k["id"]}.json'), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             ozet.append({"id": c["id"], "ad": c["ad"], "oyuncu": c["oyuncu"], "tur": c["tur"],
                          "siniflar": c["siniflar"], "avatar": c["avatar"], "ornek": k.get("ornek", False)})

@@ -1,0 +1,77 @@
+/* Karakter üreticisi */
+.ol{max-width:1320px;margin:0 auto;padding:12px 16px 120px;display:grid;grid-template-columns:200px minmax(0,1fr) 300px;grid-template-areas:"ust ust ust" "adim ana ozet";gap:16px 22px;align-items:start}
+.ol-ust{grid-area:ust;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ol-ust a{font-size:14px}
+.ol-baslik{font-family:var(--display);font-size:24px;font-weight:700}
+.ol-bosluk{flex:1}
+.ol-adimlar{grid-area:adim;position:sticky;top:12px;display:flex;flex-direction:column;gap:3px}
+.ol-adimlar button{all:unset;cursor:pointer;display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:7px;font-size:15px;color:var(--muted)}
+.ol-adimlar button:hover,.ol-adimlar button:focus-visible{background:var(--accent-soft);color:var(--ink)}
+.ol-adimlar button.on{background:var(--accent);color:var(--surface)}
+.ol-adimlar .no{font-family:var(--mono);font-size:12px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;border:1px solid currentColor;flex:none}
+.ol-adimlar .ok .no{background:var(--brass);border-color:var(--brass);color:var(--surface)}
+.ol-adimlar .eks{margin-left:auto;font-size:12px;font-family:var(--mono);color:var(--warn)}
+.ol-adimlar button.on .eks{color:var(--surface)}
+.ol-ana{grid-area:ana;min-width:0}
+.ol-ana > h2{font-family:var(--display);font-size:30px;margin:0 0 4px}
+.ol-ana .giris{color:var(--muted);margin:0 0 16px;max-width:70ch}
+.ol-ozet{grid-area:ozet;position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14.5px}
+.ol-ozet h3{font-family:var(--display);font-size:20px;margin:0}
+.ol-ozet .alt{color:var(--muted);margin:0 0 8px}
+.ol-ozet .say{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.ol-ozet .say div{text-align:center;border:1px solid var(--line);border-radius:7px;padding:4px 2px}
+.ol-ozet .say b{display:block;font-size:19px;font-family:var(--mono)}
+.ol-ozet .say small{color:var(--muted);font-size:11.5px}
+.ol-ozet .ab6{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:8px 0}
+.ol-ozet .ab6 div{text-align:center;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:3px 0}
+.ol-ozet .ab6 b{display:block;font-family:var(--mono);font-size:15px}
+.ol-ozet ul{margin:6px 0 0;padding-left:18px;color:var(--warn);font-size:13.5px}
+.ol-ozet .tamam{color:var(--brass);font-weight:700}
+
+/* kartlar */
+.kartlar{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.kart{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.kart:hover,.kart:focus-visible{border-color:var(--accent)}
+.kart.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;background:var(--accent-soft)}
+.kart b{font-family:var(--display);font-size:19px;font-weight:700}
+.kart .etk{font-family:var(--mono);font-size:11.5px;color:var(--brass);letter-spacing:.03em}
+.kart p{margin:0;font-size:14.5px;line-height:1.45;color:var(--ink)}
+.kart .kucuk{font-size:13px;color:var(--muted)}
+.detay{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:15px;line-height:1.5}
+.detay h4{margin:10px 0 2px;font-size:16px;font-family:var(--display)}
+.detay p{margin:4px 0;max-width:none}
+.detay table{border-collapse:collapse;font-size:13.5px} .detay td,.detay th{padding:2px 8px;border-bottom:1px solid var(--line)}
+details.acil{margin:6px 0} details.acil summary{cursor:pointer;color:var(--accent);font-size:14.5px}
+
+/* sorular */
+.soru{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 12px}
+.soru.eksik{border-color:var(--warn)}
+.soru h3{margin:0;font-size:18px;font-family:var(--body);font-weight:700;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.soru h3 .say{font-family:var(--mono);font-size:12.5px;font-weight:500;color:var(--muted)}
+.soru.eksik h3 .say{color:var(--warn)}
+.soru .ack{color:var(--muted);font-size:14.5px;margin:2px 0 8px;max-width:none}
+.cipler{display:flex;flex-wrap:wrap;gap:6px}
+.cip{font:inherit;font-size:14px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--ground);color:var(--ink);cursor:pointer;display:inline-flex;gap:6px;align-items:baseline}
+.cip small{color:var(--muted);font-size:11.5px}
+.cip:hover,.cip:focus-visible{border-color:var(--accent);outline:none}
+.cip.on{background:var(--accent);border-color:var(--accent);color:var(--surface)} .cip.on small{color:var(--surface)}
+.cip:disabled{opacity:.45;cursor:not-allowed;text-decoration:line-through}
+.ara{font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink);width:min(320px,100%);margin:0 0 8px}
+.secenek-kart{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.secenek-kart .kart p{font-size:13.5px}
+.satir{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.satir label{font-size:14.5px}
+select.sec,input.sec{font:inherit;font-size:15px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink)}
+.abtablo{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.abtablo .box p{font-size:13.5px;color:var(--muted);margin:4px 0 0}
+.abtablo .top{font-family:var(--mono);font-size:26px;font-weight:500}
+.alt-dugmeler{display:flex;gap:10px;justify-content:space-between;margin-top:18px}
+.btn.birincil{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.not{font-size:14px;color:var(--muted)}
+
+@media (max-width: 1000px){
+  .ol{grid-template-columns:minmax(0,1fr);grid-template-areas:"ust" "adim" "ozet" "ana"}
+  .ol-adimlar{position:static;flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:4px}
+  .ol-adimlar button{white-space:nowrap;padding:6px 8px;font-size:14px}
+  .ol-ozet{position:static}
+}

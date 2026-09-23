@@ -90,6 +90,7 @@
         if (b.slotlar.length) {
           h += '<div class="slots">';
           b.slotlar.forEach(function (n, li) {
+            if (!n) return;
             var lv = li + 1, used = S.slots[lv] || 0;
             h += '<span><b class="num" style="font-size:13px">Sv ' + lv + "</b> ";
             for (var k = 0; k < n; k++) h += '<label><input type="checkbox" data-slot="' + lv + '" data-k="' + k + '" ' + (k < used ? "checked" : "") + ' aria-label="Seviye ' + lv + " slot " + (k + 1) + '"></label>';
@@ -108,11 +109,14 @@
         CONDS.map(function (n) { return '<button class="btn' + (S.conds.indexOf(n) > -1 ? " on" : "") + '" data-cond="' + n + '" data-ack="cond|' + n + '">' + n + "</button>"; }).join("") + "</div></section>";
       h += '<section class="box" data-sekme="feat" data-etiket="Features"><h2>Features &amp; Traits</h2>' + c.ozellikler.map(function (f) { return '<p class="feat" data-ack="ozellik|' + esc(f.ad) + "|" + esc(f.kaynak) + '">' + esc(f.ad) + " <small>" + esc(f.kaynak) + (f.seviye > 1 ? " · Sv " + f.seviye : "") + "</small></p>"; }).join("") +
         (c.featler.length ? '<p class="feat"><b>Feat:</b> ' + c.featler.map(function (f) { return '<span data-ack="feat|' + esc(f) + '">' + esc(f) + "</span>"; }).join(", ") + "</p>" : "") +
-        (c.diller.length ? '<p class="feat"><b>Diller:</b> ' + c.diller.map(esc).join(", ") + "</p>" : "") + "</section>";
+        (c.diller.length ? '<p class="feat"><b>Diller:</b> ' + c.diller.map(esc).join(", ") + "</p>" : "") +
+        (c.araclar && c.araclar.length ? '<p class="feat"><b>Tool:</b> ' + c.araclar.map(function (a) { return '<span data-ack="esya|' + esc(a) + '">' + esc(a) + "</span>"; }).join(", ") + "</p>" : "") +
+        (c.zirh ? '<p class="feat"><b>Zırh:</b> ' + (c.zirh.length ? c.zirh.map(esc).join(", ") : "yok") + " · <b>Silah:</b> " + c.silah.map(esc).join(", ") + "</p>" : "") + "</section>";
       var p = c.para || {};
       h += '<section class="box" data-sekme="env" data-etiket="Envanter"><h2>Envanter</h2><p class="feat num">' + ["pp", "gp", "ep", "sp", "cp"].filter(function (k) { return p[k]; }).map(function (k) { return p[k] + " " + k; }).join(" · ") + "</p>" +
         c.envanter.map(function (i) { return '<p class="feat" data-ack="esya|' + esc(i.ad) + "|" + esc(i.tip || "") + '">' + (i.adet > 1 ? i.adet + "× " : "") + esc(i.ad) + (i.kusanili ? " <small>(kuşanılı)</small>" : "") + "</p>"; }).join("") + "</section>";
-      h += '</div><p class="foot">Beyond\'dan son çekim: ' + esc(c.guncellendi) + ' · <a href="' + esc(c.beyond_url) + '" target="_blank" rel="noopener">D&amp;D Beyond\'da aç</a></p>';
+      h += "</div>" + (c.yerel ? '<p class="foot">Kuyudan Yukarı karakter üreticisinde yapıldı · ' + esc(c.guncellendi) + ' · <a href="' + base + 'olustur/">Üreticide düzenle / seviye atla</a></p>'
+        : '<p class="foot">Beyond\'dan son çekim: ' + esc(c.guncellendi) + ' · <a href="' + esc(c.beyond_url) + '" target="_blank" rel="noopener">D&amp;D Beyond\'da aç</a></p>');
       root.innerHTML = h;
       if (o.sekmeli) sekmele();
     }
@@ -216,6 +220,8 @@
     if (o.pick) o.pick.addEventListener("change", function () { open(o.pick.value); });
     return {
       open: open, list: list,
+      // üreticinin önizlemesi: dosyadan değil doğrudan veriden çiz
+      goster: function (c) { C = c; S = fresh(); render(); },
       fill: function (items, want) {
         if (!items.length) { root.innerHTML = '<p class="empty">Henüz karakter yok.</p>'; return null; }
         o.pick.innerHTML = items.map(function (k) { return '<option value="' + k.id + '">' + esc(k.ad) + (k.ornek ? " (örnek)" : "") + (k.oyuncu && !k.ornek ? " · " + esc(k.oyuncu) : "") + "</option>"; }).join("");

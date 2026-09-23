@@ -102,6 +102,8 @@ function etiket(t, icerik) {
     case "spell": return `<i data-ack="buyu|${esc(ilk)}">${esc(ilk)}</i>`;
     case "condition": return `<span class="kw" data-ack="cond|${esc(ilk)}">${esc(ilk)}</span>`;
     case "status": return `<span class="kw">${esc(ilk)}</span>`;
+    case "filter": case "5etools": case "book": case "adventure": case "tip": case "link": case "footnote": case "area": case "homebrew": return esc(ilk); // görünen metin başta
+    case "item": case "feat": case "skill": { const ps = (icerik || "").split("|"), tur = { item: "esya", feat: "feat", skill: "skill" }[t]; return `<span data-ack="${tur}|${esc(ps[0])}">${esc(ps[2] || ps[0])}</span>`; }
     default: { const ps = (icerik || "").split("|"); return esc(ps[2] || ps[0]); } // {@item ad|kaynak|görünen}
   }
 }

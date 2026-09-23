@@ -3,7 +3,8 @@
 //   tur: skill | cond | ozellik (ek: sınıf ya da tür adı) | feat | esya | buyu | mastery
 import { metin } from "./canavar.js";
 
-const VERI = "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data/";
+// ?veri=... ile yerel bir kopya denenebilir (geliştirme)
+const VERI = (typeof location !== "undefined" && new URLSearchParams(location.search).get("veri")) || "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data/";
 const onbellek = {};
 const cek = (yol) => onbellek[yol] || (onbellek[yol] = fetch(VERI + yol).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }));
 const n = (s) => String(s || "").toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ").trim();
@@ -87,7 +88,8 @@ async function bul(tur, ad, ek) {
   return null;
 }
 
-// --- balon
+// --- balon (tarayıcıda)
+if (typeof document !== "undefined") {
 const stil = document.createElement("style");
 stil.textContent = `.ack-tip{position:fixed;z-index:60;max-width:min(340px,calc(100vw - 16px));max-height:55vh;overflow:auto;background:var(--surface,#fff);color:var(--ink,#111);
   border:1px solid var(--accent,#5A3E9E);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.28);padding:10px 12px;font-size:13.5px;line-height:1.45}
@@ -125,4 +127,6 @@ document.addEventListener("focusin", (e) => { const el = e.target.closest && e.t
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") gizle(); });
 document.addEventListener("scroll", gizle, true);
 
-export { bul as aciklamaBul };
+}
+
+export { bul as aciklamaBul, cek, girdi, n as normal, esc, sirala, sec };

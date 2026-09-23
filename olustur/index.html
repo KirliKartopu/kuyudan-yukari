@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Karakter Yarat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../assets/stil.css">
+<link rel="stylesheet" href="../assets/karakter.css">
+<link rel="stylesheet" href="../assets/olustur.css">
+</head>
+<body>
+<div class="ol">
+  <header class="ol-ust">
+    <a href="../">← Kuyudan Yukarı</a>
+    <strong class="ol-baslik">Karakter Yarat</strong>
+    <span class="ol-bosluk"></span>
+    <button class="btn" id="yeni" type="button">Yeni karakter</button>
+    <label class="btn" for="dosya">Dosya aç</label>
+    <input id="dosya" type="file" accept=".json,application/json" hidden>
+  </header>
+  <nav class="ol-adimlar" id="adimlar" aria-label="Adımlar"></nav>
+  <main class="ol-ana" id="ana"><p class="empty">Kurallar yükleniyor… (ilk açılışta birkaç saniye sürer)</p></main>
+  <aside class="ol-ozet" id="ozet" aria-label="Özet"></aside>
+</div>
+<div class="log" id="log" hidden><div class="ttl"></div><div class="res"></div><div class="brk"></div><div class="hist"></div></div>
+<script src="../assets/karakter.js"></script>
+<script type="module" src="../assets/olusturucu.js"></script>
+</body>
+</html>
