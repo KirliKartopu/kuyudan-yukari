@@ -28,12 +28,30 @@
       var zar = mode === "norm" ? "1d20@" + a : "2d20@" + a + "," + b;
       emit({ baslik: title, toplam: use + bonus, detay: note + " " + sgn(bonus) + extra, sinif: cls, zar: zar });
     }
-    function dmg(title, expr, crit) {
+    function dmgAt(title, expr, crit) { // hasar zarı: sonucu döndürür
       var m = String(expr).match(/^(\d+)d(\d+)([+-]\d+)?$/);
-      if (!m) { emit({ baslik: title, toplam: expr, detay: "" }); return; }
+      if (!m) return { baslik: title, toplam: +expr || 0, detay: "" };
       var n = +m[1] * (crit ? 2 : 1), f = +m[2], k = +(m[3] || 0), rolls = [], t = 0;
       for (var i = 0; i < n; i++) { var r = d(f); rolls.push(r); t += r; }
-      emit({ baslik: title + (crit ? " (kritik)" : ""), toplam: t + k, detay: n + "d" + f + " (" + rolls.join(", ") + ")" + (k ? " " + sgn(k) : ""), zar: n + "d" + f + "@" + rolls.join(",") });
+      return { baslik: title + (crit ? " (kritik)" : ""), toplam: Math.max(0, t + k), detay: n + "d" + f + " (" + rolls.join(", ") + ")" + (k ? " " + sgn(k) : ""), zar: n + "d" + f + "@" + rolls.join(",") };
+    }
+    function dmg(title, expr, crit) { emit(dmgAt(title, expr, crit)); }
+    // Hedefli saldırı: isabet hedefin AC'sine karşı; isabette hasar atılır ve hedefe uygulanır
+    function hedefliSaldiri(at, h) {
+      var a = d(20), b = d(20), use = a, note = "d20 (" + a + ")";
+      if (mode === "adv") { use = Math.max(a, b); note = "Advantage: d20 (" + a + ", " + b + ")"; }
+      if (mode === "dis") { use = Math.min(a, b); note = "Disadvantage: d20 (" + a + ", " + b + ")"; }
+      var toplam = use + at.isabet, crit = use === 20;
+      var vurdu = use === 1 ? false : crit ? true : h.ac == null ? null : toplam >= h.ac;
+      var sonuc = crit ? "KRİTİK!" : vurdu === true ? "İSABET" : vurdu === false ? "ISKA" : "AC bilinmiyor, DM karar verir";
+      emit({ baslik: at.ad + " → " + h.ad, toplam: toplam, detay: note + " " + sgn(at.isabet) + (h.ac != null ? " vs AC " + h.ac : "") + " · " + sonuc,
+        sinif: crit ? "crit" : vurdu === false ? "fail" : "", zar: mode === "norm" ? "1d20@" + a : "2d20@" + a + "," + b });
+      if (!vurdu) return;
+      setTimeout(function () { // zarlar dursun, sonra hasar
+        var r = dmgAt(at.ad + " hasar → " + h.ad, at.hasar, crit);
+        emit(r);
+        if (r.toplam > 0 && o.hedef && o.hedef.uygula) o.hedef.uygula(h, r.toplam, at.tur, (C ? C.ad : "") + " · " + at.ad);
+      }, 1900);
     }
 
     // --- çizim
@@ -73,7 +91,8 @@
         h += '<li><button data-roll="sk-' + i + '" data-ack="skill|' + esc(s.ad) + '"><span class="dot p' + s.prof + '" title="' + (s.prof === 2 ? "Expertise" : s.prof ? "Proficient" : "") + '"></span><span>' + esc(s.ad) + '<span class="ab-tag">' + s.yetenek.toUpperCase() + '</span></span><span class="num">' + sgn(s.bonus) + "</span></button></li>";
       });
       h += "</ul></section>";
-      h += '<section class="box span2" data-sekme="atk" data-etiket="Saldırı"><h2>Saldırılar</h2>';
+      var hd = o.hedef && o.hedef.al && o.hedef.al();
+      h += '<section class="box span2" data-sekme="atk" data-etiket="Saldırı"><h2>Saldırılar' + (hd ? ' <small style="color:var(--muted);font-family:var(--body);font-size:14px">→ ' + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") + "</small>" : "") + "</h2>";
       if (!c.saldirilar.length) h += '<p class="feat">Silah yok.</p>';
       c.saldirilar.forEach(function (a, i) {
         h += '<div class="atk"><span class="n" data-ack="esya|' + esc(a.ad) + "|" + esc(a.tip || "") + '">' + esc(a.ad) + (a.kusanili ? "" : ' <small style="font-weight:400;color:var(--muted)">(çantada)</small>') + "</span>" +
@@ -179,6 +198,11 @@
       S.env = l.filter(function (i) { return i.adet > 0; }).map(function (i) { return [i.ad, i.adet, i.kusanili ? 1 : 0]; });
       persist(); render(); yenidenHesapla();
     }
+    // AC ve HP üst sınırı durumda da dursun: hedef listesi ve HP etiketleri sayfayı açmadan bilsin
+    function ozetKaydet() {
+      if (!C || (S.ac === C.ac && S.hpMax === C.hp_max)) return;
+      S.ac = C.ac; S.hpMax = C.hp_max; persist();
+    }
     // üreticide yapılmış karakterlerde kuşanma AC'yi ve saldırıları değiştirir: sayfa yeniden hesaplanır
     var sonKusanma = null;
     function yenidenHesapla() {
@@ -187,7 +211,7 @@
       if (imza === sonKusanma) return;
       sonKusanma = imza;
       var id = C.id;
-      o.yerel.ac(id, S.env || null).then(function (c) { if (C && String(C.id) === String(id)) { C = c; render(); } });
+      o.yerel.ac(id, S.env || null).then(function (c) { if (C && String(C.id) === String(id)) { C = c; render(); ozetKaydet(); } });
     }
     function listeDoldur(idx) {
       var dl = root.querySelector("#env-liste");
@@ -248,7 +272,7 @@
         else if (r.indexOf("chk-") === 0) { var a = r.slice(4); d20(AB[a] + " check", C.yetenekler[a].mod); }
         else if (r.indexOf("sv-") === 0) { var a2 = r.slice(3); d20(AB[a2] + " save", C.saves[a2].bonus); }
         else if (r.indexOf("sk-") === 0) { var s = C.skills[+r.slice(3)]; d20(s.ad, s.bonus); }
-        else if (r.indexOf("atk-") === 0) { var at = C.saldirilar[+r.slice(4)]; d20(at.ad + " attack", at.isabet, true); }
+        else if (r.indexOf("atk-") === 0) { var at = C.saldirilar[+r.slice(4)], hdf = o.hedef && o.hedef.al && o.hedef.al(); if (hdf) hedefliSaldiri(at, hdf); else d20(at.ad + " attack", at.isabet, true); }
         else if (r.indexOf("dmg-") === 0) { var ad = C.saldirilar[+r.slice(4)]; dmg(ad.ad + " hasar", ad.hasar, false); }
         else if (r.indexOf("crit-") === 0) { var ac = C.saldirilar[+r.slice(5)]; dmg(ac.ad + " hasar", ac.hasar, true); }
         return;
@@ -318,10 +342,11 @@
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }))
         .then(function (c) { C = c; return store.load(c.id); })
         .then(function (durum) {
-          S = durum || fresh(); sonKusanma = null;
+          S = Object.assign(fresh(), durum || {}); sonKusanma = null;
           if (S.hp > C.hp_max) S.hp = C.hp_max;
           render();
           if (S.env) yenidenHesapla();
+          ozetKaydet();
           if (o.onSelect) o.onSelect(C.id, C);
         })
         .catch(function (e) {
@@ -337,6 +362,7 @@
       open: open, list: list,
       // üreticinin önizlemesi: dosyadan değil doğrudan veriden çiz
       goster: function (c) { C = c; S = fresh(); render(); },
+      ciz: function () { if (C && S) render(); },
       fill: function (items, want) {
         if (!items.length) { root.innerHTML = '<p class="empty">Henüz karakter yok.</p>'; return null; }
         o.pick.innerHTML = items.map(function (k) { return '<option value="' + k.id + '">' + esc(k.ad) + (k.ornek ? " (örnek)" : "") + (k.oyuncu && !k.ornek ? " · " + esc(k.oyuncu) : "") + "</option>"; }).join("");

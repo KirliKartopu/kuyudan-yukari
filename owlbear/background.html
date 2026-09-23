@@ -153,6 +153,26 @@ OBR.onReady(async () => {
   // --- HP etiketleri: tek bir istemci yönetsin diye sadece GM
   if ((await OBR.player.getRole()) !== "GM") return;
   const gmId = await OBR.player.getId();
+  // Hedefli saldırı hasarı: önce temp HP, sonra HP. NPC token'ın kendi verisinde, PC oda durumunda.
+  OBR.broadcast.onMessage(NS + "/hasar", async ({ data }) => {
+    if (!data || !data.itemId) return;
+    const [it] = await OBR.scene.items.getItems([data.itemId]);
+    if (!it) return;
+    const v = Math.max(0, +data.miktar || 0), ad = it.text?.plainText || it.name || "Hedef";
+    const dus = (hp, temp) => { let k = v; if (temp) { const u = Math.min(temp, k); temp -= u; k -= u; } return [Math.max(0, hp - k), temp]; };
+    let once = null, sonra = null;
+    if (it.metadata[K_NPC]) {
+      await OBR.scene.items.updateItems([it.id], (items) => {
+        const n = { ...items[0].metadata[K_NPC] }; once = n.hp; [n.hp, n.temp] = dus(n.hp, n.temp || 0); sonra = n.hp; items[0].metadata[K_NPC] = n;
+      });
+    } else if (it.metadata[K_BAG] != null) {
+      const id = it.metadata[K_BAG], m = await OBR.room.getMetadata(), d = { ...(m[K_DURUM] || {}) }, s = { ...(d[id] || {}) };
+      if (s.hp == null) { if (s.hpMax == null) { OBR.notification.show(`${ad}: karakter sayfası hiç açılmadığı için HP bilinmiyor, ${v} hasarı elle düş.`, "WARNING"); return; } s.hp = s.hpMax; }
+      once = s.hp; [s.hp, s.temp] = dus(s.hp, s.temp || 0); sonra = s.hp; d[id] = s;
+      await OBR.room.setMetadata({ [K_DURUM]: d });
+    } else { OBR.notification.show(`${ad} bir karaktere ya da NPC'ye bağlı değil: ${v} hasar uygulanmadı.`, "WARNING"); return; }
+    OBR.notification.show(`${ad}: ${v}${data.tur ? " " + data.tur : ""} hasar (${data.kaynak || "?"}) · HP ${once} → ${sonra}`, sonra === 0 ? "ERROR" : "DEFAULT");
+  });
   const kCache = {};
   const karakter = async (id) => kCache[id] || (kCache[id] = fetch(BASE + "karakterler/" + id + ".json", { cache: "no-cache" }).then((r) => r.json()).catch(() => null));
   let calisiyor = false, tekrar = false;
@@ -171,11 +191,13 @@ OBR.onReady(async () => {
       const gozlemler = items.filter((i) => i.metadata[K_GOZLEM]);
       const ekle = [], guncelle = {}, sil = [];
       for (const t of tokenlar) {
-        const c = await karakter(t.metadata[K_BAG]);
-        if (!c) continue;
-        const s = durum[c.id] || { hp: c.hp_max, temp: 0 };
-        const metin = `HP ${s.hp}/${c.hp_max}` + (s.temp ? ` +${s.temp}` : "");
-        const renk = s.hp <= 0 ? "#8A2E2E" : s.hp <= c.hp_max / 2 ? "#9A6E1C" : "#2F5D3A";
+        // HP üst sınırı: dosyadaki karakterden, yoksa (üreticide yapılmış karakter) oyun durumundan
+        const kid = t.metadata[K_BAG], dd = durum[kid], c = dd && dd.hpMax ? null : await karakter(kid);
+        const hpMax = dd && dd.hpMax ? dd.hpMax : c && c.hp_max;
+        if (!hpMax) continue;
+        const s = { hp: hpMax, temp: 0, ...(dd || {}) };
+        const metin = `HP ${s.hp}/${hpMax}` + (s.temp ? ` +${s.temp}` : "");
+        const renk = s.hp <= 0 ? "#8A2E2E" : s.hp <= hpMax / 2 ? "#9A6E1C" : "#2F5D3A";
         const mevcut = etiketler.find((e) => e.attachedTo === t.id);
         if (mevcut) {
           if (mevcut.text?.plainText !== metin || mevcut.style?.backgroundColor !== renk) guncelle[mevcut.id] = { metin, renk };

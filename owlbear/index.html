@@ -110,6 +110,8 @@
       <label class="gm"><input type="checkbox" id="zarses" checked> Ses</label>
       <button class="btn" id="sestest" type="button">Sesi test et</button>
       <span class="gm" id="sesdurum"></span>
+      <label class="gm" for="hedef">Hedef</label>
+      <select id="hedef" title="Saldırı butonu bu hedefe karşı atar; isabette hasar otomatik düşer"><option value="">Yok</option></select>
       <label class="gm" id="gm-gizli" hidden><input type="checkbox" id="gizli"> Gizli zar (sadece GM görür)</label>
       <span class="gm" id="sahip-bilgi" hidden></span>
       <button class="btn" id="sahip-kaldir" hidden>Sahipliği kaldır</button>
@@ -485,16 +487,24 @@ if (!OBR.isAvailable) {
       });
       // stat block zarları
       const npcZar = (r) => onRoll({ ...r, karakter: gosterilen ? gosterilen.baslik : "NPC" }, document.getElementById("npc-gizli").checked);
+      let npcIsabet = null; // son isabet: hasar zarı bu hedefe uygulanır
       const d20 = (baslik, bonus, atak) => {
-        const a = 1 + Math.floor(Math.random() * 20);
-        npcZar({ baslik, toplam: a + bonus, detay: `d20 (${a}) ${bonus >= 0 ? "+" : ""}${bonus}` + (atak && a === 20 ? " · KRİTİK!" : atak && a === 1 ? " · Iska" : ""), sinif: atak && a === 20 ? "crit" : atak && a === 1 ? "fail" : "", zar: "1d20@" + a });
+        const a = 1 + Math.floor(Math.random() * 20), h = atak ? hedefler.find((x) => x.id === hedefSec.value) : null;
+        const top = a + bonus, vurdu = !h ? null : a === 1 ? false : a === 20 ? true : h.ac == null ? null : top >= h.ac;
+        npcIsabet = vurdu ? { h, kritik: a === 20, zaman: Date.now() } : null;
+        const sonuc = h ? ` vs ${h.ad}${h.ac != null ? " AC " + h.ac : ""} · ${a === 20 ? "KRİTİK!" : vurdu === true ? "İSABET (hasar zarına bas)" : vurdu === false ? "ISKA" : "AC bilinmiyor"}` : atak && a === 20 ? " · KRİTİK!" : atak && a === 1 ? " · Iska" : "";
+        npcZar({ baslik: h ? baslik + " → " + h.ad : baslik, toplam: top, detay: `d20 (${a}) ${bonus >= 0 ? "+" : ""}${bonus}` + sonuc, sinif: atak && a === 20 ? "crit" : vurdu === false || (atak && a === 1) ? "fail" : "", zar: "1d20@" + a });
       };
       document.getElementById("npc-sb").addEventListener("click", (e) => {
         const b = e.target.closest(".npc-z"); if (!b) return;
         const eylem = b.closest("p") && b.closest("p").querySelector("b i");
         const ad = eylem ? eylem.textContent.replace(/\.$/, "") : "";
         if (b.dataset.hit != null) d20((ad || "Saldırı") + " attack", +b.dataset.hit, true);
-        else if (b.dataset.dmg != null) { const z = zarIfade(b.dataset.dmg); npcZar({ baslik: (ad || "Hasar") + " hasar", toplam: z.toplam, detay: z.detay, zar: z.zar }); }
+        else if (b.dataset.dmg != null) {
+          const z = zarIfade(b.dataset.dmg), is = npcIsabet && Date.now() - npcIsabet.zaman < 120000 ? npcIsabet : null;
+          npcZar({ baslik: (ad || "Hasar") + " hasar" + (is ? " → " + is.h.ad : ""), toplam: z.toplam, detay: z.detay + (is && is.kritik ? " · kritik: zarları iki kez at, fazlasını elle ekle" : ""), zar: z.zar });
+          if (is && z.toplam > 0) { OBR.broadcast.sendMessage(NS + "/hasar", { itemId: is.h.id, miktar: z.toplam, tur: "", kaynak: gosterilen ? gosterilen.baslik : "NPC" }, { destination: "ALL" }); npcIsabet = null; }
+        }
         else if (b.dataset.ini != null) d20("Initiative", +b.dataset.ini);
         else if (b.dataset.chk != null) d20(b.dataset.ad + " check", +b.dataset.chk);
       });
@@ -538,6 +548,27 @@ if (!OBR.isAvailable) {
       seciliCiz();
     }
 
+    // --- Hedef listesi: sahnedeki token'lar (oyuncu başkasının token'ını seçemediği için hedef buradan)
+    const hedefSec = document.getElementById("hedef");
+    let hedefler = [];
+    async function hedefleriKur() {
+      if (!(await OBR.scene.isReady())) { hedefler = []; hedefSec.innerHTML = '<option value="">Yok</option>'; return; }
+      const items = await OBR.scene.items.getItems((i) => i.layer === "CHARACTER");
+      const durum = (await OBR.room.getMetadata())[K_DURUM] || {};
+      hedefler = items.map((i) => {
+        const npc = i.metadata[NS + "/npc"], bag = i.metadata[NS + "/karakter"];
+        const kar = bag != null ? karakterler.find((k) => String(k.id) === String(bag)) : null;
+        const ad = i.text?.plainText || (kar && kar.ad) || i.name || (npc && npc.ad) || "Token";
+        return { id: i.id, ad, ac: npc ? npc.ac : bag != null && durum[bag] ? durum[bag].ac ?? null : null, npc: !!npc, karakter: bag ?? null, benim: bag != null && String(bag) === String(benimKarakter) };
+      }).filter((h) => !h.benim).sort((a, b) => b.npc - a.npc || a.ad.localeCompare(b.ad));
+      const onceki = hedefSec.value;
+      hedefSec.innerHTML = '<option value="">Yok</option>' + hedefler.map((h) => `<option value="${esc(h.id)}">${esc(h.ad)}${h.ac != null ? " · AC " + h.ac : ""}</option>`).join("");
+      if (hedefler.some((h) => h.id === onceki)) hedefSec.value = onceki;
+    }
+    hedefSec.addEventListener("change", () => ks.ciz());
+    OBR.scene.items.onChange(() => hedefleriKur());
+    OBR.scene.onReadyChange(() => hedefleriKur());
+
     // --- Üreticide yapılıp odaya kaydedilen karakterler
     let yerelKayit = (await OBR.room.getMetadata())[K_YEREL] || {};
     const uretici = (id) => OBR.modal.open({ id: NS + "/olustur", url: YOL + "olustur/?obr=1" + (id ? "&id=" + id : ""), fullScreen: true });
@@ -547,6 +578,10 @@ if (!OBR.isAvailable) {
       yerel: {
         var: (id) => !!yerelKayit[id],
         ac: (id, env) => yerelHesapla(yerelKayit[id].v, env).then((c) => ({ ...c, id: +id, oyuncu: yerelKayit[id].sahipAd || c.oyuncu })),
+      },
+      hedef: {
+        al: () => hedefler.find((h) => h.id === hedefSec.value) || null,
+        uygula: (h, miktar, tur, kaynak) => OBR.broadcast.sendMessage(NS + "/hasar", { itemId: h.id, miktar, tur, kaynak }, { destination: "ALL" }),
       },
       duzenle: (id) => { if (duzenleyebilir(id)) uretici(id); else OBR.notification.show("Bu karakteri sadece sahibi ve GM düzenleyebilir.", "WARNING"); },
       onSelect: async (id) => {
@@ -639,6 +674,7 @@ if (!OBR.isAvailable) {
     try {
       dosyaKarakterleri = await ks.list().catch(() => []);
       listeyiKur();
+      hedefleriKur();
       if (rol === "GM") await gmBaslat(); else await oyuncuBaslat();
     } catch (e) {
       root.innerHTML = '<p class="empty">Karakter listesi yüklenemedi.</p>';
