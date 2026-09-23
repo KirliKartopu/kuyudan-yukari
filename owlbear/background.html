@@ -75,6 +75,7 @@ OBR.onReady(async () => {
 
   // --- HP etiketleri: tek bir istemci yönetsin diye sadece GM
   if ((await OBR.player.getRole()) !== "GM") return;
+  const gmId = await OBR.player.getId();
   const kCache = {};
   const karakter = async (id) => kCache[id] || (kCache[id] = fetch(BASE + "karakterler/" + id + ".json", { cache: "no-cache" }).then((r) => r.json()).catch(() => null));
   let calisiyor = false, tekrar = false;
@@ -83,7 +84,9 @@ OBR.onReady(async () => {
     calisiyor = true;
     try {
       if (!(await OBR.scene.isReady())) return;
-      const durum = (await OBR.room.getMetadata())[K_DURUM] || {};
+      const oda0 = await OBR.room.getMetadata();
+      const durum = oda0[K_DURUM] || {};
+      const sahipler = oda0[NS + "/sahipler"] || {};
       const items = await OBR.scene.items.getItems();
       const tokenlar = items.filter((i) => i.layer === "CHARACTER" && i.metadata[K_BAG]);
       const etiketler = items.filter((i) => i.metadata[K_ETIKET]);
@@ -121,6 +124,18 @@ OBR.onReady(async () => {
           sira.liste = sira.liste.filter((x) => !gitmis.includes(x.id));
           await OBR.room.setMetadata({ [K_SIRA]: sira });
         }
+      }
+      // Token sahipliği: bağlı token'ı karakterin oyuncusu hareket ettirebilsin.
+      // Oda ayarında CHARACTER_OWNER_ONLY açıkken Owlbear başkalarını engeller.
+      const sahipDegis = {};
+      for (const t of tokenlar) {
+        const istenen = (sahipler[t.metadata[K_BAG]] || {}).oyuncu || gmId;
+        if (t.createdUserId !== istenen) sahipDegis[t.id] = istenen;
+      }
+      const sdIds = Object.keys(sahipDegis);
+      if (sdIds.length) {
+        try { await OBR.scene.items.updateItems(sdIds, (list) => { for (const t of list) t.createdUserId = sahipDegis[t.id]; }); }
+        catch (e) { console.warn("Token sahibi değiştirilemedi:", e); }
       }
       if (ekle.length) await OBR.scene.items.addItems(ekle);
       const ids = Object.keys(guncelle);

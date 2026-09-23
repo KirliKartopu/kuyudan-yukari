@@ -72,6 +72,7 @@
       <button class="btn" id="sahip-kaldir" hidden>Sahipliği kaldır</button>
       <button class="btn" id="birak" hidden title="Yanlış karakteri seçtiysen">Karakteri bırak</button>
     </div>
+    <p class="note warn" id="izin-uyari" hidden><b>Oyuncular her token'ı hareket ettirebiliyor</b>Owlbear'da oda ayarlarından (Room settings → Player permissions) <b>Characters</b> için <b>Owner only</b> seçeneğini aç. Böylece oyuncular sadece kendi karakterlerine bağlı token'ları oynatabilir.</p>
     <div id="root"><p class="empty">Yükleniyor…</p></div>
   </section>
 
@@ -129,7 +130,12 @@ if (!OBR.isAvailable) {
     const benimId = await OBR.player.getId();
     let benimKarakter = null; // oyuncunun sahiplendiği karakter
     const oyuncuAdi = await OBR.player.getName();
-    if (rol === "GM") document.getElementById("gm-gizli").hidden = false;
+    if (rol === "GM") {
+      document.getElementById("gm-gizli").hidden = false;
+      const izinKontrol = (izinler) => { document.getElementById("izin-uyari").hidden = izinler.includes("CHARACTER_OWNER_ONLY"); };
+      izinKontrol(await OBR.room.getPermissions());
+      OBR.room.onPermissionsChange(izinKontrol);
+    }
 
     // HP, slot, condition: odanın metadata'sında, herkes görür
     const store = {
