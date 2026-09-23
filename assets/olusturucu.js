@@ -2,9 +2,16 @@
 import * as K from "./kural.js";
 import { girdi, esc } from "./aciklama.js";
 import { SINIF_TR, TUR_TR, AB_TR, ADIM_TR } from "./olustur-metin.js";
+import { K_YEREL, ODA_SINIRI, sikistir, ac as yapiAc } from "./oda-karakter.js";
+
+// Owlbear içinde açıldıysa (?obr=1) karakter dosyaya değil doğrudan odaya kaydedilir
+const PARAM = new URLSearchParams(location.search), OBR_MOD = PARAM.has("obr"), DUZ_ID = PARAM.get("id");
+const NS = "com.kuyudan-yukari", K_SAHIP = NS + "/sahipler", MODAL = NS + "/olustur";
+let OBR = null, benim = null;
 
 const ADIMLAR = [["sinif", "Class"], ["bg", "Background"], ["tur", "Species"], ["yetenek", "Ability'ler"], ["sec", "Class seçimleri"], ["buyu", "Büyüler"], ["ekip", "Ekipman"], ["kimlik", "Ad ve kaydet"]];
-const TASLAK = "ky-olustur-taslak";
+// taslak: düzenlenen oda karakteri kendi anahtarında, yeni karakter ayrı anahtarda
+const TASLAK = OBR_MOD ? (DUZ_ID ? "ky-olustur-duz-" + DUZ_ID : "ky-olustur-taslak-obr") : "ky-olustur-taslak";
 const $ = (s) => document.querySelector(s);
 const ana = $("#ana"), adimlarEl = $("#adimlar"), ozetEl = $("#ozet");
 
@@ -55,7 +62,8 @@ function ciz() {
   ozetCiz(eks);
   const f = { sinif: sinifAdim, bg: bgAdim, tur: turAdim, yetenek: yetenekAdim, sec: soruAdim, buyu: soruAdim, ekip: ekipAdim, kimlik: kimlikAdim }[adim];
   const baslik = (ADIMLAR.find((x) => x[0] === adim) || [])[1];
-  ana.innerHTML = `<h2>${baslik}</h2><p class="giris">${ADIM_TR[adim] || ""}</p>` + f() + altDugmeler();
+  const giris = OBR_MOD && adim === "kimlik" ? "Karakterine bir ad ver ve Odaya kaydet'e bas. Karakter panelde açılır ve sana bağlanır; seviye atlayınca karakter sayfasının altındaki Düzenle ile buraya dönersin." : ADIM_TR[adim] || "";
+  ana.innerHTML = `<h2>${baslik}</h2><p class="giris">${giris}</p>` + f() + altDugmeler();
   if (adim === "kimlik" && C) onizle();
   const odak = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.araK;
   for (const [k, v] of Object.entries(arama)) { const i = ana.querySelector(`[data-ara-k="${k}"]`); if (i) { i.value = v; suz(i); } }
@@ -171,7 +179,8 @@ function kimlikAdim() {
   <div class="satir"><label for="oy">Oyuncu</label><input class="sec" id="oy" data-alan="oyuncu" value="${esc(Y.oyuncu)}" placeholder="Senin adın"></div>
   <div class="satir"><label for="av">Resim adresi (isteğe bağlı)</label><input class="sec" id="av" data-alan="avatar" value="${esc(Y.avatar)}" placeholder="https://…" style="min-width:280px"></div>`;
   const eks = Object.values(eksikler()).flat();
-  h += `<div class="satir"><button class="btn birincil" data-act="indir" type="button" ${C ? "" : "disabled"}>Dosyayı indir</button><button class="btn" data-act="kopyala" type="button" ${C ? "" : "disabled"}>Panoya kopyala</button>
+  if (OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="odaya" type="button" ${C ? "" : "disabled"}>Odaya kaydet</button><span class="not" id="oda-durum">Kaydedince panelde karakter sayfan açılır; seviye atlarken sayfanın altındaki <b>Düzenle</b> ile buraya dönersin.</span></div>`;
+  h += `<div class="satir"><button class="btn ${OBR_MOD ? "" : "birincil"}" data-act="indir" type="button" ${C ? "" : "disabled"}>${OBR_MOD ? "Yedek dosya indir" : "Dosyayı indir"}</button><button class="btn" data-act="kopyala" type="button" ${C ? "" : "disabled"}>Panoya kopyala</button>
     <span class="not">${eks.length ? "Eksik seçimler var (" + eks.length + "); yine de kaydedebilirsin, sonra tamamlarsın." : "Her şey tamam. Dosyayı DM'e gönder."}</span></div>`;
   h += `<p class="not">Dosya bu karakterin tüm seçimlerini taşır. Seviye atlayınca bu sayfada <b>Dosya aç</b> ile yükle, seviyeyi artır, yeni seçimleri yap ve tekrar indir.</p>`;
   h += `<h2 style="margin-top:24px">Önizleme</h2><div class="sheet" style="padding:0"><div id="onizleme"></div></div>`;
@@ -243,6 +252,8 @@ document.addEventListener("click", async (e) => {
     Y.zarlar = Array.from({ length: 6 }, () => { const r = [1, 2, 3, 4].map(() => 1 + Math.floor(Math.random() * 6)).sort((a, b) => a - b); return r[1] + r[2] + r[3]; }).sort((a, b) => b - a);
     Y.atama = {};
   } else if (t.dataset.act === "indir") { indir(); return; }
+  else if (t.dataset.act === "odaya") { odayaKaydet(t); return; }
+  else if (t.dataset.act === "kapat") { if (OBR) OBR.modal.close(MODAL); return; }
   else if (t.dataset.act === "kopyala") { try { await navigator.clipboard.writeText(JSON.stringify(C, null, 1)); t.textContent = "Kopyalandı ✓"; } catch (x) { t.textContent = "Kopyalanamadı"; } return; }
   else return;
   kaydet(); ciz();
@@ -279,9 +290,51 @@ function indir() {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
+// ---------- Owlbear: odaya kaydet
+async function odayaKaydet(dugme) {
+  const durum = document.getElementById("oda-durum");
+  try {
+    dugme.disabled = true;
+    const m = await OBR.room.getMetadata(), tum = { ...(m[K_YEREL] || {}) }, eski = tum[Y.id];
+    if (eski && eski.sahip !== benim.id && benim.rol !== "GM") throw new Error("Bu karakter senin değil; sadece sahibi ve GM kaydedebilir.");
+    tum[Y.id] = { v: await sikistir(Y), ad: C.ad, tur: C.tur, siniflar: C.siniflar, avatar: C.avatar,
+      sahip: eski ? eski.sahip : benim.id, sahipAd: eski ? eski.sahipAd : benim.ad, guncellendi: C.guncellendi };
+    const guncel = { [K_YEREL]: tum };
+    // oyuncunun yeni karakteri otomatik olarak ona bağlanır (bir oyuncu, bir karakter)
+    if (!eski && benim.rol !== "GM") {
+      const sahip = { ...(m[K_SAHIP] || {}) };
+      for (const id of Object.keys(sahip)) if (sahip[id].oyuncu === benim.id) delete sahip[id];
+      sahip[Y.id] = { oyuncu: benim.id, ad: benim.ad };
+      guncel[K_SAHIP] = sahip;
+    }
+    const boyut = new Blob([JSON.stringify({ ...m, ...guncel })]).size;
+    if (boyut > ODA_SINIRI) throw new Error(`Oda verisi dolu (${boyut} bayt). GM eski zar günlüğünü ya da handout'ları temizlemeli.`);
+    await OBR.room.setMetadata(guncel);
+    try { localStorage.removeItem(TASLAK); } catch (e) { /* yok */ }
+    OBR.notification.show(`${C.ad} odaya kaydedildi.`, "SUCCESS");
+    OBR.modal.close(MODAL);
+  } catch (e) {
+    dugme.disabled = false;
+    if (durum) durum.textContent = "Kaydedilemedi: " + e.message;
+  }
+}
+async function obrBaslat() {
+  OBR = (await import("https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm")).default;
+  await new Promise((r) => OBR.onReady(r));
+  const tema = (t) => { document.documentElement.dataset.theme = t.mode === "DARK" ? "dark" : "light"; };
+  tema(await OBR.theme.getTheme()); OBR.theme.onChange(tema);
+  benim = { id: await OBR.player.getId(), ad: await OBR.player.getName(), rol: await OBR.player.getRole() };
+  const ust = document.querySelector(".ol-ust a"); if (ust) ust.outerHTML = `<button class="btn" data-act="kapat" type="button">✕ Kapat</button>`;
+  const kayit = ((await OBR.room.getMetadata())[K_YEREL] || {});
+  if (DUZ_ID && kayit[DUZ_ID]) { Y = await yapiAc(kayit[DUZ_ID].v); adim = "sinif"; }
+  else if (!DUZ_ID && kayit[Y.id]) Y = K.bosYapi(); // "yeni karakter" var olan bir kaydın üstüne yazmasın
+  if (!Y.oyuncu) Y.oyuncu = benim.ad;
+}
+
 // ---------- başlat
 (async () => {
   try {
+    if (OBR_MOD) await obrBaslat();
     window.__V = await K.veriYukle();
     if (Y.sinif) S = await K.sinifYukle(Y.sinif);
     ciz();

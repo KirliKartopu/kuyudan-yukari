@@ -114,6 +114,8 @@
       <span class="gm" id="sahip-bilgi" hidden></span>
       <button class="btn" id="sahip-kaldir" hidden>Sahipliği kaldır</button>
       <button class="btn" id="birak" hidden title="Yanlış karakteri seçtiysen">Karakteri bırak</button>
+      <button class="btn" id="yeni-karakter" hidden>Yeni karakter</button>
+      <button class="btn" id="yerel-sil" hidden title="Üreticide yapılmış bu karakteri odadan siler">Odadan sil</button>
     </div>
     <p class="note warn" id="izin-uyari" hidden><b>Oyuncular her token'ı hareket ettirebiliyor</b>Owlbear'da oda ayarlarından (Room settings → Player permissions) <b>Characters</b> için <b>Owner only</b> seçeneğini aç. Böylece oyuncular sadece kendi karakterlerine bağlı token'ları oynatabilir.</p>
     <div id="root"><p class="empty">Yükleniyor…</p></div>
@@ -194,6 +196,8 @@ import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
 import { kucult, kaydet, oku as hoOkuGorsel, gonder as hoGonder } from "../assets/handout-aktar.js";
 import { paketYukle, paketOku, ara as cAra, bul as cBul, statBlok, zarIfade } from "../assets/canavar.js";
 import "../assets/aciklama.js"; // üstüne gelince 5e.tools açıklaması
+import { K_YEREL, hesapla as yerelHesapla, listeOgesi } from "../assets/oda-karakter.js";
+const YOL = new URL("../", location.href).pathname; // /kuyudan-yukari/
 
 const NS = "com.kuyudan-yukari";
 const K_DURUM = NS + "/durum", K_ZARLAR = NS + "/zarlar", K_SECIM = NS + "/karakter", KANAL = NS + "/zar";
@@ -529,9 +533,19 @@ if (!OBR.isAvailable) {
       seciliCiz();
     }
 
+    // --- Üreticide yapılıp odaya kaydedilen karakterler
+    let yerelKayit = (await OBR.room.getMetadata())[K_YEREL] || {};
+    const uretici = (id) => OBR.modal.open({ id: NS + "/olustur", url: YOL + "olustur/?obr=1" + (id ? "&id=" + id : ""), fullScreen: true });
+    const duzenleyebilir = (id) => yerelKayit[id] && (rol === "GM" || yerelKayit[id].sahip === benimId);
     const ks = KarakterSayfasi({
       root, pick, mode: document.getElementById("mode"), base: "../", store, onRoll, sekmeli: true,
+      yerel: {
+        var: (id) => !!yerelKayit[id],
+        ac: (id) => yerelHesapla(yerelKayit[id].v).then((c) => ({ ...c, id: +id, oyuncu: yerelKayit[id].sahipAd || c.oyuncu })),
+      },
+      duzenle: (id) => { if (duzenleyebilir(id)) uretici(id); else OBR.notification.show("Bu karakteri sadece sahibi ve GM düzenleyebilir.", "WARNING"); },
       onSelect: async (id) => {
+        document.getElementById("yerel-sil").hidden = !(rol === "GM" && yerelKayit[id]);
         if (rol !== "GM") return;
         OBR.player.setMetadata({ [K_SECIM]: id });
         const sahip = (await sahipleriOku())[id];
@@ -541,7 +555,8 @@ if (!OBR.isAvailable) {
       }
     });
 
-    let karakterler = [];
+    let karakterler = [], dosyaKarakterleri = [];
+    const listeyiKur = () => { karakterler = dosyaKarakterleri.concat(Object.entries(yerelKayit).map(([id, k]) => listeOgesi(id, k))); };
     async function gmBaslat() {
       const sahip = await sahipleriOku();
       const liste = karakterler.map((k) => ({ ...k, oyuncu: sahip[k.id] ? sahip[k.id].ad : k.oyuncu, ornek: sahip[k.id] ? false : k.ornek }));
@@ -560,7 +575,8 @@ if (!OBR.isAvailable) {
         await ks.open(benimKarakter);
         return;
       }
-      root.innerHTML = '<h2 style="margin-top:6px">Karakterini seç</h2><p class="sub">Bir kez seçersin; sonra bu panelde sadece kendi karakterin görünür.</p><ul class="sahiplen">' +
+      root.innerHTML = '<h2 style="margin-top:6px">Karakterini seç</h2><p class="sub">Bir kez seçersin; sonra bu panelde sadece kendi karakterin görünür.</p>' +
+        '<p><button class="btn on" data-yeni="1" type="button">Yeni karakter yarat</button> <small class="sub">2024 kurallarıyla adım adım; bitince doğrudan odaya kaydedilir.</small></p><ul class="sahiplen">' +
         karakterler.map((k) => {
           const s = sahip[k.id];
           return `<li><img alt="" src="${esc(k.avatar || "")}"><span><b>${esc(k.ad)}</b><br><small>${esc(k.siniflar.map((c) => c.ad + " " + c.seviye).join(" / "))}${k.ornek ? " · örnek" : ""}</small></span>` +
@@ -568,6 +584,7 @@ if (!OBR.isAvailable) {
         }).join("") + "</ul>";
     }
     root.addEventListener("click", async (e) => {
+      if (e.target.closest("[data-yeni]")) { uretici(null); return; }
       const id = e.target.dataset?.sahiplen; if (!id) return;
       const sahip = await sahipleriOku();
       if (sahip[id]) { OBR.notification.show("Bu karakteri " + sahip[id].ad + " seçmiş.", "WARNING"); return oyuncuBaslat(); }
@@ -587,6 +604,24 @@ if (!OBR.isAvailable) {
       await OBR.room.setMetadata({ [K_SAHIP]: sahip });
       await gmBaslat();
     });
+    document.getElementById("yeni-karakter").hidden = rol !== "GM";
+    document.getElementById("yeni-karakter").addEventListener("click", () => uretici(null));
+    document.getElementById("yerel-sil").addEventListener("click", async () => {
+      const id = pick.value, k = yerelKayit[id]; if (!k) return;
+      if (!confirm(k.ad + " odadan silinsin mi? (Oyuncunun dosya yedeği varsa geri yüklenebilir.)")) return;
+      const m = await OBR.room.getMetadata();
+      const tum = { ...(m[K_YEREL] || {}) }; delete tum[id];
+      const sahip = { ...(m[K_SAHIP] || {}) }; delete sahip[id];
+      await OBR.room.setMetadata({ [K_YEREL]: tum, [K_SAHIP]: sahip });
+    });
+    // odadaki karakterler değişince (yeni kayıt, düzenleme, silme) listeyi ve açık sayfayı yenile
+    let sonYerel = JSON.stringify(yerelKayit);
+    OBR.room.onMetadataChange((m) => {
+      const yeni = JSON.stringify(m[K_YEREL] || {});
+      if (yeni === sonYerel) return;
+      sonYerel = yeni; yerelKayit = m[K_YEREL] || {}; listeyiKur();
+      if (rol === "GM") gmBaslat(); else oyuncuBaslat();
+    });
     // GM bir oyuncunun sahipliğini kaldırırsa oyuncunun paneli de güncellensin
     let sonSahip = JSON.stringify(await sahipleriOku());
     OBR.room.onMetadataChange((m) => {
@@ -597,7 +632,8 @@ if (!OBR.isAvailable) {
     });
 
     try {
-      karakterler = await ks.list();
+      dosyaKarakterleri = await ks.list().catch(() => []);
+      listeyiKur();
       if (rol === "GM") await gmBaslat(); else await oyuncuBaslat();
     } catch (e) {
       root.innerHTML = '<p class="empty">Karakter listesi yüklenemedi.</p>';

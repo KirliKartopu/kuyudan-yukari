@@ -117,7 +117,7 @@
       var p = c.para || {};
       h += '<section class="box" data-sekme="env" data-etiket="Envanter"><h2>Envanter</h2><p class="feat num">' + ["pp", "gp", "ep", "sp", "cp"].filter(function (k) { return p[k]; }).map(function (k) { return p[k] + " " + k; }).join(" · ") + "</p>" +
         c.envanter.map(function (i) { return '<p class="feat" data-ack="esya|' + esc(i.ad) + "|" + esc(i.tip || "") + '">' + (i.adet > 1 ? i.adet + "× " : "") + esc(i.ad) + (i.kusanili ? " <small>(kuşanılı)</small>" : "") + "</p>"; }).join("") + "</section>";
-      h += "</div>" + (c.yerel ? '<p class="foot">Kuyudan Yukarı karakter üreticisinde yapıldı · ' + esc(c.guncellendi) + ' · <a href="' + base + 'olustur/">Üreticide düzenle / seviye atla</a></p>'
+      h += "</div>" + (c.yerel ? '<p class="foot">Kuyudan Yukarı karakter üreticisinde yapıldı · ' + esc(c.guncellendi) + ' · ' + (o.duzenle ? '<button class="btn" data-act="duzenle">Düzenle / seviye atla</button>' : '<a href="' + base + 'olustur/">Üreticide düzenle / seviye atla</a>') + '</p>'
         : '<p class="foot">Beyond\'dan son çekim: ' + esc(c.guncellendi) + ' · <a href="' + esc(c.beyond_url) + '" target="_blank" rel="noopener">D&amp;D Beyond\'da aç</a></p>');
       root.innerHTML = h;
       if (o.sekmeli) sekmele();
@@ -173,6 +173,7 @@
       var cd = t.getAttribute("data-cond");
       if (cd) { var i = S.conds.indexOf(cd); if (i > -1) S.conds.splice(i, 1); else S.conds.push(cd); persist(); render(); return; }
       var act = t.getAttribute("data-act");
+      if (act === "duzenle") { if (o.duzenle) o.duzenle(C.id); return; }
       if (act === "insp") { S.insp = !S.insp; persist(); render(); return; }
       if (act === "ds") {
         var n = d(20), dz = "1d20@" + n;
@@ -204,9 +205,12 @@
     });
 
     // --- yükleme
+    // o.yerel: odaya kayıtlı karakterler { var(id) -> bool, ac(id) -> Promise<karakter> }
     function open(id) {
-      return fetch(base + "karakterler/" + id + ".json", { cache: "no-cache" })
-        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      var yerel = o.yerel && o.yerel.var(id);
+      if (yerel) root.innerHTML = '<p class="empty">Karakter hesaplanıyor… (ilk açılışta kurallar birkaç saniyede iner)</p>';
+      return (yerel ? o.yerel.ac(id) : fetch(base + "karakterler/" + id + ".json", { cache: "no-cache" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }))
         .then(function (c) { C = c; return store.load(c.id); })
         .then(function (durum) {
           S = durum || fresh();
@@ -214,7 +218,10 @@
           render();
           if (o.onSelect) o.onSelect(C.id, C);
         })
-        .catch(function () { root.innerHTML = '<p class="empty">Bu karakter yüklenemedi. D&amp;D Beyond\'da <b>Public</b> olduğundan emin ol; site saatte bir güncelleniyor.</p>'; });
+        .catch(function (e) {
+          if (yerel) { console.warn(e); root.innerHTML = '<p class="empty">Karakter hesaplanamadı (kural verisi inmedi olabilir). Paneli kapatıp açmayı dene.</p>'; return; }
+          root.innerHTML = '<p class="empty">Bu karakter yüklenemedi. D&amp;D Beyond\'da <b>Public</b> olduğundan emin ol; site saatte bir güncelleniyor.</p>';
+        });
     }
     function list() {
       return fetch(base + "karakterler/liste.json", { cache: "no-cache" }).then(function (r) { return r.json(); });
