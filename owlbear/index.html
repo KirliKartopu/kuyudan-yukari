@@ -112,7 +112,12 @@
       <label for="ho-baslik" class="ho-l">Başlık</label>
       <input id="ho-baslik" type="text" placeholder="Leosin'in notu">
       <div id="ho-gorsel-alan">
-        <button class="btn" type="button" id="ho-sec">Owlbear kütüphanesinden görsel seç</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn" type="button" id="ho-yerel-sec" title="Owlbear depolamasına yüklenmez; doğrudan oyunculara gider">Bilgisayardan seç</button>
+          <button class="btn" type="button" id="ho-sec">Owlbear kütüphanesinden</button>
+        </div>
+        <input type="file" id="ho-dosya" accept="image/*" hidden>
+        <small id="ho-bilgi" style="display:block;color:var(--muted);margin-top:4px"></small>
         <img id="ho-onizleme" alt="" hidden>
       </div>
       <div id="ho-metin-alan" hidden>
@@ -144,6 +149,7 @@
 <script src="../assets/zar-ses.js"></script>
 <script type="module">
 import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
+import { kucult, kaydet, oku as hoOkuGorsel, gonder as hoGonder } from "../assets/handout-aktar.js";
 
 const NS = "com.kuyudan-yukari";
 const K_DURUM = NS + "/durum", K_ZARLAR = NS + "/zarlar", K_SECIM = NS + "/karakter", KANAL = NS + "/zar";
@@ -304,14 +310,14 @@ if (!OBR.isAvailable) {
 
     // --- Handout'lar (oda metadata'sı: son 15; görseller Owlbear kütüphanesinden)
     const K_HO = NS + "/handoutlar";
-    let hoTur = "gorsel", hoGorsel = null;
+    let hoTur = "gorsel", hoGorsel = null, hoYerel = null;
     const hoOku = async () => (await OBR.room.getMetadata())[K_HO] || [];
     const bana = (h) => gm || h.kime === "hepsi" || (Array.isArray(h.kime) && h.kime.includes(benimId));
     const hoCiz = (liste) => {
       const ul = document.getElementById("ho-liste");
       const gorunen = (liste || []).filter(bana);
       if (!gorunen.length) { ul.innerHTML = "<li><small>Henüz handout yok.</small></li>"; return; }
-      ul.innerHTML = gorunen.map((h) => `<li>${h.tur === "gorsel" ? `<img class="kucuk" alt="" src="${esc(h.url)}">` : `<span class="kucuk">✉</span>`}` +
+      ul.innerHTML = gorunen.map((h) => `<li>${h.tur === "gorsel" ? (h.kaynak === "yerel" ? `<span class="kucuk">🖼</span>` : `<img class="kucuk" alt="" src="${esc(h.url)}">`) : `<span class="kucuk">✉</span>`}` +
         `<span><b>${esc(h.baslik || "Adsız")}</b><br><small>${h.kime === "hepsi" ? "Herkese" : "Özel"}${h.gosterildi ? "" : " · gösterilmedi"}</small></span>` +
         `<span class="dug"><button class="btn" data-hoac="${esc(h.id)}" title="Kendi ekranımda aç">Aç</button>` +
         (gm ? `<button class="btn" data-hogoster="${esc(h.id)}" title="Oyunculara göster">Göster</button><button class="btn" data-hosil="${esc(h.id)}" aria-label="Sil">✕</button>` : "") + "</span></li>").join("");
@@ -319,6 +325,12 @@ if (!OBR.isAvailable) {
     hoCiz(await hoOku());
     OBR.room.onMetadataChange((m) => hoCiz(m[K_HO]));
     const hoGoster = async (h) => {
+      if (h.kaynak === "yerel") {
+        const blob = await hoOkuGorsel(h.id);
+        if (!blob) { OBR.notification.show("Bu görsel bu tarayıcıda yok (başka cihazdan eklenmiş).", "ERROR"); return; }
+        const n = await hoGonder(OBR, h.id, blob, h.kime); // önce görsel, sonra göster
+        console.info("handout gönderildi:", h.id, n, "parça", blob.size, "bayt");
+      }
       await OBR.broadcast.sendMessage(NS + "/handout", { id: h.id, kime: h.kime }, { destination: "REMOTE" });
       const l = await hoOku(); const x = l.find((y) => y.id === h.id);
       if (x && !x.gosterildi) { x.gosterildi = true; await OBR.room.setMetadata({ [K_HO]: l }); }
@@ -345,10 +357,19 @@ if (!OBR.isAvailable) {
         document.getElementById("ho-metin-alan").hidden = hoTur === "gorsel";
         document.getElementById("ho-metin-alan").dataset.stil = b.dataset.hotur;
       });
+      document.getElementById("ho-yerel-sec").addEventListener("click", () => document.getElementById("ho-dosya").click());
+      document.getElementById("ho-dosya").addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0]; if (!f) return;
+        hoYerel = await kucult(f); hoGorsel = null;
+        const on = document.getElementById("ho-onizleme"); on.src = URL.createObjectURL(hoYerel); on.hidden = false;
+        document.getElementById("ho-bilgi").textContent = `Depolamaya yüklenmez · ${Math.round(hoYerel.size / 1024)} KB`;
+        const bas = document.getElementById("ho-baslik"); if (!bas.value) bas.value = f.name.replace(/\.[^.]+$/, "");
+        e.target.value = "";
+      });
       document.getElementById("ho-sec").addEventListener("click", async () => {
         const secim = await OBR.assets.downloadImages(false);
         if (!secim || !secim.length) return;
-        hoGorsel = secim[0];
+        hoGorsel = secim[0]; hoYerel = null; document.getElementById("ho-bilgi").textContent = "Owlbear kütüphanesinden";
         const on = document.getElementById("ho-onizleme"); on.src = hoGorsel.image.url; on.hidden = false;
         const bas = document.getElementById("ho-baslik"); if (!bas.value) bas.value = hoGorsel.name || "";
       });
@@ -357,8 +378,12 @@ if (!OBR.isAvailable) {
         const kimeV = document.getElementById("ho-kime").value;
         const h = { id: Math.random().toString(36).slice(2, 10), baslik, kime: kimeV === "hepsi" ? "hepsi" : [kimeV], zaman: Date.now(), gosterildi: false };
         if (hoTur === "gorsel") {
-          if (!hoGorsel) { OBR.notification.show("Önce bir görsel seç.", "WARNING"); return; }
-          Object.assign(h, { tur: "gorsel", url: hoGorsel.image.url });
+          if (hoYerel) {
+            await kaydet(h.id, hoYerel);
+            Object.assign(h, { tur: "gorsel", kaynak: "yerel", boyut: hoYerel.size });
+          } else if (hoGorsel) {
+            Object.assign(h, { tur: "gorsel", url: hoGorsel.image.url });
+          } else { OBR.notification.show("Önce bir görsel seç.", "WARNING"); return; }
         } else {
           const metin = document.getElementById("ho-metin").value.trim();
           if (!metin) { OBR.notification.show("Metin boş.", "WARNING"); return; }
@@ -368,7 +393,7 @@ if (!OBR.isAvailable) {
         await OBR.room.setMetadata({ [K_HO]: l });
         if (goster) await hoGoster(h);
         document.getElementById("ho-baslik").value = ""; document.getElementById("ho-metin").value = "";
-        hoGorsel = null; document.getElementById("ho-onizleme").hidden = true;
+        hoGorsel = null; hoYerel = null; document.getElementById("ho-onizleme").hidden = true; document.getElementById("ho-bilgi").textContent = "";
       };
       document.getElementById("ho-goster").addEventListener("click", () => hoYeni(true));
       document.getElementById("ho-kaydet").addEventListener("click", () => hoYeni(false));

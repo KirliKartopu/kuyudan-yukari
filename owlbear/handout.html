@@ -34,6 +34,7 @@
 </div>
 <script type="module">
 import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
+import { oku } from "../assets/handout-aktar.js";
 const K = "com.kuyudan-yukari/handoutlar";
 const id = new URLSearchParams(location.hash.slice(1)).get("id");
 OBR.onReady(async () => {
@@ -43,7 +44,18 @@ OBR.onReady(async () => {
   if (!h) { icerik.innerHTML = '<p class="bos">Bu handout artık yok.</p>'; return; }
   document.getElementById("baslik").textContent = h.baslik || "";
   if (h.tur === "gorsel") {
-    const img = document.createElement("img"); img.src = h.url; img.alt = h.baslik || "Handout";
+    let src = h.url;
+    if (h.kaynak === "yerel") {
+      const blob = await oku(id);
+      if (!blob) {
+        icerik.innerHTML = '<p class="bos">Görsel GM\'den alınıyor…</p>';
+        OBR.broadcast.onMessage("com.kuyudan-yukari/hazir", ({ data }) => { if (data && data.id === id) location.reload(); });
+        OBR.broadcast.sendMessage("com.kuyudan-yukari/iste", { id }, { destination: "REMOTE" });
+        return;
+      }
+      src = URL.createObjectURL(blob);
+    }
+    const img = document.createElement("img"); img.src = src; img.alt = h.baslik || "Handout";
     img.addEventListener("click", () => icerik.classList.toggle("buyuk")); // tıkla: tam boyut
     icerik.replaceChildren(img);
   } else {

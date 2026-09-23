@@ -8,6 +8,7 @@
 //  - sağ tık menüleri (karakter bağla, sıraya ekle)
 //  - GM'de: bağlı token'ların altındaki HP etiketlerini günceller
 import OBR, { buildLabel } from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
+import { Alici, oku, gonder, hepsi, sil } from "../assets/handout-aktar.js";
 
 const NS = "com.kuyudan-yukari";
 const K_DURUM = NS + "/durum", K_SIRA = NS + "/sira", K_BAG = NS + "/karakter", K_ETIKET = NS + "/hp-etiket";
@@ -42,9 +43,39 @@ OBR.onReady(async () => {
     const W = await OBR.viewport.getWidth(), H = await OBR.viewport.getHeight();
     await OBR.modal.open({ id: NS + "/handout", url: YOL + "owlbear/handout.html#" + new URLSearchParams({ id }), width: Math.round(W * 0.85), height: Math.round(H * 0.88), hidePaper: true });
   };
+  const benimRol = await OBR.player.getRole();
+  const hedefMi = (kime) => benimRol === "GM" || kime === "hepsi" || (Array.isArray(kime) && kime.includes(benimId));
+  const handoutMeta = async (id) => ((await OBR.room.getMetadata())[NS + "/handoutlar"] || []).find((x) => x.id === id);
+  // Yerel görseller: parçalar gelince birleşir; göster isteği önce geldiyse tamamlanınca açılır
+  const acilacak = new Set();
+  Alici(OBR, (id) => {
+    OBR.broadcast.sendMessage(NS + "/hazir", { id }, { destination: "LOCAL" });
+    if (acilacak.has(id)) { acilacak.delete(id); handoutAc(id); }
+  }, hedefMi);
+  const goster = async (id) => {
+    const h = await handoutMeta(id);
+    if (h && h.kaynak === "yerel" && !(await oku(id))) {
+      acilacak.add(id);
+      setTimeout(async () => { if (acilacak.has(id) && !(await oku(id))) OBR.broadcast.sendMessage(NS + "/iste", { id }, { destination: "REMOTE" }); }, 4000);
+      return;
+    }
+    handoutAc(id);
+  };
   OBR.broadcast.onMessage(NS + "/handout", ({ data }) => {
     if (!data || !data.id) return;
-    if (data.kime === "hepsi" || (Array.isArray(data.kime) && data.kime.includes(benimId))) handoutAc(data.id);
+    if (data.kime === "hepsi" || (Array.isArray(data.kime) && data.kime.includes(benimId))) goster(data.id);
+  });
+  // Görseli olmayan (geç katılan, başka cihaz) biri isterse GM yeniden gönderir
+  if (benimRol === "GM") OBR.broadcast.onMessage(NS + "/iste", async ({ data }) => {
+    const blob = data && data.id && await oku(data.id);
+    const h = blob && await handoutMeta(data.id);
+    if (blob && h) gonder(OBR, data.id, blob, h.kime);
+  });
+  // Silinen handout'ların görselleri tarayıcıdan da temizlensin
+  OBR.room.onMetadataChange(async (m) => {
+    const liste = m[NS + "/handoutlar"]; if (!Array.isArray(liste)) return;
+    const idler = new Set(liste.map((x) => x.id));
+    for (const k of await hepsi()) if (!idler.has(k)) sil(k);
   });
   OBR.broadcast.onMessage(NS + "/handout-ac", ({ data }) => { if (data && data.id) handoutAc(data.id); });
   OBR.broadcast.onMessage(NS + "/sira", ({ data }) => {
