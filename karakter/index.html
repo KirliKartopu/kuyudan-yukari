@@ -16,6 +16,7 @@
     <a href="../">← Kuyudan Yukarı</a>
     <label for="pick" hidden>Karakter</label>
     <select id="pick"></select>
+    <label class="gm" style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="zar3d" checked> 3D zar</label>
     <div class="mode" id="mode" role="group" aria-label="Zar modu">
       <button class="btn" data-mode="dis" title="İki d20, düşüğü">Disadvantage</button>
       <button class="btn on" data-mode="norm">Normal</button>
@@ -36,9 +37,24 @@
     onChange: function (cb) { window.addEventListener("storage", function (e) { if (e.key && e.key.indexOf("ky-durum-") === 0) { try { cb(e.key.slice(9), JSON.parse(e.newValue)); } catch (x) {} } }); }
   };
   var goster = ZarKutusu(document.getElementById("log"));
+  var z3 = document.getElementById("zar3d");
+  try { z3.checked = localStorage.getItem("ky-zar3d") !== "0"; } catch (e) {}
+  z3.addEventListener("change", function () { try { localStorage.setItem("ky-zar3d", z3.checked ? "1" : "0"); } catch (e) {} });
+  var katman = null;
+  function sahne(r) {
+    if (!z3.checked || !r.zar) { goster(r); return; }
+    if (katman) katman.remove();
+    katman = document.createElement("div");
+    katman.style.cssText = "position:fixed;inset:0;z-index:50;pointer-events:none";
+    document.body.appendChild(katman);
+    var k = katman;
+    import("../assets/zar3d.js").then(function (m) { return m.zarAt(k, r.zar, r.sinif || "normal"); })
+      .catch(function (e) { console.warn("3D zar:", e); })
+      .then(function () { goster(r); setTimeout(function () { if (k === katman) { k.remove(); katman = null; } }, 1300); });
+  }
   var ks = KarakterSayfasi({
     root: document.getElementById("root"), pick: document.getElementById("pick"), mode: document.getElementById("mode"),
-    base: "../", store: store, onRoll: function (r) { goster(r); },
+    base: "../", store: store, onRoll: sahne,
     onSelect: function (id, c) { document.title = c.ad + " · Karakter Sayfası"; if (location.hash.slice(1) !== String(id)) history.replaceState(null, "", "#" + id); }
   });
   ks.list().then(function (items) { var want = ks.fill(items, location.hash.slice(1)); if (want) ks.open(want); })

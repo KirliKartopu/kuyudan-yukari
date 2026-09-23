@@ -25,14 +25,15 @@
       if (mode === "dis") { use = Math.min(a, b); note = "Disadvantage: d20 (" + a + ", " + b + ")"; }
       var cls = isAttack && use === 20 ? "crit" : isAttack && use === 1 ? "fail" : "";
       var extra = isAttack && use === 20 ? " · KRİTİK! Hasar zarlarını iki kez at" : isAttack && use === 1 ? " · Iska" : "";
-      emit({ baslik: title, toplam: use + bonus, detay: note + " " + sgn(bonus) + extra, sinif: cls });
+      var zar = mode === "norm" ? "1d20@" + a : "2d20@" + a + "," + b;
+      emit({ baslik: title, toplam: use + bonus, detay: note + " " + sgn(bonus) + extra, sinif: cls, zar: zar });
     }
     function dmg(title, expr, crit) {
       var m = String(expr).match(/^(\d+)d(\d+)([+-]\d+)?$/);
       if (!m) { emit({ baslik: title, toplam: expr, detay: "" }); return; }
       var n = +m[1] * (crit ? 2 : 1), f = +m[2], k = +(m[3] || 0), rolls = [], t = 0;
       for (var i = 0; i < n; i++) { var r = d(f); rolls.push(r); t += r; }
-      emit({ baslik: title + (crit ? " (kritik)" : ""), toplam: t + k, detay: n + "d" + f + " (" + rolls.join(", ") + ")" + (k ? " " + sgn(k) : "") });
+      emit({ baslik: title + (crit ? " (kritik)" : ""), toplam: t + k, detay: n + "d" + f + " (" + rolls.join(", ") + ")" + (k ? " " + sgn(k) : ""), zar: n + "d" + f + "@" + rolls.join(",") });
     }
 
     // --- çizim
@@ -145,11 +146,11 @@
       var act = t.getAttribute("data-act");
       if (act === "insp") { S.insp = !S.insp; persist(); render(); return; }
       if (act === "ds") {
-        var n = d(20);
-        if (n === 20) { S.hp = 1; S.ds = { s: 0, f: 0 }; emit({ baslik: "Death Save", toplam: 20, detay: "Doğal 20: 1 HP ile ayağa kalktın!", sinif: "crit" }); }
-        else if (n === 1) { S.ds.f = Math.min(3, S.ds.f + 2); emit({ baslik: "Death Save", toplam: 1, detay: "Doğal 1: iki başarısızlık", sinif: "fail" }); }
-        else if (n >= 10) { S.ds.s++; emit({ baslik: "Death Save", toplam: n, detay: "Başarı" + (S.ds.s >= 3 ? " · stabil oldun" : "") }); }
-        else { S.ds.f++; emit({ baslik: "Death Save", toplam: n, detay: "Başarısızlık" + (S.ds.f >= 3 ? " · karakter öldü" : ""), sinif: "fail" }); }
+        var n = d(20), dz = "1d20@" + n;
+        if (n === 20) { S.hp = 1; S.ds = { s: 0, f: 0 }; emit({ baslik: "Death Save", toplam: 20, detay: "Doğal 20: 1 HP ile ayağa kalktın!", sinif: "crit", zar: dz }); }
+        else if (n === 1) { S.ds.f = Math.min(3, S.ds.f + 2); emit({ baslik: "Death Save", toplam: 1, detay: "Doğal 1: iki başarısızlık", sinif: "fail", zar: dz }); }
+        else if (n >= 10) { S.ds.s++; emit({ baslik: "Death Save", toplam: n, detay: "Başarı" + (S.ds.s >= 3 ? " · stabil oldun" : ""), zar: dz }); }
+        else { S.ds.f++; emit({ baslik: "Death Save", toplam: n, detay: "Başarısızlık" + (S.ds.f >= 3 ? " · karakter öldü" : ""), sinif: "fail", zar: dz }); }
         persist(); render();
       }
     });

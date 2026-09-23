@@ -17,10 +17,25 @@ const ICON = YOL + "owlbear/icon.svg";
 
 OBR.onReady(async () => {
   // --- bildirimler
-  OBR.broadcast.onMessage(NS + "/zar", ({ data }) => {
+  const benimBaglanti = await OBR.player.getConnectionId();
+  const zar3dAcik = () => { try { return localStorage.getItem("ky-zar3d") !== "0"; } catch (e) { return true; } };
+  OBR.broadcast.onMessage(NS + "/zar", async ({ data, connectionId }) => {
     const r = data || {};
+    const sahne = zar3dAcik() && r.zar;
+    if (sahne) {
+      const W = await OBR.viewport.getWidth(), H = await OBR.viewport.getHeight();
+      const id = NS + "/zar-sahne";
+      OBR.popover.open({
+        id, url: YOL + "owlbear/zar.html#" + new URLSearchParams({ z: r.zar, t: r.sinif || "normal", id }),
+        width: Math.min(W, 900), height: Math.min(H, 600),
+        anchorReference: "POSITION", anchorPosition: { left: W / 2, top: H / 2 },
+        anchorOrigin: { horizontal: "CENTER", vertical: "CENTER" }, transformOrigin: { horizontal: "CENTER", vertical: "CENTER" },
+        hidePaper: true,
+      });
+    }
+    if (connectionId === benimBaglanti) return; // kendi zarımın sonucunu panel gösteriyor
     const variant = r.sinif === "crit" ? "SUCCESS" : r.sinif === "fail" ? "ERROR" : "DEFAULT";
-    OBR.notification.show(`${r.kimden || "?"} · ${r.baslik}: ${r.toplam}  (${r.detay})`, variant);
+    setTimeout(() => OBR.notification.show(`${r.kimden || "?"} · ${r.baslik}: ${r.toplam}  (${r.detay})`, variant), sahne ? 1800 : 0);
   });
   OBR.broadcast.onMessage(NS + "/sira", ({ data }) => {
     if (data && data.ad) OBR.notification.show(`Sıra: ${data.ad} (tur ${data.tur})`, "INFO");

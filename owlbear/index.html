@@ -67,6 +67,7 @@
         <button class="btn on" data-mode="norm">Normal</button>
         <button class="btn" data-mode="adv" title="Advantage: iki d20, yükseği">Adv</button>
       </div>
+      <label class="gm"><input type="checkbox" id="zar3d" checked> 3D zar</label>
       <label class="gm" id="gm-gizli" hidden><input type="checkbox" id="gizli"> Gizli zar (sadece GM görür)</label>
       <span class="gm" id="sahip-bilgi" hidden></span>
       <button class="btn" id="sahip-kaldir" hidden>Sahipliği kaldır</button>
@@ -160,16 +161,19 @@ if (!OBR.isAvailable) {
     OBR.room.onMetadataChange((m) => cizGunluk(m[K_ZARLAR]));
 
     const goster = ZarKutusu(document.getElementById("log"));
+    const z3 = document.getElementById("zar3d");
+    try { z3.checked = localStorage.getItem("ky-zar3d") !== "0"; } catch (e) {}
+    z3.addEventListener("change", () => { try { localStorage.setItem("ky-zar3d", z3.checked ? "1" : "0"); } catch (e) {} });
     const onRoll = async (r) => {
       const gizli = rol === "GM" && document.getElementById("gizli").checked;
       r.kimden = (r.karakter || oyuncuAdi) + (gizli ? " (gizli)" : "");
-      goster(r, r.kimden);
+      setTimeout(() => goster(r, r.kimden), z3.checked && r.zar ? 1700 : 0); // zarlar dursun, sonra sonuç
       const c = ks.current();
       if (r.baslik === "Initiative" && c) {
         siraYaz((s) => { s.liste.filter((x) => x.karakter === c.id).forEach((x) => { x.deger = r.toplam; }); });
       }
+      await OBR.broadcast.sendMessage(KANAL, r, { destination: gizli ? "LOCAL" : "ALL" });
       if (gizli) return; // gizli zar kimseye gitmez, günlüğe yazılmaz
-      await OBR.broadcast.sendMessage(KANAL, r, { destination: "REMOTE" });
       const m = await OBR.room.getMetadata();
       await OBR.room.setMetadata({ [K_ZARLAR]: [r, ...(m[K_ZARLAR] || [])].slice(0, 25) });
     };
