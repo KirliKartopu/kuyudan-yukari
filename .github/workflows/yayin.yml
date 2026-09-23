@@ -1,0 +1,40 @@
+name: Siteyi yayınla
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 * * * *"   # her saat: karakterleri D&D Beyond'dan yeniden çek
+  workflow_dispatch:        # elle tetikleme: gh workflow run yayin.yml
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  yayinla:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Siteyi topla
+        run: |
+          mkdir _site
+          cp -r index.html assets rehber sozluk karakter .nojekyll _site/
+      - name: Karakterleri D&D Beyond'dan çek
+        run: python araclar/ddb_cevir.py karakterler.json _site/karakterler
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
