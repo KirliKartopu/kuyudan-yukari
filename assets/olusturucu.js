@@ -86,14 +86,14 @@ function kartListesi(adimK, liste, seciliMi, kartHTML) {
 // --- adım: class
 function sinifAdim() {
   let h = `<div class="satir"><label for="sv">Seviye</label><select class="sec" id="sv" data-alan="seviye">${Array.from({ length: 20 }, (_, i) => `<option ${Y.seviye === i + 1 ? "selected" : ""}>${i + 1}</option>`).join("")}</select><span class="not">Prolog 1. seviyede başlar. Seviye atlarken buradan artır; yeni seçimler eksik olarak işaretlenir.</span></div>`;
-  h += kartListesi("sinif", K.SINIFLAR, (s) => Y.sinif === s, (s) => { const t = SINIF_TR[s]; return `<button type="button" class="kart ${Y.sinif === s ? "on" : ""}" data-sinif="${s}"><b>${s}</b><span class="etk">d${t.hd} · ${t.ana} · ${t.zorluk}</span><p>${t.ozet}</p><span class="kucuk">${t.rol}</span></button>`; });
+  h += dunyaDugmesi() + kartListesi("sinif", K.siniflar(Y), (s) => Y.sinif === s, (s) => { const t = SINIF_TR[s]; return `<button type="button" class="kart ${Y.sinif === s ? "on" : ""}" data-sinif="${s}"><b>${s}</b>${s === "Artificer" ? kaynakEtiket("EFA") : ""}<span class="etk">d${t.hd} · ${t.ana} · ${t.zorluk}</span><p>${t.ozet}</p><span class="kucuk">${t.rol}</span></button>`; });
   if (S) {
     const oz = K.ozellikler(S, Y).filter(({ f }) => !/ (Subclass|Options)$|^Subclass Feature$/.test(f.name));
     h += `<div class="detay"><b>${S.c.name}: ${Y.seviye}. seviyeye kadar kazandıkların</b>${oz.map(({ f }) => `<details class="acil"><summary>${esc(f.name)} <small>(Sv ${f.level})</small></summary>${girdi(f.entries)}</details>`).join("")}</div>`;
     const q = sorular.find((x) => x.sub);
     if (q) {
       h += `<div class="soru ${q.tamam ? "" : "eksik"}"><h3>Subclass <span class="say">${q.tamam ? "✓" : "seçilmedi"}</span></h3><p class="ack">${esc(q.aciklama)}</p><div class="secenek-kart">` +
-        S.subs.map((s) => { const f = S.sfeat.find((x) => x.subclassShortName === s.shortName && x.subclassSource === s.source && x.name === s.shortName); const ilk = f ? f.entries.filter((e) => typeof e === "string").slice(0, 2) : []; return `<button type="button" class="kart ${sec("subclass")[0] === s.name ? "on" : ""}" data-q="subclass" data-d="${esc(s.name)}"><b>${esc(s.name)}</b>${s.source === "FRHoF" ? '<span class="etk">Heroes of Faerûn</span>' : ""}${girdi(ilk)}</button>`; }).join("") + "</div></div>";
+        S.subs.map((s) => { const f = S.sfeat.find((x) => x.subclassShortName === s.shortName && x.subclassSource === s.source && x.name === s.shortName); const ilk = f ? f.entries.filter((e) => typeof e === "string").slice(0, 2) : []; return `<button type="button" class="kart ${sec("subclass")[0] === s.name ? "on" : ""}" data-q="subclass" data-d="${esc(s.name)}"><b>${esc(s.name)}</b>${kaynakEtiket(s.source)}${girdi(ilk)}</button>`; }).join("") + "</div></div>";
       const sub = K.altSinif(S, Y);
       if (sub) { const f = S.sfeat.find((x) => x.subclassShortName === sub.shortName && x.subclassSource === sub.source && x.name === sub.shortName); if (f) h += `<details class="acil detay"><summary>${esc(sub.name)}: tüm metin</summary>${girdi(f.entries)}</details>`; }
     } else if (Y.seviye < 3) h += `<p class="not">Subclass 3. seviyede seçilir.</p>`;
@@ -102,22 +102,26 @@ function sinifAdim() {
 }
 // --- adım: background
 function bgAdim() {
-  let h = kartListesi("bg", bgListesi(), (b) => Y.background === b.name + "|" + b.source, (b) => {
+  let h = dunyaDugmesi() + kartListesi("bg", bgListesi(), (b) => Y.background === b.name + "|" + b.source, (b) => {
     const ab = b.ability[0].choose.weighted.from.map((x) => x.toUpperCase()).join(", ");
     const sk = (b.skillProficiencies || []).flatMap((s) => Object.keys(s).filter((k) => s[k] === true)).map((x) => (K.SKILLS[x] || [x])[0]).join(", ");
-    const ft = K.bgFeat(b), fo = ft && K.bulFeat(ft), spec = ft && ft.split("|")[0].split(";")[1];
-    const fad = fo ? fo.name + (spec ? " (" + spec.trim().replace(/^./, (c) => c.toUpperCase()) + ")" : "") : "";
-    return `<button type="button" class="kart ${Y.background === b.name + "|" + b.source ? "on" : ""}" data-bg="${esc(b.name + "|" + b.source)}"><b>${esc(b.name)}</b>${b.source === "FRHoF" ? '<span class="etk">Heroes of Faerûn</span>' : ""}<p class="kucuk">Ability: ${ab}<br>Skill: ${esc(sk)}<br>Feat: <span data-ack="feat|${esc(fo ? fo.name : "")}">${esc(fad)}</span></p></button>`;
+    const fl = K.bgFeatListesi(b), ft = fl.length === 1 ? fl[0] : null, fo = ft && K.bulFeat(ft), spec = ft && ft.split("|")[0].split(";")[1];
+    const fad = fo ? fo.name + (spec ? " (" + spec.trim().replace(/^./, (c) => c.toUpperCase()) + ")" : "") : fl.length > 1 ? "seçimlik" : "";
+    return `<button type="button" class="kart ${Y.background === b.name + "|" + b.source ? "on" : ""}" data-bg="${esc(b.name + "|" + b.source)}"><b>${esc(b.name)}</b>${kaynakEtiket(b.source)}<p class="kucuk">Ability: ${ab}<br>Skill: ${esc(sk)}<br>Feat: <span data-ack="feat|${esc(fo ? fo.name : "")}">${esc(fad)}</span></p></button>`;
   });
   const bg = K.bulBg(Y);
   if (bg) h += `<details class="acil detay"><summary>${esc(bg.name)}: tüm metin</summary>${girdi(bg.entries)}</details>` + sorular.filter((q) => adimOf(q) === "bg").map(soruHTML).join("");
   return h;
 }
-function bgListesi() { return (window.__V || {}).background || []; }
+function bgListesi() { return K.liste(Y, "background"); }
+const kaynakEtiket = (src) => (K.KAYNAK_AD[src] ? `<span class="etk">${esc(K.KAYNAK_AD[src])}</span>` : "");
+function dunyaDugmesi() {
+  return `<label class="satir not" style="cursor:pointer"><input type="checkbox" data-alan="dunyalar" ${Y.dunyalar ? "checked" : ""}> Diğer dünyaların içeriğini de göster (Eberron, Lorwyn: Artificer, Warforged, Kithkin…). Bizim macera Faerûn'da; DM'e sormadan seçme.</label>`;
+}
 // --- adım: species
 function turAdim() {
-  const l = (window.__V || {}).tur || [];
-  let h = kartListesi("tur", l, (r) => Y.tur === r.name + "|" + r.source, (r) => `<button type="button" class="kart ${Y.tur === r.name + "|" + r.source ? "on" : ""}" data-tur="${esc(r.name + "|" + r.source)}"><b>${esc(r.name)}</b><span class="etk">${[(r.size || []).map((s) => (s === "S" ? "Small" : "Medium")).join("/"), "Speed " + (typeof r.speed === "object" ? r.speed.walk : r.speed), r.darkvision ? "Darkvision " + r.darkvision : ""].filter(Boolean).join(" · ")}</span><p>${esc(TUR_TR[r.name] || "")}</p></button>`);
+  const l = K.liste(Y, "tur");
+  let h = dunyaDugmesi() + kartListesi("tur", l, (r) => Y.tur === r.name + "|" + r.source, (r) => `<button type="button" class="kart ${Y.tur === r.name + "|" + r.source ? "on" : ""}" data-tur="${esc(r.name + "|" + r.source)}"><b>${esc(r.name)}</b>${kaynakEtiket(r.source)}<span class="etk">${[(r.size || []).map((s) => (s === "S" ? "Small" : "Medium")).join("/"), "Speed " + (typeof r.speed === "object" ? r.speed.walk : r.speed), r.darkvision ? "Darkvision " + r.darkvision : ""].filter(Boolean).join(" · ")}</span><p>${esc(TUR_TR[r.name + "|" + r.source] || TUR_TR[r.name] || "")}</p></button>`);
   const tur = K.bulTur(Y);
   if (tur) h += `<details class="acil detay"><summary>${esc(tur.name)}: tüm metin</summary>${girdi(tur.entries)}</details>`;
   h += sorular.filter((q) => adimOf(q) === "tur").map(soruHTML).join("");
@@ -246,6 +250,7 @@ document.addEventListener("click", async (e) => {
 document.addEventListener("change", (e) => {
   const t = e.target;
   if (t.dataset.alan === "seviye") Y.seviye = +t.value;
+  else if (t.dataset.alan === "dunyalar") { Y.dunyalar = t.checked; acik = { sinif: true, bg: true, tur: true }; }
   else if (t.dataset.alan === "yontem") { Y.yontem = t.value; Y.atama = {}; if (t.value === "puan") K.AB.forEach((a) => (Y.temel[a] = 8)); }
   else if (t.dataset.alan) { Y[t.dataset.alan] = t.value.trim(); kaydet(); ozetCiz(eksikler()); if (C) { C = K.hesapla(Y, S); onizle(); } return; }
   else if (t.dataset.atama) { Y.atama = Y.atama || {}; if (t.value === "") delete Y.atama[t.dataset.atama]; else Y.atama[t.dataset.atama] = +t.value; }

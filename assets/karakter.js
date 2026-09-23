@@ -110,6 +110,8 @@
       h += '<section class="box" data-sekme="feat" data-etiket="Features"><h2>Features &amp; Traits</h2>' + c.ozellikler.map(function (f) { return '<p class="feat" data-ack="ozellik|' + esc(f.ad) + "|" + esc(f.kaynak) + '">' + esc(f.ad) + " <small>" + esc(f.kaynak) + (f.seviye > 1 ? " · Sv " + f.seviye : "") + "</small></p>"; }).join("") +
         (c.featler.length ? '<p class="feat"><b>Feat:</b> ' + c.featler.map(function (f) { return '<span data-ack="feat|' + esc(f) + '">' + esc(f) + "</span>"; }).join(", ") + "</p>" : "") +
         (c.diller.length ? '<p class="feat"><b>Diller:</b> ' + c.diller.map(esc).join(", ") + "</p>" : "") +
+        (c.direncler && c.direncler.length ? '<p class="feat"><b>Resistance:</b> ' + c.direncler.map(esc).join(", ") + "</p>" : "") +
+        (c.notlar && c.notlar.length ? '<p class="feat"><b>Not:</b> ' + c.notlar.map(esc).join(" · ") + "</p>" : "") +
         (c.araclar && c.araclar.length ? '<p class="feat"><b>Tool:</b> ' + c.araclar.map(function (a) { return '<span data-ack="esya|' + esc(a) + '">' + esc(a) + "</span>"; }).join(", ") + "</p>" : "") +
         (c.zirh ? '<p class="feat"><b>Zırh:</b> ' + (c.zirh.length ? c.zirh.map(esc).join(", ") : "yok") + " · <b>Silah:</b> " + c.silah.map(esc).join(", ") + "</p>" : "") + "</section>";
       var p = c.para || {};
