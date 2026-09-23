@@ -15,6 +15,13 @@
   .sheet{padding-inline:12px;padding-block:0 110px}
   .grid{grid-template-columns:1fr}
   .who h1{font-size:22px}
+  /* dar panel: HP ve savaş değerleri kompakt, sekmelere yer kalsın */
+  .who{margin-bottom:8px} .who img{width:48px;height:48px}
+  .box{padding:8px 10px} .box h2{font-size:15px;margin-bottom:4px}
+  .grid{gap:8px}
+  .hp-num{font-size:22px}
+  .vitals{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+  .vital{padding:5px 2px} .vital b{font-size:17px} .vital small{font-size:9px;letter-spacing:.02em}
   .tabs{position:sticky;top:0;z-index:2;display:flex;gap:4px;padding:10px 0 8px;background:var(--ground);border-bottom:1px solid var(--line);margin-bottom:10px}
   .tabs button{flex:1;font:inherit;font-family:var(--display);font-size:17px;padding:6px 4px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--muted);cursor:pointer}
   .tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--accent);background:var(--accent-soft)}
@@ -264,7 +271,8 @@ if (!OBR.isAvailable) {
       r.kimden = (r.karakter || oyuncuAdi) + (gizli ? " (gizli)" : "");
       r.id = Math.random().toString(36).slice(2);
       sesCal(r); // kendi zarım: yayının geri dönmesini bekleme
-      setTimeout(() => goster(r, r.kimden), z3.checked && r.zar ? 1700 : 0); // zarlar dursun, sonra sonuç
+      // Sonuç panelde değil, harita üstündeki zar sahnesinde görünür; 3D kapalıysa bildirim
+      if (!z3.checked || !r.zar) OBR.notification.show(`${r.kimden} · ${r.baslik}: ${r.toplam}  (${r.detay})`, r.sinif === "crit" ? "SUCCESS" : r.sinif === "fail" ? "ERROR" : "DEFAULT");
       const c = ks.current();
       if (r.baslik === "Initiative" && c) {
         siraYaz((s) => { s.liste.filter((x) => x.karakter === c.id).forEach((x) => { x.deger = r.toplam; }); });
@@ -521,7 +529,7 @@ if (!OBR.isAvailable) {
     }
 
     const ks = KarakterSayfasi({
-      root, pick, mode: document.getElementById("mode"), base: "../", store, onRoll,
+      root, pick, mode: document.getElementById("mode"), base: "../", store, onRoll, sekmeli: true,
       onSelect: async (id) => {
         if (rol !== "GM") return;
         OBR.player.setMetadata({ [K_SECIM]: id });

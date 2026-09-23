@@ -70,3 +70,10 @@
   .foot{font-size:13px;color:var(--muted);margin-top:14px}
   @media (max-width:720px){ .grid{grid-template-columns:1fr} .who h1{font-size:24px} }
   .foot{font-size:13px;color:var(--muted);margin-top:14px;grid-column:1/-1}
+
+  /* Dar panel: dikey sekmeler */
+  .sekmeli{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:12px;align-items:start}
+  .sek-icerik > section{margin:0}
+  .ray{display:flex;flex-direction:column;gap:4px;position:sticky;top:56px}
+  .ray .btn{writing-mode:vertical-rl;transform:rotate(180deg);padding:10px 5px;font-size:13px;letter-spacing:.02em;white-space:nowrap}
+  .log{cursor:pointer}

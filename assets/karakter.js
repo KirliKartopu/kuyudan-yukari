@@ -12,7 +12,7 @@
 
   window.KarakterSayfasi = function (o) {
     var root = o.root, base = o.base || "../", store = o.store;
-    var mode = "norm", C = null, S = null;
+    var mode = "norm", C = null, S = null, aktifSekme = "atk";
 
     function fresh() { return { hp: C.hp_max, temp: 0, slots: {}, conds: [], insp: false, ds: { s: 0, f: 0 } }; }
     function persist() { if (C) store.save(C.id, S); }
@@ -60,7 +60,7 @@
         '<div class="vital"><b>' + sgn(c.prof_bonus) + "</b><small>Prof.</small></div>" +
         '<div class="vital"><b>' + c.pasif_perception + "</b><small>Pasif Perc.</small></div>" +
         "</div>" + (c.duyular && Object.keys(c.duyular).length ? '<p class="feat" style="margin-top:8px"><small>' + Object.keys(c.duyular).map(function (k) { return esc(k) + " " + c.duyular[k] + " ft"; }).join(" · ") + "</small></p>" : "") + "</section>";
-      h += '<section class="box"><h2>Yetenekler ve Saving Throw</h2><div class="abil">';
+      h += '<section class="box" data-sekme="yet" data-etiket="Yetenekler"><h2>Yetenekler ve Saving Throw</h2><div class="abil">';
       Object.keys(AB).forEach(function (a) {
         var y = c.yetenekler[a], s = c.saves[a];
         h += '<div class="ab"><div class="nm">' + a.toUpperCase() + "</div>" +
@@ -68,12 +68,12 @@
           '<button class="sv' + (s.prof ? " prof" : "") + '" data-roll="sv-' + a + '" title="' + AB[a] + ' saving throw">Save ' + sgn(s.bonus) + "</button></div>";
       });
       h += "</div></section>";
-      h += '<section class="box"><h2>Skills</h2><ul class="rows">';
+      h += '<section class="box" data-sekme="skill" data-etiket="Skills"><h2>Skills</h2><ul class="rows">';
       c.skills.forEach(function (s, i) {
         h += '<li><button data-roll="sk-' + i + '"><span class="dot p' + s.prof + '" title="' + (s.prof === 2 ? "Expertise" : s.prof ? "Proficient" : "") + '"></span><span>' + esc(s.ad) + '<span class="ab-tag">' + s.yetenek.toUpperCase() + '</span></span><span class="num">' + sgn(s.bonus) + "</span></button></li>";
       });
       h += "</ul></section>";
-      h += '<section class="box span2"><h2>Saldırılar</h2>';
+      h += '<section class="box span2" data-sekme="atk" data-etiket="Saldırı"><h2>Saldırılar</h2>';
       if (!c.saldirilar.length) h += '<p class="feat">Silah yok.</p>';
       c.saldirilar.forEach(function (a, i) {
         h += '<div class="atk"><span class="n">' + esc(a.ad) + (a.kusanili ? "" : ' <small style="font-weight:400;color:var(--muted)">(çantada)</small>') + "</span>" +
@@ -84,7 +84,7 @@
       h += "</section>";
       if (c.buyu) {
         var b = c.buyu;
-        h += '<section class="box span2"><h2>Büyü · ' + esc(b.sinif) + "</h2>" +
+        h += '<section class="box span2" data-sekme="buyu" data-etiket="Büyü"><h2>Büyü · ' + esc(b.sinif) + "</h2>" +
           '<div class="vitals" style="margin-bottom:10px"><div class="vital"><b>' + b.save_dc + "</b><small>Save DC</small></div>" +
           '<button class="vital" data-roll="spatk"><b>' + sgn(b.isabet) + "</b><small>Spell atk</small></button></div>";
         if (b.slotlar.length) {
@@ -104,20 +104,43 @@
         });
         h += "</section>";
       }
-      h += '<section class="box span2"><h2>Condition\'lar</h2><div class="tags conds">' +
+      h += '<section class="box span2" data-sekme="cond" data-etiket="Condition"><h2>Condition\'lar</h2><div class="tags conds">' +
         CONDS.map(function (n) { return '<button class="btn' + (S.conds.indexOf(n) > -1 ? " on" : "") + '" data-cond="' + n + '">' + n + "</button>"; }).join("") + "</div></section>";
-      h += '<section class="box"><h2>Özellikler</h2>' + c.ozellikler.map(function (f) { return '<p class="feat">' + esc(f.ad) + " <small>" + esc(f.kaynak) + (f.seviye > 1 ? " · Sv " + f.seviye : "") + "</small></p>"; }).join("") +
+      h += '<section class="box" data-sekme="feat" data-etiket="Features"><h2>Features</h2>' + c.ozellikler.map(function (f) { return '<p class="feat">' + esc(f.ad) + " <small>" + esc(f.kaynak) + (f.seviye > 1 ? " · Sv " + f.seviye : "") + "</small></p>"; }).join("") +
         (c.featler.length ? '<p class="feat"><b>Feat:</b> ' + c.featler.map(esc).join(", ") + "</p>" : "") +
         (c.diller.length ? '<p class="feat"><b>Diller:</b> ' + c.diller.map(esc).join(", ") + "</p>" : "") + "</section>";
       var p = c.para || {};
-      h += '<section class="box"><h2>Envanter</h2><p class="feat num">' + ["pp", "gp", "ep", "sp", "cp"].filter(function (k) { return p[k]; }).map(function (k) { return p[k] + " " + k; }).join(" · ") + "</p>" +
+      h += '<section class="box" data-sekme="env" data-etiket="Envanter"><h2>Envanter</h2><p class="feat num">' + ["pp", "gp", "ep", "sp", "cp"].filter(function (k) { return p[k]; }).map(function (k) { return p[k] + " " + k; }).join(" · ") + "</p>" +
         c.envanter.map(function (i) { return '<p class="feat">' + (i.adet > 1 ? i.adet + "× " : "") + esc(i.ad) + (i.kusanili ? " <small>(kuşanılı)</small>" : "") + "</p>"; }).join("") + "</section>";
       h += '</div><p class="foot">Beyond\'dan son çekim: ' + esc(c.guncellendi) + ' · <a href="' + esc(c.beyond_url) + '" target="_blank" rel="noopener">D&amp;D Beyond\'da aç</a></p>';
       root.innerHTML = h;
+      if (o.sekmeli) sekmele();
+    }
+    // Dar panel: HP ve Savaş üstte kalır, diğer bölümler sağdaki dikey sekmelerle açılır
+    function sekmele() {
+      var grid = root.querySelector(".grid");
+      var bolumler = [].slice.call(grid.querySelectorAll("section[data-sekme]"));
+      if (!bolumler.length) return;
+      if (!bolumler.some(function (b) { return b.dataset.sekme === aktifSekme; })) aktifSekme = bolumler[0].dataset.sekme;
+      var kap = document.createElement("div"); kap.className = "sekmeli";
+      var icerik = document.createElement("div"); icerik.className = "sek-icerik";
+      var ray = document.createElement("nav"); ray.className = "ray"; ray.setAttribute("aria-label", "Karakter bölümleri");
+      bolumler.forEach(function (b) {
+        var d = document.createElement("button");
+        d.type = "button"; d.className = "btn" + (b.dataset.sekme === aktifSekme ? " on" : "");
+        d.setAttribute("data-sekme-sec", b.dataset.sekme); d.textContent = b.dataset.etiket;
+        ray.appendChild(d);
+        b.hidden = b.dataset.sekme !== aktifSekme;
+        icerik.appendChild(b);
+      });
+      kap.appendChild(icerik); kap.appendChild(ray);
+      grid.parentNode.insertBefore(kap, grid.nextSibling);
     }
 
     // --- etkileşim
     root.addEventListener("click", function (e) {
+      var sek = e.target.closest("[data-sekme-sec]");
+      if (sek) { aktifSekme = sek.getAttribute("data-sekme-sec"); render(); return; }
       var t = e.target.closest("[data-roll],[data-hp],[data-cond],[data-act]");
       if (!t || !C) return;
       var r = t.getAttribute("data-roll");
@@ -206,7 +229,8 @@
 
   // Zar sonucu kutusu (site ve panel ortak)
   window.ZarKutusu = function (el) {
-    var hist = [];
+    var hist = [], zaman = null;
+    el.addEventListener("click", function () { el.hidden = true; });
     return function (r, kimden) {
       el.querySelector(".ttl").textContent = (kimden ? kimden + " · " : "") + r.baslik;
       var res = el.querySelector(".res"); res.textContent = r.toplam; res.className = "res" + (r.sinif ? " " + r.sinif : "");
@@ -214,6 +238,7 @@
       hist.unshift((kimden ? kimden + ": " : "") + r.baslik + " " + r.toplam); hist = hist.slice(0, 8);
       el.querySelector(".hist").textContent = hist.slice(1).join(" · ");
       el.hidden = false;
+      clearTimeout(zaman); zaman = setTimeout(function () { el.hidden = true; }, 6000);
     };
   };
 })();

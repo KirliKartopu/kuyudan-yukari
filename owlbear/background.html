@@ -30,7 +30,7 @@ OBR.onReady(async () => {
       const W = await OBR.viewport.getWidth(), H = await OBR.viewport.getHeight();
       const id = NS + "/zar-sahne";
       OBR.popover.open({
-        id, url: YOL + "owlbear/zar.html#" + new URLSearchParams({ z: r.zar, t: r.sinif || "normal", s: "0", id }),
+        id, url: YOL + "owlbear/zar.html#" + new URLSearchParams({ z: r.zar, t: r.sinif || "normal", id, kimden: r.kimden || "", baslik: r.baslik || "", toplam: String(r.toplam ?? ""), detay: r.detay || "" }),
         width: Math.min(W, 900), height: Math.min(H, 600),
         anchorReference: "POSITION", anchorPosition: { left: W / 2, top: H / 2 },
         anchorOrigin: { horizontal: "CENTER", vertical: "CENTER" }, transformOrigin: { horizontal: "CENTER", vertical: "CENTER" },
