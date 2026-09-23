@@ -239,7 +239,12 @@ if (!OBR.isAvailable) {
         if (rol !== "GM" && String(id) !== String(benimKarakter)) return; // başkasının karakterine dokunma
         const m = await OBR.room.getMetadata();
         const all = { ...(m[K_DURUM] || {}), [id]: s };
-        await OBR.room.setMetadata({ [K_DURUM]: all });
+        // Owlbear oda verisi 16 KB ile sınırlı: yaklaşınca önce zar günlüğü kısalır, yine sığmazsa uyarı
+        const guncel = { [K_DURUM]: all };
+        const boyut = (x) => new Blob([JSON.stringify({ ...m, ...x })]).size;
+        if (boyut(guncel) > 15000 && (m[K_ZARLAR] || []).length > 8) guncel[K_ZARLAR] = m[K_ZARLAR].slice(0, 8);
+        if (boyut(guncel) > 16000) { OBR.notification.show("Oda verisi dolu: değişiklik kaydedilmedi. GM eski handout'ları silmeli.", "ERROR"); return; }
+        await OBR.room.setMetadata(guncel);
       },
       onChange(cb) { OBR.room.onMetadataChange((m) => { const all = m[K_DURUM] || {}; Object.keys(all).forEach((id) => cb(id, all[id])); }); }
     };

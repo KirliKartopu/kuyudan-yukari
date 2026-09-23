@@ -114,14 +114,76 @@
         (c.notlar && c.notlar.length ? '<p class="feat"><b>Not:</b> ' + c.notlar.map(esc).join(" · ") + "</p>" : "") +
         (c.araclar && c.araclar.length ? '<p class="feat"><b>Tool:</b> ' + c.araclar.map(function (a) { return '<span data-ack="esya|' + esc(a) + '">' + esc(a) + "</span>"; }).join(", ") + "</p>" : "") +
         (c.zirh ? '<p class="feat"><b>Zırh:</b> ' + (c.zirh.length ? c.zirh.map(esc).join(", ") : "yok") + " · <b>Silah:</b> " + c.silah.map(esc).join(", ") + "</p>" : "") + "</section>";
-      var p = c.para || {};
-      h += '<section class="box" data-sekme="env" data-etiket="Envanter"><h2>Envanter</h2><p class="feat num">' + ["pp", "gp", "ep", "sp", "cp"].filter(function (k) { return p[k]; }).map(function (k) { return p[k] + " " + k; }).join(" · ") + "</p>" +
-        c.envanter.map(function (i) { return '<p class="feat" data-ack="esya|' + esc(i.ad) + "|" + esc(i.tip || "") + '">' + (i.adet > 1 ? i.adet + "× " : "") + esc(i.ad) + (i.kusanili ? " <small>(kuşanılı)</small>" : "") + "</p>"; }).join("") + "</section>";
+      h += envanterHTML();
       h += "</div>" + (c.yerel ? '<p class="foot">Kuyudan Yukarı karakter üreticisinde yapıldı · ' + esc(c.guncellendi) + ' · ' + (o.duzenle ? '<button class="btn" data-act="duzenle">Düzenle / seviye atla</button>' : '<a href="' + base + 'olustur/">Üreticide düzenle / seviye atla</a>') + '</p>'
         : '<p class="foot">Beyond\'dan son çekim: ' + esc(c.guncellendi) + ' · <a href="' + esc(c.beyond_url) + '" target="_blank" rel="noopener">D&amp;D Beyond\'da aç</a></p>');
       root.innerHTML = h;
       if (o.sekmeli) sekmele();
     }
+    // --- envanter: başlangıç listesi karakterden gelir; ilk değişiklikte kopyası durum'a (S.env, S.para) alınır
+    var ESYA = null, esyaYukleniyor = null;
+    var PARA = ["pp", "gp", "ep", "sp", "cp"];
+    // S.env oda verisinde yer kaplamasın diye kısa: [[ad, adet, kuşanılı 0/1], …]; tür orijinal listeden ya da 5e.tools'tan bulunur
+    function tipBul(ad) {
+      var o3 = C.envanter.filter(function (i) { return i.ad === ad; })[0];
+      if (o3 && o3.tip) return o3.tip;
+      var x = ESYA && ESYA[ad.toLowerCase()];
+      return x ? x.tip : "";
+    }
+    function envanter() {
+      if (S.env) return S.env.map(function (a) { return { ad: a[0], adet: a[1], kusanili: !!a[2], tip: tipBul(a[0]) }; });
+      return C.envanter.map(function (i) { return { ad: i.ad, adet: i.adet || 1, tip: i.tip || "", kusanili: !!i.kusanili }; });
+    }
+    function para() { // S.para kısa: [pp, gp, ep, sp, cp]
+      var o2 = {}, p = C.para || {};
+      PARA.forEach(function (k, i) { o2[k] = S.para ? +S.para[i] || 0 : +p[k] || 0; });
+      return o2;
+    }
+    function kusanilir(i) { var x = ESYA && ESYA[i.ad.toLowerCase()]; return /Weapon|Armor|Shield/.test(i.tip || "") || !!(x && x.kusanilir); }
+    function esyaYukle() { // 5e.tools eşya listesi (arama, ağırlık); ilk ihtiyaçta bir kez
+      if (!esyaYukleniyor) esyaYukleniyor = import(new URL(base + "assets/aciklama.js", location.href).href).then(function (m) {
+        return Promise.all([m.cek("items-base.json"), m.cek("items.json")]).then(function (r) {
+          var TIP = { M: "Melee Weapon", R: "Ranged Weapon", LA: "Light Armor", MA: "Medium Armor", HA: "Heavy Armor", S: "Shield", A: "Ammunition", SCF: "Spellcasting Focus", AT: "Artisan's Tools", INS: "Instrument", GS: "Gaming Set", T: "Tool", G: "Adventuring Gear", P: "Potion", SC: "Scroll", RG: "Ring", WD: "Wand", RD: "Rod", ST: "Staff" };
+          var ONC = { XPHB: 3, XDMG: 3, PHB: 1, DMG: 1 }, idx = {};
+          r[0].baseitem.concat(r[1].item).forEach(function (x) {
+            var k = x.name.toLowerCase(), eski = idx[k], puan = ONC[x.source] || 0;
+            if (eski && eski.puan >= puan) return;
+            var t = String(x.type || "").split("|")[0];
+            idx[k] = { ad: x.name, puan: puan, tip: TIP[t] || (x.wondrous ? "Wondrous Item" : ""), agirlik: +x.weight || 0, kusanilir: !!(x.weapon || x.armor || t === "S") };
+          });
+          ESYA = idx; return idx;
+        });
+      });
+      return esyaYukleniyor;
+    }
+    function envanterHTML() {
+      var l = envanter(), p = para(), yuk = 0, bilinmeyen = false;
+      if (ESYA) l.forEach(function (i) { var x = ESYA[i.ad.toLowerCase()]; if (x) yuk += x.agirlik * i.adet; else bilinmeyen = true; });
+      var h = '<section class="box" data-sekme="env" data-etiket="Envanter"><h2>Envanter</h2>';
+      h += '<div class="para">' + PARA.map(function (k) { return '<label>' + k + '<input type="number" min="0" inputmode="numeric" data-para="' + k + '" value="' + p[k] + '"></label>'; }).join("") + "</div>";
+      h += '<ul class="env">' + l.map(function (i, n) {
+        return '<li><span class="adet"><button class="btn" data-env="-" data-i="' + n + '" aria-label="Azalt">−</button><b class="num">' + i.adet + '</b><button class="btn" data-env="+" data-i="' + n + '" aria-label="Artır">+</button></span>' +
+          '<span class="ad" data-ack="esya|' + esc(i.ad) + "|" + esc(i.tip || "") + '">' + esc(i.ad) + (i.tip ? " <small>" + esc(i.tip) + "</small>" : "") + "</span>" +
+          (kusanilir(i) ? '<button class="btn' + (i.kusanili ? " on" : "") + '" data-env="k" data-i="' + n + '" title="Kuşan / çıkar">' + (i.kusanili ? "Kuşanılı" : "Kuşan") + "</button>" : "<span></span>") +
+          '<button class="btn sil" data-env="x" data-i="' + n + '" aria-label="' + esc(i.ad) + ' sil">✕</button></li>';
+      }).join("") + "</ul>";
+      h += '<div class="env-ekle"><label for="env-ara" hidden>Eşya ekle</label><input id="env-ara" list="env-liste" placeholder="Eşya ekle: Rope, Potion of Healing…" autocomplete="off">' +
+        '<input id="env-adet" type="number" min="1" value="1" aria-label="Adet"><button class="btn" data-env="ekle">Ekle</button><datalist id="env-liste"></datalist></div>';
+      var str = C.yetenekler.str.puan;
+      h += '<p class="feat"><small>' + (ESYA ? (yuk > str * 15 ? '<b style="color:var(--warn)">' : "<span>") + "Yük: " + Math.round(yuk * 10) / 10 + " / " + str * 15 + " lb" + (yuk > str * 15 ? " · taşıma kapasitesi aşıldı</b>" : "</span>") + (bilinmeyen ? " (listede olmayan eşyalar hariç)" : "") : "Yük hesabı için eşya ekleme kutusuna tıkla") +
+        (S.env || S.para ? ' · <a href="#" data-env="sifirla">Başlangıç envanterine dön</a>' : "") + "</small></p></section>";
+      return h;
+    }
+    function envDegis(fn) {
+      var l = envanter(); fn(l);
+      S.env = l.filter(function (i) { return i.adet > 0; }).map(function (i) { return [i.ad, i.adet, i.kusanili ? 1 : 0]; });
+      persist(); render();
+    }
+    function listeDoldur(idx) {
+      var dl = root.querySelector("#env-liste");
+      if (dl && !dl.children.length) dl.innerHTML = Object.keys(idx).map(function (k) { return '<option value="' + esc(idx[k].ad) + '">'; }).join("");
+    }
+
     // Dar panel: HP ve Savaş üstte kalır, diğer bölümler sağdaki dikey sekmelerle açılır
     function sekmele() {
       var grid = root.querySelector(".grid");
@@ -146,7 +208,27 @@
     // --- etkileşim
     root.addEventListener("click", function (e) {
       var sek = e.target.closest("[data-sekme-sec]");
-      if (sek) { aktifSekme = sek.getAttribute("data-sekme-sec"); render(); return; }
+      if (sek) { aktifSekme = sek.getAttribute("data-sekme-sec"); render(); if (aktifSekme === "env") esyaHazirla(); return; }
+      var ev = e.target.closest("[data-env]");
+      if (ev && C) {
+        e.preventDefault();
+        var tur = ev.getAttribute("data-env"), n = +ev.getAttribute("data-i");
+        if (tur === "+") envDegis(function (l) { l[n].adet++; });
+        else if (tur === "-") envDegis(function (l) { l[n].adet--; });
+        else if (tur === "x") envDegis(function (l) { l[n].adet = 0; });
+        else if (tur === "k") envDegis(function (l) { l[n].kusanili = !l[n].kusanili; });
+        else if (tur === "sifirla") { if (confirm("Envanter ve para, karakterin başlangıç hâline dönsün mü?")) { delete S.env; delete S.para; persist(); render(); } }
+        else if (tur === "ekle") {
+          var ad = root.querySelector("#env-ara").value.trim(), adet = Math.max(1, parseInt(root.querySelector("#env-adet").value, 10) || 1);
+          if (!ad) return;
+          var x = ESYA && ESYA[ad.toLowerCase()];
+          envDegis(function (l) {
+            var var_ = l.filter(function (i) { return i.ad.toLowerCase() === ad.toLowerCase(); })[0];
+            if (var_) var_.adet += adet; else l.push({ ad: x ? x.ad : ad, adet: adet, tip: x ? x.tip : "", kusanili: false });
+          });
+        }
+        return;
+      }
       var t = e.target.closest("[data-roll],[data-hp],[data-cond],[data-act]");
       if (!t || !C) return;
       var r = t.getAttribute("data-roll");
@@ -186,11 +268,24 @@
     });
     root.addEventListener("change", function (e) {
       var t = e.target;
+      if (t.matches("[data-para]")) { var pp = para(); pp[t.getAttribute("data-para")] = Math.max(0, parseInt(t.value, 10) || 0); S.para = PARA.map(function (k) { return pp[k]; }); persist(); render(); return; }
       if (!t.matches("[data-slot]")) return;
       var lv = t.getAttribute("data-slot"), k = +t.getAttribute("data-k");
       S.slots[lv] = t.checked ? k + 1 : k;
       persist(); render();
     });
+    // 5e.tools eşya listesi (öneriler, tür, yük hesabı): Envanter açılınca ya da kutuya dokununca bir kez yüklenir
+    function esyaHazirla() {
+      if (ESYA) { listeDoldur(ESYA); return; }
+      esyaYukle().then(function (idx) {
+        var ara = root.querySelector("#env-ara"), deger = ara ? ara.value : "", odak = document.activeElement === ara;
+        render();
+        var yeni = root.querySelector("#env-ara");
+        if (yeni) { yeni.value = deger; listeDoldur(idx); if (odak) yeni.focus(); }
+      }).catch(function () { /* çevrimdışı: serbest metinle eklenir */ });
+    }
+    root.addEventListener("focusin", function (e) { if (e.target.id === "env-ara") esyaHazirla(); });
+    root.addEventListener("pointerdown", function (e) { if (e.target.id === "env-ara") esyaHazirla(); });
     if (o.mode) o.mode.addEventListener("click", function (e) {
       var b = e.target.closest("[data-mode]"); if (!b) return;
       mode = b.getAttribute("data-mode");
@@ -199,7 +294,7 @@
     // başka bir oyuncu/sekme durumu değiştirdiyse
     store.onChange(function (id, durum) {
       if (C && String(id) === String(C.id) && durum && JSON.stringify(durum) !== JSON.stringify(S)) {
-        var focused = document.activeElement && document.activeElement.id === "hpv";
+        var ae = document.activeElement, focused = ae && (ae.id === "hpv" || ae.id === "env-ara" || ae.id === "env-adet" || ae.hasAttribute("data-para"));
         S = durum; if (!focused) render();
       }
     });

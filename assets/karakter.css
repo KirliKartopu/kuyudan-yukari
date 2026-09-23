@@ -77,3 +77,19 @@
   .ray{display:flex;flex-direction:column;gap:4px;position:sticky;top:56px}
   .ray .btn{writing-mode:vertical-rl;transform:rotate(180deg);padding:10px 5px;font-size:13px;letter-spacing:.02em;white-space:nowrap}
   .log{cursor:pointer}
+
+  /* Envanter */
+  .para{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-bottom:8px}
+  .para label{display:flex;flex-direction:column;font-size:11px;color:var(--muted);text-transform:uppercase;font-family:var(--mono)}
+  .para input{font:inherit;font-family:var(--mono);font-size:15px;padding:3px 5px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink);min-width:0;width:100%}
+  ul.env{list-style:none;margin:0;padding:0}
+  ul.env li{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--line);max-width:none}
+  ul.env .adet{display:flex;align-items:center;gap:3px}
+  ul.env .adet b{min-width:1.6em;text-align:center}
+  ul.env .btn{padding:2px 7px;font-size:13px}
+  ul.env .ad{font-size:14.5px;overflow-wrap:anywhere} ul.env .ad small{color:var(--muted);font-size:12px}
+  ul.env .sil{color:var(--warn)}
+  .env-ekle{display:flex;gap:6px;margin-top:8px}
+  .env-ekle #env-ara{flex:1;min-width:0}
+  .env-ekle input{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink)}
+  .env-ekle #env-adet{width:4em}
