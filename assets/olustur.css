@@ -75,3 +75,16 @@ select.sec,input.sec{font:inherit;font-size:15px;padding:6px 8px;border:1px soli
   .ol-adimlar button{white-space:nowrap;padding:6px 8px;font-size:14px}
   .ol-ozet{position:static}
 }
+
+/* özet: birincil ability, bloklar */
+.ol-ozet .ab6 .ana{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.ol-ozet .kucuk-not{font-size:12px;color:var(--muted);margin:0 0 6px}
+.ol-ozet .blok{margin:6px 0 0;font-size:13.5px;line-height:1.45}
+.ol-ozet .blok b{color:var(--brass);font-weight:700}
+.abtablo .box.ana{border-color:var(--accent)}
+.detay ol{margin:6px 0;padding-left:20px}
+.ol-ozet{max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width: 1000px){ .ol-ozet{max-height:none} }
+.kart .sv{font-family:var(--mono);font-size:11.5px;color:var(--brass);font-weight:500}
+label.dunya{display:flex;gap:8px;align-items:flex-start;cursor:pointer;margin:6px 0 10px}
+label.dunya input{margin-top:4px;flex:none}

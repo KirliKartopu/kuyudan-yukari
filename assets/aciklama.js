@@ -117,8 +117,9 @@ async function goster(el) {
 }
 function gizle() { clearTimeout(zaman); hedef = null; tip.hidden = true; }
 document.addEventListener("mouseover", (e) => {
+  if (tip.contains(e.target)) { clearTimeout(zaman); return; } // balonun içindeki kelimeler balonu değiştirmesin/kapatmasın
   const el = e.target.closest && e.target.closest("[data-ack]");
-  if (!el) { if (hedef && !tip.contains(e.target)) { clearTimeout(zaman); zaman = setTimeout(gizle, 150); } return; }
+  if (!el) { if (hedef) { clearTimeout(zaman); zaman = setTimeout(gizle, 150); } return; }
   if (el === hedef) return;
   clearTimeout(zaman); zaman = setTimeout(() => goster(el), 280);
 });

@@ -55,7 +55,7 @@ function eksikler() {
 function ciz() {
   temelHesapla();
   sorular = S ? K.secimler(Y, S) : Y.background || Y.tur ? K.secimler(Y, null) : [];
-  C = S && Y.background && Y.tur ? K.hesapla(Y, S) : null;
+  C = S ? K.hesapla(Y, S) : null; // background/species seçilmemiş olsa da hesapla: özet ve son puanlar hemen görünsün
   const eks = eksikler();
   adimlarEl.innerHTML = ADIMLAR.filter(([k]) => k !== "buyu" || sorular.some((q) => adimOf(q) === "buyu")).map(([k, ad], i) =>
     `<button type="button" data-git="${k}" class="${k === adim ? "on" : ""} ${eks[k] ? "" : "ok"}"><span class="no">${eks[k] ? i + 1 : "✓"}</span>${ad}${eks[k] ? `<span class="eks">${eks[k].length}</span>` : ""}</button>`).join("");
@@ -78,13 +78,26 @@ function ozetCiz(eks) {
   let h = `<h3>${esc(Y.ad || "İsimsiz kahraman")}</h3><p class="alt">${esc([Y.tur && Y.tur.split("|")[0], Y.sinif && Y.sinif + " " + Y.seviye + (sec("subclass")[0] ? " (" + sec("subclass")[0] + ")" : ""), Y.background && Y.background.split("|")[0]].filter(Boolean).join(" · ") || "Henüz seçim yok")}</p>`;
   if (C) {
     h += `<div class="say"><div><b>${C.hp_max}</b><small>HP</small></div><div><b>${C.ac}</b><small>AC</small></div><div><b>${sa(C.initiative)}</b><small>Init</small></div><div><b>${C.hiz}</b><small>Speed</small></div></div>`;
-    h += `<div class="ab6">${K.AB.map((a) => `<div>${a.toUpperCase()}<b>${C.yetenekler[a].puan}</b>${sa(C.yetenekler[a].mod)}</div>`).join("")}</div>`;
+    const ana = anaAbility();
+    h += `<div class="ab6">${K.AB.map((a) => `<div class="${ana.has(a) ? "ana" : ""}" title="${ana.has(a) ? "Birincil ability" : ""}">${a.toUpperCase()}<b>${C.yetenekler[a].puan}</b>${sa(C.yetenekler[a].mod)}</div>`).join("")}</div>`;
+    if (ana.size) h += `<p class="kucuk-not">Çerçeveli: ${esc(Y.sinif)} için birincil ability</p>`;
+    const blok = (bas, icerik) => (icerik ? `<p class="blok"><b>${bas}</b> ${icerik}</p>` : "");
+    h += blok("Save:", K.AB.filter((a) => C.saves[a].prof).map((a) => `${a.toUpperCase()} ${sa(C.saves[a].bonus)}`).join(", "));
+    h += blok("Skill:", C.skills.filter((s) => s.prof).map((s) => `<span data-ack="skill|${esc(s.ad)}">${esc(s.ad)}${s.prof === 2 ? "★" : ""}</span> ${sa(s.bonus)}`).join(", "));
+    h += blok("Saldırı:", C.saldirilar.filter((a) => a.kusanili).slice(0, 3).map((a) => `${esc(a.ad)} ${sa(a.isabet)} (${esc(a.hasar)})`).join(" · "));
+    if (C.buyu) h += blok("Büyü:", `DC ${C.buyu.save_dc} · atak ${sa(C.buyu.isabet)}${C.buyu.slotlar.some((x) => x) ? " · slot " + C.buyu.slotlar.map((n, i) => (n ? `${n}×Sv${i + 1}` : "")).filter(Boolean).join(" ") : ""} · ${C.buyu.buyuler.length} büyü`);
+    h += blok("Feat:", C.featler.map((f) => `<span data-ack="feat|${esc(f)}">${esc(f)}</span>`).join(", "));
+    h += blok("Özellikler:", C.ozellikler.map((o) => `<span data-ack="ozellik|${esc(o.ad)}|${esc(o.kaynak)}">${esc(o.ad)}</span>`).join(", "));
+    h += blok("Diller:", C.diller.map(esc).join(", "));
+    h += blok("Duyu/Direnç:", [...Object.entries(C.duyular).map(([k, v]) => `${esc(k)} ${v} ft`), ...(C.direncler || []).map((d) => esc(d) + " resistance")].join(", "));
   }
   const liste = Object.entries(eks).flatMap(([a, l]) => l.map((m) => [a, m]));
   h += liste.length ? `<p style="margin:8px 0 0"><b>Eksik ${liste.length} seçim</b></p><ul>${liste.slice(0, 12).map(([a, m]) => `<li><a href="#" data-git="${a}">${esc(m)}</a></li>`).join("")}${liste.length > 12 ? "<li>…</li>" : ""}</ul>` : `<p class="tamam">Karakter hazır ✓</p>`;
   ozetEl.innerHTML = h;
 }
 
+// class'ın birincil ability'leri (5e.tools primaryAbility: [{dex:true}] ya da seçenekli)
+function anaAbility() { const s = new Set(); for (const o of (S && S.c.primaryAbility) || []) Object.keys(o).forEach((a) => o[a] === true && s.add(a)); return s; }
 // seçim yapıldıysa uzun listeyi daralt: sadece seçili kart + "Değiştir"
 function kartListesi(adimK, liste, seciliMi, kartHTML) {
   const secili = liste.filter(seciliMi);
@@ -101,9 +114,13 @@ function sinifAdim() {
     const q = sorular.find((x) => x.sub);
     if (q) {
       h += `<div class="soru ${q.tamam ? "" : "eksik"}"><h3>Subclass <span class="say">${q.tamam ? "✓" : "seçilmedi"}</span></h3><p class="ack">${esc(q.aciklama)}</p><div class="secenek-kart">` +
-        S.subs.map((s) => { const f = S.sfeat.find((x) => x.subclassShortName === s.shortName && x.subclassSource === s.source && x.name === s.shortName); const ilk = f ? f.entries.filter((e) => typeof e === "string").slice(0, 2) : []; return `<button type="button" class="kart ${sec("subclass")[0] === s.name ? "on" : ""}" data-q="subclass" data-d="${esc(s.name)}"><b>${esc(s.name)}</b>${kaynakEtiket(s.source)}${girdi(ilk)}</button>`; }).join("") + "</div></div>";
+        S.subs.filter((s) => Y.dunyalar || !["EFA", "LFL"].includes(s.source)).map((s) => {
+          const f = K.altBaslik(S, s), ilk = f ? f.entries.filter((e) => typeof e === "string").slice(0, 2) : [];
+          const l = K.altListe(S, s).map(([lv, adlar]) => `<strong class="sv">Sv${lv}</strong> ${adlar.map(esc).join(", ")}`).join(" · ");
+          return `<button type="button" class="kart ${sec("subclass")[0] === s.name ? "on" : ""}" data-q="subclass" data-d="${esc(s.name)}"><b>${esc(s.name)}</b>${kaynakEtiket(s.source)}${girdi(ilk)}${l ? `<span class="kucuk">${l}</span>` : ""}</button>`;
+        }).join("") + "</div></div>";
       const sub = K.altSinif(S, Y);
-      if (sub) { const f = S.sfeat.find((x) => x.subclassShortName === sub.shortName && x.subclassSource === sub.source && x.name === sub.shortName); if (f) h += `<details class="acil detay"><summary>${esc(sub.name)}: tüm metin</summary>${girdi(f.entries)}</details>`; }
+      if (sub) { const f = K.altBaslik(S, sub); if (f) h += `<details class="acil detay"><summary>${esc(sub.name)}: tüm metin</summary>${girdi(f.entries)}</details>`; }
     } else if (Y.seviye < 3) h += `<p class="not">Subclass 3. seviyede seçilir.</p>`;
   }
   return h;
@@ -124,7 +141,7 @@ function bgAdim() {
 function bgListesi() { return K.liste(Y, "background"); }
 const kaynakEtiket = (src) => (K.KAYNAK_AD[src] ? `<span class="etk">${esc(K.KAYNAK_AD[src])}</span>` : "");
 function dunyaDugmesi() {
-  return `<label class="satir not" style="cursor:pointer"><input type="checkbox" data-alan="dunyalar" ${Y.dunyalar ? "checked" : ""}> Diğer dünyaların içeriğini de göster (Eberron, Lorwyn: Artificer, Warforged, Kithkin…). Bizim macera Faerûn'da; DM'e sormadan seçme.</label>`;
+  return `<label class="dunya not"><input type="checkbox" data-alan="dunyalar" ${Y.dunyalar ? "checked" : ""}><span>Diğer dünyaların içeriğini de göster (Eberron, Lorwyn: Artificer, Warforged, Kithkin…). Bizim macera Faerûn'da; DM'e sormadan seçme.</span></label>`;
 }
 // --- adım: species
 function turAdim() {
@@ -152,11 +169,13 @@ function yetenekAdim() {
     if (Y.yontem === "standart" || Y.yontem === "zar") giris = `<select class="sec" data-atama="${a}"><option value="">—</option>${dizi.map((v, i) => `<option value="${i}" ${at[a] === i ? "selected" : ""} ${Object.entries(at).some(([b, j]) => b !== a && j === i) ? "disabled" : ""}>${v}</option>`).join("")}</select>`;
     else if (Y.yontem === "puan") giris = `<button class="btn" data-puan="${a}" data-yon="-1" type="button" aria-label="${a} azalt">−</button> <b class="num">${Y.temel[a]}</b> <button class="btn" data-puan="${a}" data-yon="1" type="button" aria-label="${a} artır">+</button>`;
     else giris = `<input class="sec" type="number" min="3" max="18" value="${Y.temel[a]}" data-elle="${a}" style="width:70px">`;
-    const son = C ? C.yetenekler[a] : null;
-    return `<div class="box"><b>${K.AB_AD[a]}</b><div class="satir">${giris}${son ? `<span class="not">→ <span class="top">${son.puan}</span> (${son.mod >= 0 ? "+" : ""}${son.mod})</span>` : ""}</div><p>${AB_TR[a]}</p></div>`;
-  }).join("")}</div><p class="not">Sağdaki son puan, background artışların ve feat'lerle birlikte.</p>`;
+    const son = C ? C.yetenekler[a] : null, bgA = bgArtis(a), diger = son ? son.puan - Y.temel[a] - bgA : 0;
+    const acik = [bgA ? `+${bgA} ${esc((Y.background || "").split("|")[0])}` : "", diger ? `${diger > 0 ? "+" : ""}${diger} feat/diğer` : ""].filter(Boolean).join(", ");
+    return `<div class="box ${anaAbility().has(a) ? "ana" : ""}"><b>${K.AB_AD[a]}</b>${anaAbility().has(a) ? ' <small class="not">birincil</small>' : ""}<div class="satir">${giris}${son ? `<span class="not">→ <span class="top">${son.puan}</span> (${son.mod >= 0 ? "+" : ""}${son.mod})</span>` : ""}</div>${acik ? `<p class="not">${acik}</p>` : ""}<p>${AB_TR[a]}</p></div>`;
+  }).join("")}</div><p class="not">Oktan sonraki sayı son puan: background artışın ve feat'lerle birlikte. Background'da ability artışını henüz seçmediysen orada seçince buraya eklenir.</p>`;
   return h;
 }
+function bgArtis(a) { const v = sec("bg:ab"), bg = K.bulBg(Y); if (v[0] === "21") return (v[1] === a ? 2 : 0) + (v[2] === a ? 1 : 0); if (v[0] === "111" && bg) return bg.ability[0].choose.weighted.from.includes(a) ? 1 : 0; return 0; }
 // --- adım: sorular (class seçimleri, büyüler)
 function soruAdim() {
   const l = sorular.filter((q) => adimOf(q) === adim && !q.sub);
@@ -181,8 +200,13 @@ function kimlikAdim() {
   const eks = Object.values(eksikler()).flat();
   if (OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="odaya" type="button" ${C ? "" : "disabled"}>Odaya kaydet</button><span class="not" id="oda-durum">Kaydedince panelde karakter sayfan açılır; seviye atlarken sayfanın altındaki <b>Düzenle</b> ile buraya dönersin.</span></div>`;
   h += `<div class="satir"><button class="btn ${OBR_MOD ? "" : "birincil"}" data-act="indir" type="button" ${C ? "" : "disabled"}>${OBR_MOD ? "Yedek dosya indir" : "Dosyayı indir"}</button><button class="btn" data-act="kopyala" type="button" ${C ? "" : "disabled"}>Panoya kopyala</button>
-    <span class="not">${eks.length ? "Eksik seçimler var (" + eks.length + "); yine de kaydedebilirsin, sonra tamamlarsın." : "Her şey tamam. Dosyayı DM'e gönder."}</span></div>`;
-  h += `<p class="not">Dosya bu karakterin tüm seçimlerini taşır. Seviye atlayınca bu sayfada <b>Dosya aç</b> ile yükle, seviyeyi artır, yeni seçimleri yap ve tekrar indir.</p>`;
+    <span class="not">${eks.length ? "Eksik seçimler var (" + eks.length + "); yine de kaydedebilirsin, sonra tamamlarsın." : "Her şey tamam."}</span></div>`;
+  if (!OBR_MOD) h += `<div class="detay"><b>Bu karakteri oyuna nasıl alırım?</b>
+    <p>Bu sayfa sitede açık; buradan yapılan karakter doğrudan oyuna girmez, önce dosya olarak indirilir. Oyuna almak için:</p>
+    <ol><li>Owlbear'da odaya gir, <b>Kuyudan Yukarı</b> panelini aç.</li><li><b>Yeni karakter yarat</b>'a bas.</li>
+    <li>Açılan pencerenin üstündeki <b>Dosya aç</b> ile indirdiğin dosyayı seç.</li><li>Son adımda <b>Odaya kaydet</b>'e bas. Karakter sana bağlanır.</li></ol>
+    <p>Kısa yol: karakteri baştan Owlbear içinde, panelden yaratırsan dosyaya hiç gerek kalmaz.</p></div>`;
+  else h += `<p class="not">Yedek dosya isteğe bağlı: karakter odada saklanıyor.</p>`;
   h += `<h2 style="margin-top:24px">Önizleme</h2><div class="sheet" style="padding:0"><div id="onizleme"></div></div>`;
   return h;
 }

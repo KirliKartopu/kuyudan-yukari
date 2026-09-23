@@ -76,5 +76,5 @@ export const ADIM_TR = {
   sec: "Class'ının sana sunduğu seçimler: skill'ler, ustalıklar, özel teknikler. Fareyi bir seçeneğin üstüne getirince açıklaması çıkar.",
   buyu: "Cantrip'ler bedavadır, istediğin kadar yapılır. Diğer büyüler spell slot harcar ve long rest'te yenilenir.",
   ekip: "Başlangıç eşyaların. Hazır paketi almak en kolayı. Sadece altın alırsan eşyaları DM ile birlikte satın alırsın.",
-  kimlik: "Karakterine bir ad ver ve dosyayı indir. Dosyayı DM'e gönder; siteye ve Owlbear'a o ekler. Seviye atlayınca aynı dosyayı buradan açıp devam edersin.",
+  kimlik: "Karakterine bir ad ver. Owlbear'da oynuyoruz: karakteri oyuna almanın yolu aşağıda.",
 };

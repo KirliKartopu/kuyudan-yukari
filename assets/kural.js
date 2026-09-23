@@ -165,6 +165,20 @@ export function altSinif(S, Y) {
   if (!ad || Y.seviye < altSinifSeviye(S)) return null;
   return S.subs.find((s) => s.name === ad);
 }
+// subclass'ın giriş metni (ilk subclassFeatures referansı; adı kısa adla aynı olmayabilir: "Life Domain" / "Life")
+export function altBaslik(S, sub) { return sub && sub.subclassFeatures && sub.subclassFeatures[0] ? altOzellik(S, sub.subclassFeatures[0]) : null; }
+// subclass'ın bütün seviyelerde verdiği özelliklerin adları: [[seviye, [ad..]], ..]
+export function altListe(S, sub) {
+  const out = [];
+  for (const s of (sub && sub.subclassFeatures) || []) {
+    const f = altOzellik(S, s); if (!f) continue;
+    const adlar = [];
+    tara(f.entries, (tur, e) => { if (tur === "ref" && e.subclassFeature) { const g = altOzellik(S, e.subclassFeature); if (g) adlar.push(g.name); } });
+    if (!adlar.length && f.name !== sub.shortName && f.name !== sub.name) adlar.push(f.name);
+    if (adlar.length) out.push([f.level, adlar]);
+  }
+  return out;
+}
 export function ozellikler(S, Y) { // seviyeye kadar kazanılan class ve subclass özellikleri
   const L = Y.seviye, out = [];
   for (const r of S.c.classFeatures) {
@@ -391,7 +405,8 @@ export function secimler(Y, S) {
   // --- Species
   const tur = B.tur;
   if (tur) {
-    if (tur._versions && tur._versions.length && tur._versions[0].name) ekle("tur", { k: "tur:surum", tur: "tek", baslik: tur.name + " soyu", aciklama: "Bu species'in alt kolları farklı yetenekler verir.", adet: 1, secenekler: tur._versions.map((v) => ({ d: v.name.split("; ")[1], ad: v.name.split("; ")[1] })) });
+    if (tur._versions && tur._versions.length && tur._versions[0].name) ekle("tur", { k: "tur:surum", tur: "tek", baslik: tur.name + " soyu", aciklama: "Bu species'in alt kolları farklı yetenekler verir.", adet: 1,
+      secenekler: tur._versions.map((v) => ({ d: v.name.split("; ")[1], ad: v.name.split("; ")[1], entries: [].concat((v._mod && v._mod.entries) || []).flatMap((m) => [].concat(m.items || [])).flatMap((it) => it.entries || []) })) });
     if (tur.name === "Dragonborn") ekle("tur", { k: "tur:ejderha", tur: "tek", baslik: "Draconic Ancestry", aciklama: "Atan ejderha türü: Breath Weapon'ının hasar türünü ve dayanıklı olduğun hasarı belirler.", adet: 1, secenekler: EJDERHA.map(([r, h]) => ({ d: r, ad: r + " Dragon", alt: h })) });
     if ((tur.size || []).length > 1) ekle("tur", { k: "tur:boy", tur: "tek", baslik: "Boy", adet: 1, secenekler: tur.size.map((s) => ({ d: s, ad: s === "S" ? "Small" : "Medium" })) });
     for (const sp of B.turV.skillProficiencies || []) {
@@ -488,6 +503,18 @@ export function secimler(Y, S) {
   // dinamik: expertise seçenekleri proficient skill'lerden
   const prof = profSkill(B, null);
   for (const q of out) if (q.dinamik === "expertise") q.secenekler = [...prof].filter((x) => !q.scholar || SCHOLAR.includes(x)).sort().map(skillSecenek);
+  // aynı dil iki kez seçilemez: bildiğin (Common, Thieves' Cant, Druidic, feat'ten gelen) ve başka soruda seçtiğin diller kapalı
+  const sabitDil = new Set(["Common"]);
+  if (S && S.c.name === "Rogue") sabitDil.add("Thieves' Cant");
+  if (S && S.c.name === "Druid") sabitDil.add("Druidic");
+  for (const x of B.featler) for (const lp of x.f.languageProficiencies || []) Object.keys(lp).forEach((q) => lp[q] === true && sabitDil.add(buyuk(q)));
+  tumEtki(B, "dil").forEach((x) => x.e.dil.forEach((d) => sabitDil.add(d)));
+  const dilSoru = out.filter((q) => q.k === "dil" || /:dil$/.test(q.k));
+  for (const q of dilSoru) {
+    const baska = new Set(sabitDil);
+    for (const r of dilSoru) if (r !== q) sec(r.k).forEach((x) => baska.add(x));
+    for (const o of q.secenekler) if (baska.has(o.d)) o.devre = sabitDil.has(o.d) ? "bu dili zaten biliyorsun" : "başka bir seçimde zaten seçtin";
+  }
   // aynı skill iki kaynaktan alınamaz
   const sabitSkill = profSabit(B);
   const skillSoru = out.filter((q) => !q.dinamik && q.secenekler.some((o) => SKILLS[o.d]));
@@ -604,7 +631,7 @@ export function hesapla(Y, S, ek) {
     if (/^(Ability Score Improvement|Epic Boon|Subclass Feature)$/.test(f.name) || / (Subclass|Options)$/.test(f.name)) continue;
     if (secenekAdlari.has(f.name) && !secilenler.has(f.name)) continue;
     tara(f.entries, (t, e) => t === "esya" && esyaStat.push(e));
-    if (baslik && sub && f.name === sub.shortName) continue;
+    if (baslik) continue; // subclass'ın giriş metni ayrı bir özellik değil
     ozel.push({ ad: f.name, kaynak: c.name, seviye: f.level });
   }
   secilenler.forEach((ad) => { if (!ozel.some((o) => o.ad === ad)) ozel.push({ ad, kaynak: c.name, seviye: 1 }); });
