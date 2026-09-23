@@ -174,8 +174,10 @@ if (!OBR.isAvailable) {
     // Sesi panel çalar: tarayıcı, tıklanmış pencerede sese izin verir
     const ses = ZarSesi(new URL("../assets/", location.href).href);
     const calinan = new Set();
-    const sesCal = (r) => { if (!zs.checked || !r || !r.zar || calinan.has(r.id)) return; calinan.add(r.id); ses.cal(r.zar, r.sinif); };
+    // 3D açıkken ses, zar penceresinin fizik çarpışmalarından gelir; kapalıyken yaklaşık dizi
+    const sesCal = (r) => { if (!zs.checked || z3.checked || !r || !r.zar || calinan.has(r.id)) return; calinan.add(r.id); ses.cal(r.zar, r.sinif); };
     OBR.broadcast.onMessage(KANAL, ({ data }) => sesCal(data));
+    OBR.broadcast.onMessage(NS + "/ses", ({ data }) => { if (zs.checked && data) ses.calDosya(data.d, data.v); });
     document.getElementById("sestest").addEventListener("click", async () => {
       document.getElementById("sesdurum").textContent = await ses.test();
     });
