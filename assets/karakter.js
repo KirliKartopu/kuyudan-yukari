@@ -177,7 +177,17 @@
     function envDegis(fn) {
       var l = envanter(); fn(l);
       S.env = l.filter(function (i) { return i.adet > 0; }).map(function (i) { return [i.ad, i.adet, i.kusanili ? 1 : 0]; });
-      persist(); render();
+      persist(); render(); yenidenHesapla();
+    }
+    // üreticide yapılmış karakterlerde kuşanma AC'yi ve saldırıları değiştirir: sayfa yeniden hesaplanır
+    var sonKusanma = null;
+    function yenidenHesapla() {
+      if (!C || !o.yerel || !o.yerel.var(C.id)) return;
+      var imza = JSON.stringify((S.env || []).map(function (e) { return [e[0], e[2]]; }));
+      if (imza === sonKusanma) return;
+      sonKusanma = imza;
+      var id = C.id;
+      o.yerel.ac(id, S.env || null).then(function (c) { if (C && String(C.id) === String(id)) { C = c; render(); } });
     }
     function listeDoldur(idx) {
       var dl = root.querySelector("#env-liste");
@@ -295,7 +305,7 @@
     store.onChange(function (id, durum) {
       if (C && String(id) === String(C.id) && durum && JSON.stringify(durum) !== JSON.stringify(S)) {
         var ae = document.activeElement, focused = ae && (ae.id === "hpv" || ae.id === "env-ara" || ae.id === "env-adet" || ae.hasAttribute("data-para"));
-        S = durum; if (!focused) render();
+        S = durum; if (!focused) render(); yenidenHesapla();
       }
     });
 
@@ -308,9 +318,10 @@
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }))
         .then(function (c) { C = c; return store.load(c.id); })
         .then(function (durum) {
-          S = durum || fresh();
+          S = durum || fresh(); sonKusanma = null;
           if (S.hp > C.hp_max) S.hp = C.hp_max;
           render();
+          if (S.env) yenidenHesapla();
           if (o.onSelect) o.onSelect(C.id, C);
         })
         .catch(function (e) {

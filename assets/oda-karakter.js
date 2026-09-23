@@ -20,17 +20,19 @@ export async function ac(b64) {
 let K = null;
 const onbellek = new Map();
 // yapıdan karakter sayfası (aynı yapı ikinci kez hesaplanmaz)
-export async function hesapla(b64) {
-  if (onbellek.has(b64)) return onbellek.get(b64);
+// env: oyunda değişmiş envanter (kuşanma AC'yi ve saldırıları etkiler)
+export async function hesapla(b64, env) {
+  const anahtar = b64 + (env ? JSON.stringify(env.map((e) => [e[0], e[2]])) : "");
+  if (onbellek.has(anahtar)) return onbellek.get(anahtar);
   const is = (async () => {
     K = K || (await import("./kural.js"));
     const Y = await ac(b64);
     await K.veriYukle();
     const S = await K.sinifYukle(Y.sinif);
-    return K.hesapla(Y, S);
+    return K.hesapla(Y, S, env ? { env } : null);
   })();
-  onbellek.set(b64, is);
-  is.catch(() => onbellek.delete(b64));
+  onbellek.set(anahtar, is);
+  is.catch(() => onbellek.delete(anahtar));
   return is;
 }
 // listede gösterilecek özet

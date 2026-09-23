@@ -554,7 +554,8 @@ function silahYetkin(B, x) {
 function silahlar(B) { return Object.values(V.esya).filter((x) => x.source === "XPHB" && x.weapon && x.mastery && x.rarity === "none" && silahYetkin(B, x)).sort((a, b) => a.name.localeCompare(b.name)); }
 
 // ---------- hesap
-export function hesapla(Y, S) {
+// ek.env: oyunda değişmiş envanter [[ad, adet, kuşanılı]] — verilirse AC ve saldırılar onun kuşanma durumuna göre hesaplanır
+export function hesapla(Y, S, ek) {
   const B = baglam(Y, S), L = Y.seviye, P = pb(L), sec = B.sec, c = S.c, bg = B.bg, tur = B.tur, sub = B.sub;
   const var_ = (ad) => B.featler.some((x) => x.f.name === ad);
   const notlar = [];
@@ -634,23 +635,30 @@ export function hesapla(Y, S) {
     });
   }
   tumEtki(B, "esya").forEach((x) => x.e.esya.forEach((a) => { if (!envanter.some((e) => e.ad === a)) koy(a, 1, tipAd(V.esya[n(a)] || {})); }));
-  // AC: zırhlı ve zırhsız seçeneklerden en iyisi otomatik kuşanılır
+  const oyun = !!(ek && ek.env);
+  if (oyun) { envanter.length = 0; ek.env.forEach(([ad, adet, k]) => envanter.push({ ad, adet, tip: tipAd(V.esya[n(ad)] || {}), kusanili: !!k })); }
+  // AC: başlangıçta zırhlı/zırhsız seçeneklerden en iyisi kuşanılır; oyunda oyuncunun kuşandığı esas alınır
   const dexMax = (x) => { const t = String(x.type).split("|")[0]; if (t === "LA") return m.dex; if (t === "MA") return Math.min(tumEtki(B, "ortaZirhDex3").length && puan.dex >= 16 ? 3 : 2, m.dex); return 0; };
-  const zirhlar = envanter.map((e) => [e, V.esya[n(e.ad)]]).filter(([, x]) => x && x.armor && String(x.type).split("|")[0] !== "S");
-  const kalkan = envanter.find((e) => { const x = V.esya[n(e.ad)]; return x && String(x.type).split("|")[0] === "S"; });
+  const zirhlar = envanter.map((e) => [e, V.esya[n(e.ad)]]).filter(([e, x]) => x && x.armor && String(x.type).split("|")[0] !== "S" && (!oyun || e.kusanili));
+  const kalkan = envanter.find((e) => { const x = V.esya[n(e.ad)]; return x && String(x.type).split("|")[0] === "S" && (!oyun || e.kusanili); });
   const kalkanOk = !!(kalkan && zirh.has("shield"));
   const acEkHer = tumEtki(B, "acEk").filter((x) => x.e.acEk.kosul === "her").reduce((t, x) => t + x.e.acEk.deger, 0);
   const acEkZirh = tumEtki(B, "acEk").filter((x) => x.e.acEk.kosul === "zirhli").reduce((t, x) => t + x.e.acEk.deger, 0);
-  const aday = [{ ac: 10 + m.dex, zirh: null, kalkanSerbest: true }];
-  for (const x of tumEtki(B, "ac")) { const f = x.e.ac; aday.push({ ac: (f.sabit || 10) + f.taban.reduce((t, a) => t + m[a], 0), zirh: null, kalkanSerbest: f.kosul !== "zirhsiz_kalkansiz" }); }
-  for (const [e, x] of zirhlar) { const ok = { LA: "light", MA: "medium", HA: "heavy" }[String(x.type).split("|")[0]]; if (zirh.has(ok)) aday.push({ ac: x.ac + dexMax(x) + acEkZirh, zirh: e, x, kalkanSerbest: true }); }
-  aday.forEach((a) => (a.toplam = a.ac + (a.kalkanSerbest && kalkanOk ? 2 : 0)));
+  const aday = oyun && zirhlar.length ? [] : [{ ac: 10 + m.dex, zirh: null, kalkanSerbest: true }];
+  // zırh giyiliyken zırhsız formüller (Unarmored Defense vb.) geçersiz
+  if (aday.length) for (const x of tumEtki(B, "ac")) { const f = x.e.ac; aday.push({ ac: (f.sabit || 10) + f.taban.reduce((t, a) => t + m[a], 0), zirh: null, kalkanSerbest: f.kosul !== "zirhsiz_kalkansiz" }); }
+  for (const [e, x] of zirhlar) {
+    const ok = { LA: "light", MA: "medium", HA: "heavy" }[String(x.type).split("|")[0]];
+    if (zirh.has(ok)) aday.push({ ac: x.ac + dexMax(x) + acEkZirh, zirh: e, x, kalkanSerbest: true });
+    else if (oyun) { aday.push({ ac: x.ac + dexMax(x), zirh: e, x, kalkanSerbest: true }); notlar.push(`${x.name}: training yok (Str/Dex d20 testlerinde Disadvantage, büyü yapılamaz)`); }
+  }
+  const kalkanVar = !!kalkan && (kalkanOk || oyun);
+  aday.forEach((a) => (a.toplam = a.ac + (a.kalkanSerbest && kalkanVar ? 2 : 0)));
   const enIyi = aday.reduce((a, b) => (b.toplam > a.toplam ? b : a));
-  if (enIyi.zirh) enIyi.zirh.kusanili = true;
-  if (kalkan && kalkanOk && enIyi.kalkanSerbest) kalkan.kusanili = true;
+  if (!oyun) { if (enIyi.zirh) enIyi.zirh.kusanili = true; if (kalkan && kalkanOk && enIyi.kalkanSerbest) kalkan.kusanili = true; }
   const ac = enIyi.toplam + acEkHer;
   const agirZirh = enIyi.x && String(enIyi.x.type).startsWith("HA"), zirhsizKalkansiz = !enIyi.zirh && !(kalkan && kalkan.kusanili);
-  envanter.forEach((e) => { const x = V.esya[n(e.ad)]; if (x && x.weapon) e.kusanili = true; });
+  if (!oyun) envanter.forEach((e) => { const x = V.esya[n(e.ad)]; if (x && x.weapon) e.kusanili = true; });
   // hız, hareket, duyular
   const turV = B.turV;
   let hiz = (turV && (typeof turV.speed === "object" ? turV.speed.walk : turV.speed)) || 30;
@@ -695,7 +703,8 @@ export function hesapla(Y, S) {
       menzil: x.range ? x.range + " ft" : props.includes("R") ? "10 ft" : "5 ft", mastery: ms && (mastery.has(x.name) || adOver) ? ms : null,
       ozellikler: props.map((p) => OZELLIK[p]).filter(Boolean) };
   };
-  envanter.forEach((e) => { const x = V.esya[n(e.ad)]; if (x && x.weapon && x.dmg1) saldirilar.push(silahSatir(x)); });
+  envanter.forEach((e) => { const x = V.esya[n(e.ad)]; if (x && x.weapon && x.dmg1) saldirilar.push(Object.assign(silahSatir(x), { kusanili: e.kusanili })); });
+  saldirilar.sort((a, b) => b.kusanili - a.kusanili);
   esyaStat.forEach((e) => { const x = V.esya[n(e.name)]; if (x && x.dmg1) saldirilar.push(silahSatir(x, x.name)); });
   for (const x of tumEtki(B, "saldiri")) for (const s of x.e.saldiri) saldirilar.push({ ad: s.ad, tip: "", kusanili: true, isabet: m[s.ab] + P, hasar: s.zar + sgn(m[s.ab]), tur: s.tur, menzil: s.menzil, mastery: null, ozellikler: s.props });
   // Unarmed Strike: seçeneklerden ortalaması en yüksek olanı

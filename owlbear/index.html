@@ -546,7 +546,7 @@ if (!OBR.isAvailable) {
       root, pick, mode: document.getElementById("mode"), base: "../", store, onRoll, sekmeli: true,
       yerel: {
         var: (id) => !!yerelKayit[id],
-        ac: (id) => yerelHesapla(yerelKayit[id].v).then((c) => ({ ...c, id: +id, oyuncu: yerelKayit[id].sahipAd || c.oyuncu })),
+        ac: (id, env) => yerelHesapla(yerelKayit[id].v, env).then((c) => ({ ...c, id: +id, oyuncu: yerelKayit[id].sahipAd || c.oyuncu })),
       },
       duzenle: (id) => { if (duzenleyebilir(id)) uretici(id); else OBR.notification.show("Bu karakteri sadece sahibi ve GM düzenleyebilir.", "WARNING"); },
       onSelect: async (id) => {

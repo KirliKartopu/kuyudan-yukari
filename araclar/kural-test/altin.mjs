@@ -1,6 +1,6 @@
 // Çalıştır: node araclar/kural-test/altin.mjs   (yerel 5e.tools verisi gerekir, bkz. kur.mjs)
 // Elle hesaplanmış referans karakterler (2024 PHB kurallarına göre). Her beklenen değerin gerekçesi yanında.
-import { kur } from "./kur.mjs";
+import { kur, K } from "./kur.mjs";
 const T = (dizi) => Object.fromEntries(["str", "dex", "con", "int", "wis", "cha"].map((a, i) => [a, dizi[i]]));
 let hata = 0, test = 0;
 function bekle(ad, gercek, beklenen) {
@@ -96,4 +96,21 @@ const atk = (c, ad) => c.saldirilar.find((a) => a.ad === ad) || {};
   bekle("Arcana çakışınca yedek skill sorusu (1)", q && q.adet, 1);
   bekle("Nature proficient", skill(r.c, "Nature").prof, 1); }
 
+// G11 Oyunda kuşanma: Fighter zırhı çıkarır / Barbarian zırh giyer / sonradan silah
+{ const r = await kur("Fighter", { seviye: 1, background: "Soldier|XPHB", tur: "Human|XPHB", temel: T([15, 14, 13, 8, 12, 10]) },
+  { "bg:ab": ["21", "str", "con"], "tur:feat": ["Alert|XPHB"], "tur:skill": ["perception"], "sinif:skill": ["acrobatics", "survival"], "sinif:fp:Fighting Style:1": ["Defense|XPHB"], "sinif:mastery": ["Greatsword", "Longsword", "Javelin"], "sinif:ekip": ["A"], "bg:ekip": ["A"] });
+  console.log("G11 Kuşanma");
+  bekle("Başlangıç: Chain Mail 16 + Defense 1", r.c.ac, 17);
+  const env = [["Chain Mail", 1, 0], ["Greatsword", 1, 0], ["Longsword", 1, 1]];
+  const c2 = K.hesapla(r.Y, r.S, { env });
+  bekle("Zırh çıkınca 10 + Dex2 (Defense yok)", c2.ac, 12);
+  bekle("Sonradan eklenen Longsword saldırıda, kuşanılı", [atk(c2, "Longsword").isabet, atk(c2, "Longsword").kusanili], [5, true]);
+  bekle("Çıkarılan Greatsword çantada", atk(c2, "Greatsword").kusanili, false);
+  const b = await kur("Barbarian", { seviye: 1, background: "Soldier|XPHB", tur: "Human|XPHB", temel: T([15, 14, 13, 8, 12, 10]) },
+    { "bg:ab": ["21", "str", "con"], "tur:feat": ["Alert|XPHB"], "tur:skill": ["perception"], "sinif:skill": ["nature", "survival"], "sinif:mastery": ["Greataxe", "Handaxe"], "sinif:ekip": ["A"], "bg:ekip": ["A"] });
+  bekle("Barbarian zırhsız 10+2+2", b.c.ac, 14);
+  bekle("Scale Mail giyince 14 + min(Dex,2) (Unarmored Defense geçersiz)", K.hesapla(b.Y, b.S, { env: [["Scale Mail", 1, 1], ["Greataxe", 1, 1]] }).ac, 16);
+  bekle("Kalkan kuşanınca +2", K.hesapla(b.Y, b.S, { env: [["Shield", 1, 1]] }).ac, 16); }
+
 console.log(`\n${test - hata}/${test} doğru`);
+process.exit(hata ? 1 : 0);
