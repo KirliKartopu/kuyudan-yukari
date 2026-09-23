@@ -3,17 +3,109 @@
 <head><meta charset="utf-8"><title>Kuyudan Yukarı arka plan</title></head>
 <body>
 <script type="module">
-  // Panel kapalıyken bile başkalarının zarlarını bildirim olarak gösterir.
-  import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
-  const KANAL = "com.kuyudan-yukari/zar";
-  OBR.onReady(() => {
-    OBR.broadcast.onMessage(KANAL, ({ data }) => {
-      const r = data || {};
-      const kim = r.kimden || r.karakter || "?";
-      const variant = r.sinif === "crit" ? "SUCCESS" : r.sinif === "fail" ? "ERROR" : "DEFAULT";
-      OBR.notification.show(`${kim} · ${r.baslik}: ${r.toplam}  (${r.detay})`, variant);
-    });
+// Her zaman çalışan arka plan:
+//  - başkalarının zarlarını ve sıra değişimini bildirim olarak gösterir
+//  - sağ tık menüleri (karakter bağla, sıraya ekle)
+//  - GM'de: bağlı token'ların altındaki HP etiketlerini günceller
+import OBR, { buildLabel } from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
+
+const NS = "com.kuyudan-yukari";
+const K_DURUM = NS + "/durum", K_SIRA = NS + "/sira", K_BAG = NS + "/karakter", K_ETIKET = NS + "/hp-etiket";
+const BASE = new URL("../", import.meta.url).href; // .../kuyudan-yukari/
+const YOL = new URL("../", import.meta.url).pathname; // /kuyudan-yukari/
+const ICON = YOL + "owlbear/icon.svg";
+
+OBR.onReady(async () => {
+  // --- bildirimler
+  OBR.broadcast.onMessage(NS + "/zar", ({ data }) => {
+    const r = data || {};
+    const variant = r.sinif === "crit" ? "SUCCESS" : r.sinif === "fail" ? "ERROR" : "DEFAULT";
+    OBR.notification.show(`${r.kimden || "?"} · ${r.baslik}: ${r.toplam}  (${r.detay})`, variant);
   });
+  OBR.broadcast.onMessage(NS + "/sira", ({ data }) => {
+    if (data && data.ad) OBR.notification.show(`Sıra: ${data.ad} (tur ${data.tur})`, "INFO");
+  });
+
+  // --- sağ tık menüleri (sadece GM görür)
+  const bagli = { key: ["metadata", K_BAG], value: undefined, operator: "!=" };
+  const bagsiz = { key: ["metadata", K_BAG], value: undefined };
+  await OBR.contextMenu.create({
+    id: NS + "/bagla",
+    icons: [{ icon: ICON, label: "Karakter bağla", filter: { roles: ["GM"], max: 1, every: [{ key: "layer", value: "CHARACTER" }, bagsiz] } }],
+    embed: { url: YOL + "owlbear/bagla.html", height: 220 },
+  });
+  await OBR.contextMenu.create({
+    id: NS + "/coz",
+    icons: [{ icon: ICON, label: "Karakter bağını kaldır", filter: { roles: ["GM"], every: [{ key: "layer", value: "CHARACTER" }, bagli] } }],
+    onClick: async (ctx) => {
+      const ids = ctx.items.map((i) => i.id);
+      await OBR.scene.items.updateItems(ids, (items) => { for (const it of items) delete it.metadata[K_BAG]; });
+      const etiketler = await OBR.scene.items.getItems((i) => i.metadata[K_ETIKET] && ids.includes(i.attachedTo));
+      if (etiketler.length) await OBR.scene.items.deleteItems(etiketler.map((i) => i.id));
+    },
+  });
+  await OBR.contextMenu.create({
+    id: NS + "/sira-ekle",
+    icons: [{ icon: ICON, label: "Sıraya ekle / çıkar", filter: { roles: ["GM"], every: [{ key: "layer", value: "CHARACTER" }] } }],
+    onClick: async (ctx) => {
+      const m = await OBR.room.getMetadata();
+      const sira = m[K_SIRA] || { tur: 1, aktifId: null, liste: [] };
+      for (const it of ctx.items) {
+        const i = sira.liste.findIndex((x) => x.id === it.id);
+        if (i > -1) sira.liste.splice(i, 1);
+        else sira.liste.push({ id: it.id, ad: it.text?.plainText || it.name || "Token", karakter: it.metadata[K_BAG] || null, deger: null });
+      }
+      await OBR.room.setMetadata({ [K_SIRA]: sira });
+    },
+  });
+
+  // --- HP etiketleri: tek bir istemci yönetsin diye sadece GM
+  if ((await OBR.player.getRole()) !== "GM") return;
+  const kCache = {};
+  const karakter = async (id) => kCache[id] || (kCache[id] = fetch(BASE + "karakterler/" + id + ".json", { cache: "no-cache" }).then((r) => r.json()).catch(() => null));
+  let calisiyor = false, tekrar = false;
+  async function senkron() {
+    if (calisiyor) { tekrar = true; return; }
+    calisiyor = true;
+    try {
+      if (!(await OBR.scene.isReady())) return;
+      const durum = (await OBR.room.getMetadata())[K_DURUM] || {};
+      const items = await OBR.scene.items.getItems();
+      const tokenlar = items.filter((i) => i.layer === "CHARACTER" && i.metadata[K_BAG]);
+      const etiketler = items.filter((i) => i.metadata[K_ETIKET]);
+      const ekle = [], guncelle = {}, sil = [];
+      for (const t of tokenlar) {
+        const c = await karakter(t.metadata[K_BAG]);
+        if (!c) continue;
+        const s = durum[c.id] || { hp: c.hp_max, temp: 0 };
+        const metin = `HP ${s.hp}/${c.hp_max}` + (s.temp ? ` +${s.temp}` : "");
+        const renk = s.hp <= 0 ? "#8A2E2E" : s.hp <= c.hp_max / 2 ? "#9A6E1C" : "#2F5D3A";
+        const mevcut = etiketler.find((e) => e.attachedTo === t.id);
+        if (mevcut) {
+          if (mevcut.text?.plainText !== metin || mevcut.style?.backgroundColor !== renk) guncelle[mevcut.id] = { metin, renk };
+        } else {
+          const b = await OBR.scene.items.getItemBounds([t.id]);
+          ekle.push(buildLabel().plainText(metin).backgroundColor(renk).backgroundOpacity(0.9).fillColor("#FFFFFF")
+            .fontSize(14).padding(4).cornerRadius(6).pointerHeight(0)
+            .position({ x: b.center.x, y: b.max.y + 4 }).attachedTo(t.id).layer("TEXT")
+            .locked(true).disableHit(true).metadata({ [K_ETIKET]: true }).name("HP").build());
+        }
+      }
+      for (const e of etiketler) if (!tokenlar.some((t) => t.id === e.attachedTo)) sil.push(e.id);
+      if (ekle.length) await OBR.scene.items.addItems(ekle);
+      const ids = Object.keys(guncelle);
+      if (ids.length) await OBR.scene.items.updateItems(ids, (list) => {
+        for (const l of list) { l.text.plainText = guncelle[l.id].metin; l.style.backgroundColor = guncelle[l.id].renk; }
+      });
+      if (sil.length) await OBR.scene.items.deleteItems(sil);
+    } catch (e) { console.warn("HP etiketi senkronu:", e); }
+    finally { calisiyor = false; if (tekrar) { tekrar = false; senkron(); } }
+  }
+  OBR.room.onMetadataChange(() => senkron());
+  OBR.scene.items.onChange(() => senkron());
+  OBR.scene.onReadyChange((hazir) => { if (hazir) senkron(); });
+  senkron();
+});
 </script>
 </body>
 </html>

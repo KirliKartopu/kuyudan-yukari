@@ -34,6 +34,13 @@
   dl.gloss{grid-template-columns:1fr}
   dl.gloss dt{border-bottom:0;padding-bottom:0}
   dl.gloss dd{padding-top:2px}
+  .sira-bas{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-family:var(--display);font-size:19px}
+  ol.sira{list-style:none;margin:0 0 10px;padding:0}
+  ol.sira li{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:var(--surface);max-width:none}
+  ol.sira li.aktif{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+  ol.sira .deg{font-family:var(--mono);font-size:18px;min-width:2.2em;text-align:right}
+  ol.sira input{width:4.2em;font:inherit;font-family:var(--mono);padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink)}
+  ol.sira .pc{font-family:var(--mono);font-size:11px;color:var(--muted)}
   .outside{padding:24px 0}
   .outside code{font-family:var(--mono);font-size:13px;background:var(--surface);padding:2px 6px;border-radius:4px;word-break:break-all}
 </style>
@@ -42,6 +49,7 @@
 <div class="sheet">
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="karakter">Karakter</button>
+    <button role="tab" aria-selected="false" data-tab="sira">Sıra</button>
     <button role="tab" aria-selected="false" data-tab="zarlar">Zarlar</button>
     <button role="tab" aria-selected="false" data-tab="sozluk">Sözlük</button>
   </div>
@@ -58,6 +66,13 @@
       <label class="gm" id="gm-gizli" hidden><input type="checkbox" id="gizli"> Gizli zar (sadece GM görür)</label>
     </div>
     <div id="root"><p class="empty">Yükleniyor…</p></div>
+  </section>
+
+  <section data-panel="sira" hidden>
+    <div class="sira-bas"><b id="sira-tur">Savaş yok</b>
+      <span class="gmonly" hidden><button class="btn" id="sira-sonraki">Sonraki ▶</button> <button class="btn" id="sira-bitir">Bitir</button></span></div>
+    <ol class="sira" id="sira-liste"></ol>
+    <p class="feat" id="sira-ipucu"><small>GM, token'lara sağ tıklayıp <b>Sıraya ekle</b> der. Oyuncular karakter sayfasından <b>Initiative</b> atınca değer buraya kendiliğinden yazılır.</small></p>
   </section>
 
   <section data-panel="zarlar" hidden>
@@ -133,11 +148,64 @@ if (!OBR.isAvailable) {
       const gizli = rol === "GM" && document.getElementById("gizli").checked;
       r.kimden = (r.karakter || oyuncuAdi) + (gizli ? " (gizli)" : "");
       goster(r, r.kimden);
+      const c = ks.current();
+      if (r.baslik === "Initiative" && c) {
+        siraYaz((s) => { s.liste.filter((x) => x.karakter === c.id).forEach((x) => { x.deger = r.toplam; }); });
+      }
       if (gizli) return; // gizli zar kimseye gitmez, günlüğe yazılmaz
       await OBR.broadcast.sendMessage(KANAL, r, { destination: "REMOTE" });
       const m = await OBR.room.getMetadata();
       await OBR.room.setMetadata({ [K_ZARLAR]: [r, ...(m[K_ZARLAR] || [])].slice(0, 25) });
     };
+
+    // --- Initiative sırası (oda metadata'sı: {tur, aktifId, liste:[{id, ad, karakter, deger}]})
+    const K_SIRA = NS + "/sira";
+    const gm = rol === "GM";
+    document.querySelectorAll(".gmonly").forEach((x) => { x.hidden = !gm; });
+    const sirala = (l) => l.slice().sort((a, b) => (b.deger ?? -99) - (a.deger ?? -99));
+    const siraYaz = async (fn) => {
+      const m = await OBR.room.getMetadata();
+      const s = m[K_SIRA] || { tur: 1, aktifId: null, liste: [] };
+      fn(s); s.liste = sirala(s.liste);
+      await OBR.room.setMetadata({ [K_SIRA]: s });
+      return s;
+    };
+    const siraCiz = (s) => {
+      const ol = document.getElementById("sira-liste");
+      if (!s || !s.liste || !s.liste.length) { ol.innerHTML = ""; document.getElementById("sira-tur").textContent = "Savaş yok"; return; }
+      document.getElementById("sira-tur").textContent = s.aktifId ? "Tur " + s.tur : "Initiative bekleniyor";
+      ol.innerHTML = s.liste.map((x) => `<li class="${x.id === s.aktifId ? "aktif" : ""}"><span>${x.id === s.aktifId ? "▶" : ""}</span>` +
+        `<span>${esc(x.ad)} ${x.karakter ? '<span class="pc">PC</span>' : ""}</span>` +
+        (gm ? `<input type="number" data-deg="${esc(x.id)}" value="${x.deger ?? ""}" aria-label="${esc(x.ad)} initiative">` +
+              `<button class="btn" data-d20="${esc(x.id)}" title="d20 at (bonussuz)">d20</button>`
+            : `<span class="deg">${x.deger ?? "–"}</span><span></span>`) + `</li>`).join("");
+    };
+    siraCiz((await OBR.room.getMetadata())[K_SIRA]);
+    OBR.room.onMetadataChange((m) => { if (!document.activeElement || !document.activeElement.dataset.deg) siraCiz(m[K_SIRA]); });
+    document.getElementById("sira-liste").addEventListener("change", (e) => {
+      const id = e.target.dataset.deg; if (!id) return;
+      const v = e.target.value === "" ? null : Number(e.target.value);
+      siraYaz((s) => { const x = s.liste.find((y) => y.id === id); if (x) x.deger = v; });
+    });
+    document.getElementById("sira-liste").addEventListener("click", (e) => {
+      const id = e.target.dataset?.d20; if (!id) return;
+      const v = 1 + Math.floor(Math.random() * 20);
+      siraYaz((s) => { const x = s.liste.find((y) => y.id === id); if (x) x.deger = v; });
+    });
+    document.getElementById("sira-sonraki").addEventListener("click", async () => {
+      const s = await siraYaz((s) => {
+        if (!s.liste.length) return;
+        const i = s.liste.findIndex((x) => x.id === s.aktifId);
+        if (i === -1) { s.aktifId = s.liste[0].id; return; }
+        if (i + 1 >= s.liste.length) { s.tur += 1; s.aktifId = s.liste[0].id; } else s.aktifId = s.liste[i + 1].id;
+      });
+      const a = s.liste.find((x) => x.id === s.aktifId);
+      if (a) {
+        await OBR.broadcast.sendMessage(NS + "/sira", { ad: a.ad, tur: s.tur }, { destination: "REMOTE" });
+        OBR.notification.show(`Sıra: ${a.ad} (tur ${s.tur})`, "INFO");
+      }
+    });
+    document.getElementById("sira-bitir").addEventListener("click", () => OBR.room.setMetadata({ [K_SIRA]: undefined }));
 
     const ks = KarakterSayfasi({
       root: document.getElementById("root"), pick: document.getElementById("pick"), mode: document.getElementById("mode"),
