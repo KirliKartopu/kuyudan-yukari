@@ -45,6 +45,15 @@
   .sahiplen li{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);max-width:none}
   .sahiplen img{width:40px;height:40px;border-radius:6px;object-fit:cover;background:var(--ground)}
   .sahiplen small{color:var(--muted)}
+  .ho-tur{display:flex;gap:4px;margin-bottom:8px}
+  .ho-l{display:block;font-size:13px;color:var(--muted);margin:8px 0 2px}
+  #ho-baslik,#ho-metin,#ho-kime{width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+  #ho-onizleme{display:block;max-width:100%;max-height:160px;margin-top:8px;border-radius:6px;border:1px solid var(--line)}
+  .ho-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .ho-liste li{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--surface);max-width:none}
+  .ho-liste .kucuk{width:44px;height:44px;border-radius:4px;object-fit:cover;background:var(--ground);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .ho-liste small{color:var(--muted)}
+  .ho-liste .dug{display:flex;gap:4px}
   .outside{padding:24px 0}
   .outside code{font-family:var(--mono);font-size:13px;background:var(--surface);padding:2px 6px;border-radius:4px;word-break:break-all}
 </style>
@@ -55,6 +64,7 @@
     <button role="tab" aria-selected="true" data-tab="karakter">Karakter</button>
     <button role="tab" aria-selected="false" data-tab="sira">Sıra</button>
     <button role="tab" aria-selected="false" data-tab="zarlar">Zarlar</button>
+    <button role="tab" aria-selected="false" data-tab="handout">Handout</button>
     <button role="tab" aria-selected="false" data-tab="sozluk">Sözlük</button>
   </div>
 
@@ -89,6 +99,32 @@
 
   <section data-panel="zarlar" hidden>
     <ul class="rolls" id="rolls"><li><span class="t">Henüz zar atılmadı.</span></li></ul>
+  </section>
+
+  <section data-panel="handout" hidden>
+    <div class="gmonly ho-yeni" hidden>
+      <h2 style="margin:4px 0 8px">Yeni handout</h2>
+      <div class="ho-tur" role="group" aria-label="Handout türü">
+        <button class="btn on" type="button" data-hotur="gorsel">Görsel</button>
+        <button class="btn" type="button" data-hotur="mektup">Mektup</button>
+        <button class="btn" type="button" data-hotur="not">Not</button>
+      </div>
+      <label for="ho-baslik" class="ho-l">Başlık</label>
+      <input id="ho-baslik" type="text" placeholder="Leosin'in notu">
+      <div id="ho-gorsel-alan">
+        <button class="btn" type="button" id="ho-sec">Owlbear kütüphanesinden görsel seç</button>
+        <img id="ho-onizleme" alt="" hidden>
+      </div>
+      <div id="ho-metin-alan" hidden>
+        <label for="ho-metin" class="ho-l">Metin</label>
+        <textarea id="ho-metin" rows="7" placeholder="Beş maske. Taksitle. Son teslimata kadar drow'larda…"></textarea>
+      </div>
+      <label for="ho-kime" class="ho-l">Kime</label>
+      <select id="ho-kime"><option value="hepsi">Herkese</option></select>
+      <div style="display:flex;gap:6px;margin-top:10px"><button class="btn" type="button" id="ho-goster">Göster</button><button class="btn" type="button" id="ho-kaydet" title="Göstermeden listeye ekle">Sadece kaydet</button></div>
+    </div>
+    <h2 style="margin:16px 0 8px">Handout'lar</h2>
+    <ul class="ho-liste" id="ho-liste"><li><small>Henüz handout yok.</small></li></ul>
   </section>
 
   <section data-panel="sozluk" hidden>
@@ -265,6 +301,78 @@ if (!OBR.isAvailable) {
     const pick = document.getElementById("pick"), root = document.getElementById("root");
     const sahipleriOku = async () => (await OBR.room.getMetadata())[K_SAHIP] || {};
     const benimkiniBul = (sahip) => Object.keys(sahip).find((id) => sahip[id].oyuncu === benimId) || null;
+
+    // --- Handout'lar (oda metadata'sı: son 15; görseller Owlbear kütüphanesinden)
+    const K_HO = NS + "/handoutlar";
+    let hoTur = "gorsel", hoGorsel = null;
+    const hoOku = async () => (await OBR.room.getMetadata())[K_HO] || [];
+    const bana = (h) => gm || h.kime === "hepsi" || (Array.isArray(h.kime) && h.kime.includes(benimId));
+    const hoCiz = (liste) => {
+      const ul = document.getElementById("ho-liste");
+      const gorunen = (liste || []).filter(bana);
+      if (!gorunen.length) { ul.innerHTML = "<li><small>Henüz handout yok.</small></li>"; return; }
+      ul.innerHTML = gorunen.map((h) => `<li>${h.tur === "gorsel" ? `<img class="kucuk" alt="" src="${esc(h.url)}">` : `<span class="kucuk">✉</span>`}` +
+        `<span><b>${esc(h.baslik || "Adsız")}</b><br><small>${h.kime === "hepsi" ? "Herkese" : "Özel"}${h.gosterildi ? "" : " · gösterilmedi"}</small></span>` +
+        `<span class="dug"><button class="btn" data-hoac="${esc(h.id)}" title="Kendi ekranımda aç">Aç</button>` +
+        (gm ? `<button class="btn" data-hogoster="${esc(h.id)}" title="Oyunculara göster">Göster</button><button class="btn" data-hosil="${esc(h.id)}" aria-label="Sil">✕</button>` : "") + "</span></li>").join("");
+    };
+    hoCiz(await hoOku());
+    OBR.room.onMetadataChange((m) => hoCiz(m[K_HO]));
+    const hoGoster = async (h) => {
+      await OBR.broadcast.sendMessage(NS + "/handout", { id: h.id, kime: h.kime }, { destination: "REMOTE" });
+      const l = await hoOku(); const x = l.find((y) => y.id === h.id);
+      if (x && !x.gosterildi) { x.gosterildi = true; await OBR.room.setMetadata({ [K_HO]: l }); }
+      OBR.notification.show(`Handout gösterildi: ${h.baslik || "Adsız"}`, "SUCCESS");
+    };
+    document.getElementById("ho-liste").addEventListener("click", async (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const l = await hoOku();
+      if (b.dataset.hoac) OBR.broadcast.sendMessage(NS + "/handout-ac", { id: b.dataset.hoac }, { destination: "LOCAL" });
+      if (b.dataset.hogoster) { const h = l.find((x) => x.id === b.dataset.hogoster); if (h) hoGoster(h); }
+      if (b.dataset.hosil) await OBR.room.setMetadata({ [K_HO]: l.filter((x) => x.id !== b.dataset.hosil) });
+    });
+    if (gm) {
+      const kimeDoldur = async () => {
+        const oyuncular = (await OBR.party.getPlayers()).filter((p) => p.role !== "GM");
+        document.getElementById("ho-kime").innerHTML = '<option value="hepsi">Herkese</option>' + oyuncular.map((p) => `<option value="${esc(p.id)}">Sadece ${esc(p.name)}</option>`).join("");
+      };
+      kimeDoldur(); OBR.party.onChange(kimeDoldur);
+      document.querySelector(".ho-tur").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-hotur]"); if (!b) return;
+        hoTur = b.dataset.hotur === "gorsel" ? "gorsel" : "metin";
+        document.querySelectorAll("[data-hotur]").forEach((x) => x.classList.toggle("on", x === b));
+        document.getElementById("ho-gorsel-alan").hidden = hoTur !== "gorsel";
+        document.getElementById("ho-metin-alan").hidden = hoTur === "gorsel";
+        document.getElementById("ho-metin-alan").dataset.stil = b.dataset.hotur;
+      });
+      document.getElementById("ho-sec").addEventListener("click", async () => {
+        const secim = await OBR.assets.downloadImages(false);
+        if (!secim || !secim.length) return;
+        hoGorsel = secim[0];
+        const on = document.getElementById("ho-onizleme"); on.src = hoGorsel.image.url; on.hidden = false;
+        const bas = document.getElementById("ho-baslik"); if (!bas.value) bas.value = hoGorsel.name || "";
+      });
+      const hoYeni = async (goster) => {
+        const baslik = document.getElementById("ho-baslik").value.trim();
+        const kimeV = document.getElementById("ho-kime").value;
+        const h = { id: Math.random().toString(36).slice(2, 10), baslik, kime: kimeV === "hepsi" ? "hepsi" : [kimeV], zaman: Date.now(), gosterildi: false };
+        if (hoTur === "gorsel") {
+          if (!hoGorsel) { OBR.notification.show("Önce bir görsel seç.", "WARNING"); return; }
+          Object.assign(h, { tur: "gorsel", url: hoGorsel.image.url });
+        } else {
+          const metin = document.getElementById("ho-metin").value.trim();
+          if (!metin) { OBR.notification.show("Metin boş.", "WARNING"); return; }
+          Object.assign(h, { tur: "metin", stil: document.getElementById("ho-metin-alan").dataset.stil || "mektup", metin: metin.slice(0, 3000) });
+        }
+        const l = [h, ...(await hoOku())].slice(0, 15);
+        await OBR.room.setMetadata({ [K_HO]: l });
+        if (goster) await hoGoster(h);
+        document.getElementById("ho-baslik").value = ""; document.getElementById("ho-metin").value = "";
+        hoGorsel = null; document.getElementById("ho-onizleme").hidden = true;
+      };
+      document.getElementById("ho-goster").addEventListener("click", () => hoYeni(true));
+      document.getElementById("ho-kaydet").addEventListener("click", () => hoYeni(false));
+    }
 
     const ks = KarakterSayfasi({
       root, pick, mode: document.getElementById("mode"), base: "../", store, onRoll,

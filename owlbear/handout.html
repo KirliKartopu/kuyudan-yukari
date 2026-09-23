@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+SC:wght@500;700&display=swap">
+<style>
+  html,body{margin:0;height:100%;background:transparent;font-family:"Alegreya",Georgia,serif}
+  .kap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;box-sizing:border-box}
+  .ust{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;color:#F3EAD6}
+  .ust h1{font-family:"Alegreya SC",Georgia,serif;font-size:22px;margin:0;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+  .ust button{font:15px "Alegreya",Georgia,serif;padding:6px 14px;border-radius:6px;border:1px solid rgba(243,234,214,.6);background:rgba(20,16,12,.6);color:#F3EAD6;cursor:pointer}
+  .ust button:focus-visible{outline:2px solid #F3EAD6}
+  .gorsel{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+  .gorsel img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.6);cursor:zoom-in}
+  .gorsel.buyuk{overflow:auto;display:block}
+  .gorsel.buyuk img{max-width:none;max-height:none;cursor:zoom-out}
+  /* mektup: parşömen */
+  .mektup{flex:1;min-height:0;width:min(640px,100%);overflow:auto;box-sizing:border-box;padding:40px 46px;border-radius:4px;
+    color:#2B1D10;font-size:20px;line-height:1.6;white-space:pre-wrap;
+    background:radial-gradient(ellipse at center, #F4E7C8 0%, #EAD7AA 70%, #D9BF86 100%);
+    box-shadow:0 10px 40px rgba(0,0,0,.6), inset 0 0 60px rgba(120,80,30,.35)}
+  .mektup.not{font-size:18px;background:#F3EFE6;color:#1B211E;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+  .bos{color:#F3EAD6;font-size:18px}
+</style>
+</head>
+<body>
+<div class="kap">
+  <div class="ust"><h1 id="baslik"></h1><button id="kapat" type="button">Kapat</button></div>
+  <div id="icerik" class="gorsel"><p class="bos">Yükleniyor…</p></div>
+</div>
+<script type="module">
+import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
+const K = "com.kuyudan-yukari/handoutlar";
+const id = new URLSearchParams(location.hash.slice(1)).get("id");
+OBR.onReady(async () => {
+  document.getElementById("kapat").addEventListener("click", () => OBR.modal.close("com.kuyudan-yukari/handout"));
+  const h = ((await OBR.room.getMetadata())[K] || []).find((x) => x.id === id);
+  const icerik = document.getElementById("icerik");
+  if (!h) { icerik.innerHTML = '<p class="bos">Bu handout artık yok.</p>'; return; }
+  document.getElementById("baslik").textContent = h.baslik || "";
+  if (h.tur === "gorsel") {
+    const img = document.createElement("img"); img.src = h.url; img.alt = h.baslik || "Handout";
+    img.addEventListener("click", () => icerik.classList.toggle("buyuk")); // tıkla: tam boyut
+    icerik.replaceChildren(img);
+  } else {
+    const m = document.createElement("div");
+    m.className = "mektup" + (h.stil === "not" ? " not" : "");
+    m.textContent = h.metin || "";
+    icerik.className = "gorsel"; icerik.replaceChildren(m);
+  }
+});
+</script>
+</body>
+</html>

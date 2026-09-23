@@ -37,6 +37,16 @@ OBR.onReady(async () => {
     const variant = r.sinif === "crit" ? "SUCCESS" : r.sinif === "fail" ? "ERROR" : "DEFAULT";
     setTimeout(() => OBR.notification.show(`${r.kimden || "?"} · ${r.baslik}: ${r.toplam}  (${r.detay})`, variant), sahne ? 1800 : 0);
   });
+  const benimId = await OBR.player.getId();
+  const handoutAc = async (id) => {
+    const W = await OBR.viewport.getWidth(), H = await OBR.viewport.getHeight();
+    await OBR.modal.open({ id: NS + "/handout", url: YOL + "owlbear/handout.html#" + new URLSearchParams({ id }), width: Math.round(W * 0.85), height: Math.round(H * 0.88), hidePaper: true });
+  };
+  OBR.broadcast.onMessage(NS + "/handout", ({ data }) => {
+    if (!data || !data.id) return;
+    if (data.kime === "hepsi" || (Array.isArray(data.kime) && data.kime.includes(benimId))) handoutAc(data.id);
+  });
+  OBR.broadcast.onMessage(NS + "/handout-ac", ({ data }) => { if (data && data.id) handoutAc(data.id); });
   OBR.broadcast.onMessage(NS + "/sira", ({ data }) => {
     if (data && data.ad) OBR.notification.show(`Sıra: ${data.ad} (tur ${data.tur})`, "INFO");
   });
