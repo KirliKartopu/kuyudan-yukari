@@ -32,11 +32,12 @@ export async function paketOku() {
   return bellek;
 }
 const norm = (s) => String(s || "").toLocaleLowerCase("tr").normalize("NFKD").replace(/[̀-ͯ’']/g, "");
-export async function ara(q, limit = 40) {
+export async function ara(q, limit = 40, tumDunyalar = false) {
   const p = await paketOku(); if (!p) return [];
   const n = norm(q).trim(); if (!n) return [];
   const bas = [], ic = [];
   for (const m of p.canavarlar) {
+    if (m.dunya && !tumDunyalar) continue; // başka dünyalar sadece istenirse
     const a = norm(m.name);
     if (a.startsWith(n)) bas.push(m); else if (a.includes(n)) ic.push(m);
     if (bas.length >= limit) break;

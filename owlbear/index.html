@@ -120,6 +120,7 @@
     <div id="npc-secili"></div>
     <label for="npc-q" hidden>Canavar ara</label>
     <input id="npc-q" type="search" placeholder="Canavar ara: goblin, drow, troll…" autocomplete="off">
+    <label class="gm"><input type="checkbox" id="npc-tum"> Diğer dünyalar da (Eberron, Spelljammer…)</label>
     <ul class="npc-sonuc" id="npc-sonuc"></ul>
     <div id="npc-sb"></div>
   </section>
@@ -455,10 +456,12 @@ if (!OBR.isAvailable) {
         document.getElementById("npc-sb").innerHTML = statBlok(m);
       };
       let sonuc = [];
-      document.getElementById("npc-q").addEventListener("input", async (e) => {
-        sonuc = await cAra(e.target.value, 30);
-        document.getElementById("npc-sonuc").innerHTML = sonuc.map((m, i) => `<li><button data-ci="${i}"><span>${esc(m.name)}</span><small>CR ${esc(typeof m.cr === "object" ? m.cr.cr : m.cr ?? "—")} · ${esc(m.source)}</small></button></li>`).join("");
-      });
+      const npcAra = async () => {
+        sonuc = await cAra(document.getElementById("npc-q").value, 30, document.getElementById("npc-tum").checked);
+        document.getElementById("npc-sonuc").innerHTML = sonuc.map((m, i) => `<li><button data-ci="${i}"><span>${esc(m.name)}</span><small>CR ${esc(typeof m.cr === "object" ? m.cr.cr : m.cr ?? "—")} · ${esc(m.source)}${m.dunya ? " · " + esc(m.dunya) : ""}</small></button></li>`).join("");
+      };
+      document.getElementById("npc-q").addEventListener("input", npcAra);
+      document.getElementById("npc-tum").addEventListener("change", npcAra);
       document.getElementById("npc-sonuc").addEventListener("click", (e) => {
         const b = e.target.closest("[data-ci]"); if (b) sbGoster(sonuc[+b.dataset.ci]);
       });

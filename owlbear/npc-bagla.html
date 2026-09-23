@@ -23,6 +23,7 @@
   <label for="q" hidden>Canavar ara</label>
   <input id="q" type="search" placeholder="Canavar ara: goblin, drow…" autocomplete="off" autofocus>
   <label title="İşaretliyse HP formülle zarlanır; değilse ortalama"><input type="checkbox" id="zarla"> HP zarla</label>
+  <label title="Eberron, Spelljammer gibi başka dünyaların canavarları da"><input type="checkbox" id="tum"> Diğer dünyalar</label>
 </div>
 <ul id="l"><li><p>Aramaya başla.</p></li></ul>
 <script type="module">
@@ -35,10 +36,12 @@ OBR.onReady(async () => {
   const ul = document.getElementById("l");
   if (!(await paketOku())) { ul.innerHTML = "<li><p>Canavar paketi yok. Paneldeki NPC sekmesinden yükle.</p></li>"; return; }
   let sonuc = [];
-  document.getElementById("q").addEventListener("input", async (e) => {
-    sonuc = await ara(e.target.value, 30);
-    ul.innerHTML = sonuc.length ? sonuc.map((m, i) => `<li><button class="s" data-i="${i}"><span>${esc(m.name)}</span><small>CR ${esc(typeof m.cr === "object" ? m.cr.cr : m.cr ?? "—")} · ${esc(m.source)}</small></button></li>`).join("") : "<li><p>Bulunamadı.</p></li>";
-  });
+  const bul = async () => {
+    sonuc = await ara(document.getElementById("q").value, 30, document.getElementById("tum").checked);
+    ul.innerHTML = sonuc.length ? sonuc.map((m, i) => `<li><button class="s" data-i="${i}"><span>${esc(m.name)}</span><small>CR ${esc(typeof m.cr === "object" ? m.cr.cr : m.cr ?? "—")} · ${esc(m.source)}${m.dunya ? " · " + esc(m.dunya) : ""}</small></button></li>`).join("") : "<li><p>Bulunamadı.</p></li>";
+  };
+  document.getElementById("q").addEventListener("input", bul);
+  document.getElementById("tum").addEventListener("change", bul);
   ul.addEventListener("click", async (e) => {
     const b = e.target.closest("[data-i]"); if (!b) return;
     const m = sonuc[+b.dataset.i];
