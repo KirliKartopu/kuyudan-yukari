@@ -17,6 +17,7 @@
     <label for="pick" hidden>Karakter</label>
     <select id="pick"></select>
     <label class="gm" style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="zar3d" checked> 3D zar</label>
+    <label class="gm" style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="zarses" checked> Ses</label>
     <div class="mode" id="mode" role="group" aria-label="Zar modu">
       <button class="btn" data-mode="dis" title="İki d20, düşüğü">Disadvantage</button>
       <button class="btn on" data-mode="norm">Normal</button>
@@ -40,6 +41,9 @@
   var z3 = document.getElementById("zar3d");
   try { z3.checked = localStorage.getItem("ky-zar3d") !== "0"; } catch (e) {}
   z3.addEventListener("change", function () { try { localStorage.setItem("ky-zar3d", z3.checked ? "1" : "0"); } catch (e) {} });
+  var zs = document.getElementById("zarses");
+  try { zs.checked = localStorage.getItem("ky-zar-ses") !== "0"; } catch (e) {}
+  zs.addEventListener("change", function () { try { localStorage.setItem("ky-zar-ses", zs.checked ? "1" : "0"); } catch (e) {} });
   var katman = null;
   function sahne(r) {
     if (!z3.checked || !r.zar) { goster(r); return; }
@@ -48,7 +52,7 @@
     katman.style.cssText = "position:fixed;inset:0;z-index:50;pointer-events:none";
     document.body.appendChild(katman);
     var k = katman;
-    import("../assets/zar3d.js").then(function (m) { return m.zarAt(k, r.zar, r.sinif || "normal"); })
+    import("../assets/zar3d.js").then(function (m) { return m.zarAt(k, r.zar, r.sinif || "normal", zs.checked); })
       .catch(function (e) { console.warn("3D zar:", e); })
       .then(function () { goster(r); setTimeout(function () { if (k === katman) { k.remove(); katman = null; } }, 1300); });
   }

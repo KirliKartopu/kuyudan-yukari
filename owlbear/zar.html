@@ -13,7 +13,7 @@ import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm";
 import { zarAt } from "../assets/zar3d.js";
 const p = new URLSearchParams(location.hash.slice(1));
 OBR.onReady(async () => {
-  try { await zarAt(document.getElementById("sahne"), p.get("z"), p.get("t")); }
+  try { await zarAt(document.getElementById("sahne"), p.get("z"), p.get("t"), p.get("s") !== "0"); }
   catch (e) { console.warn("3D zar:", e); }
   setTimeout(() => OBR.popover.close(p.get("id")), 1300);
 });
