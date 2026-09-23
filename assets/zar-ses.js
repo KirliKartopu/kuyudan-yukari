@@ -9,7 +9,7 @@
     felt: [1, 2, 3, 5, 7].map(function (n) { return "zar/sounds/surfaces/surface_felt" + n + ".mp3"; }),
   };
   window.ZarSesi = function (taban) {
-    var ctx = null, tampon = { plastic: [], metal: [], felt: [] }, yukleniyor = null;
+    var ctx = null, tampon = { plastic: [], metal: [], felt: [] }, yukleniyor = null, sonHata = "";
     function hazirla() {
       if (!ctx) {
         var AC = window.AudioContext || window.webkitAudioContext;
@@ -19,11 +19,11 @@
           return Promise.all(DOSYA[tur].map(function (f) {
             return fetch(taban + f).then(function (r) { return r.arrayBuffer(); })
               .then(function (b) { return new Promise(function (ok, no) { ctx.decodeAudioData(b, ok, no); }); })
-              .then(function (buf) { tampon[tur].push(buf); }).catch(function () {});
+              .then(function (buf) { tampon[tur].push(buf); }).catch(function (e) { sonHata = "yükleme: " + (e && e.message || e); });
           }));
         }));
       }
-      if (ctx.state === "suspended") ctx.resume();
+      if (ctx.state === "suspended") ctx.resume().catch(function (e) { sonHata = "resume: " + (e && e.message || e); });
     }
     // İlk tıklamada sesi hazırla (tarayıcı izni tıklamayla gelir)
     document.addEventListener("pointerdown", hazirla, true);
@@ -53,6 +53,14 @@
         return true;
       });
     }
-    return { cal: cal, hazir: function () { return !!ctx && ctx.state === "running"; } };
+    function durum() {
+      var n = tampon.plastic.length + tampon.metal.length + tampon.felt.length;
+      return "ses: " + (ctx ? ctx.state : "henüz tıklanmadı") + " · yüklenen dosya: " + n + "/23" + (sonHata ? " · hata: " + sonHata : "");
+    }
+    return {
+      cal: cal, durum: durum,
+      hazir: function () { return !!ctx && ctx.state === "running"; },
+      test: function () { hazirla(); return (yukleniyor || Promise.resolve()).then(function () { return cal("1d20@20", "normal"); }).then(durum); }
+    };
   };
 })();

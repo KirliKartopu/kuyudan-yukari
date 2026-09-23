@@ -69,6 +69,8 @@
       </div>
       <label class="gm"><input type="checkbox" id="zar3d" checked> 3D zar</label>
       <label class="gm"><input type="checkbox" id="zarses" checked> Ses</label>
+      <button class="btn" id="sestest" type="button">Sesi test et</button>
+      <span class="gm" id="sesdurum"></span>
       <label class="gm" id="gm-gizli" hidden><input type="checkbox" id="gizli"> Gizli zar (sadece GM görür)</label>
       <span class="gm" id="sahip-bilgi" hidden></span>
       <button class="btn" id="sahip-kaldir" hidden>Sahipliği kaldır</button>
@@ -171,10 +173,17 @@ if (!OBR.isAvailable) {
     zs.addEventListener("change", () => { try { localStorage.setItem("ky-zar-ses", zs.checked ? "1" : "0"); } catch (e) {} });
     // Sesi panel çalar: tarayıcı, tıklanmış pencerede sese izin verir
     const ses = ZarSesi(new URL("../assets/", location.href).href);
-    OBR.broadcast.onMessage(KANAL, ({ data }) => { if (zs.checked && data) ses.cal(data.zar, data.sinif); });
+    const calinan = new Set();
+    const sesCal = (r) => { if (!zs.checked || !r || !r.zar || calinan.has(r.id)) return; calinan.add(r.id); ses.cal(r.zar, r.sinif); };
+    OBR.broadcast.onMessage(KANAL, ({ data }) => sesCal(data));
+    document.getElementById("sestest").addEventListener("click", async () => {
+      document.getElementById("sesdurum").textContent = await ses.test();
+    });
     const onRoll = async (r) => {
       const gizli = rol === "GM" && document.getElementById("gizli").checked;
       r.kimden = (r.karakter || oyuncuAdi) + (gizli ? " (gizli)" : "");
+      r.id = Math.random().toString(36).slice(2);
+      sesCal(r); // kendi zarım: yayının geri dönmesini bekleme
       setTimeout(() => goster(r, r.kimden), z3.checked && r.zar ? 1700 : 0); // zarlar dursun, sonra sonuç
       const c = ks.current();
       if (r.baslik === "Initiative" && c) {
