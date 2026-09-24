@@ -281,10 +281,83 @@ OBR.onReady(async () => {
     } catch (e) { console.warn("HP etiketi senkronu:", e); }
     finally { calisiyor = false; if (tekrar) { tekrar = false; senkron(); } }
   }
-  OBR.room.onMetadataChange(() => senkron());
-  OBR.scene.items.onChange(() => senkron());
-  OBR.scene.onReadyChange((hazir) => { if (hazir) senkron(); });
+  OBR.room.onMetadataChange(() => { senkron(); kopru.degisim++; });
+  OBR.scene.items.onChange(() => { senkron(); kopru.degisim++; });
+  OBR.scene.onReadyChange((hazir) => { if (hazir) senkron(); kopru.degisim++; });
   senkron();
+
+  // --- DM Masası köprüsü (araclar/dm-masasi): masa uygulaması Owlbear'ı kendi penceresinde açar ve bu
+  // çerçeveye doğrudan erişir (executeJavaScript). Tarayıcıda kimse çağırmaz; yalnız GM'de tanımlı.
+  const olaylar = [];
+  OBR.broadcast.onMessage(NS + "/zar", ({ data }) => { olaylar.push({ tip: "zar", r: data }); if (olaylar.length > 50) olaylar.shift(); });
+  const K_ZARLAR = NS + "/zarlar";
+  const kopru = window.kyKopru = {
+    surum: 1,
+    degisim: 0,
+    cek: () => olaylar.splice(0),
+    async durum() {
+      const m = await OBR.room.getMetadata();
+      const hazir = await OBR.scene.isReady();
+      const items = hazir ? await OBR.scene.items.getItems((i) => i.layer === "CHARACTER") : [];
+      const d = m[K_DURUM] || {};
+      const tokenlar = [];
+      for (const i of items) {
+        const t = { id: i.id, ad: i.text?.plainText || i.name || "Token", gorunur: i.visible, pc: i.metadata[K_BAG] ?? null, npc: i.metadata[K_NPC] || null };
+        if (t.pc != null) {
+          const s = d[t.pc] || {}, c = s.hpMax ? null : await karakter(t.pc);
+          t.hpMax = s.hpMax || (c && c.hp_max) || null; t.hp = s.hp ?? t.hpMax; t.temp = s.temp || 0;
+        } else if (t.npc) { t.hp = t.npc.hp; t.hpMax = t.npc.hpMax; t.temp = t.npc.temp || 0; }
+        tokenlar.push(t);
+      }
+      const oyuncular = (await OBR.party.getPlayers()).map((p) => ({ ad: p.name, rol: p.role }));
+      return { sahne: hazir, sira: m[K_SIRA] || null, tokenlar, oyuncular, zarlar: (m[K_ZARLAR] || []).slice(0, 20) };
+    },
+    async zar(r, gizli) {
+      r = { ...r, id: Math.random().toString(36).slice(2) };
+      await OBR.broadcast.sendMessage(NS + "/zar", r, { destination: gizli ? "LOCAL" : "ALL" });
+      if (gizli) return r;
+      const m = await OBR.room.getMetadata();
+      await OBR.room.setMetadata({ [K_ZARLAR]: [r, ...(m[K_ZARLAR] || [])].slice(0, 25) });
+      return r;
+    },
+    // Hasar: arka plandaki /hasar işleyicisi (temp HP önce) kendi istemcimizde çalışır
+    hasar: (itemId, miktar, kaynak) => OBR.broadcast.sendMessage(NS + "/hasar", { itemId, miktar, tur: "", kaynak: kaynak || "DM" }, { destination: "LOCAL" }),
+    async iyiles(itemId, miktar) {
+      const [it] = await OBR.scene.items.getItems([itemId]);
+      if (!it) return;
+      const v = Math.max(0, +miktar || 0);
+      if (it.metadata[K_NPC]) {
+        await OBR.scene.items.updateItems([it.id], (l) => { const n = { ...l[0].metadata[K_NPC] }; n.hp = Math.min(n.hpMax, (n.hp || 0) + v); l[0].metadata[K_NPC] = n; });
+      } else if (it.metadata[K_BAG] != null) {
+        const id = it.metadata[K_BAG], m = await OBR.room.getMetadata(), d = { ...(m[K_DURUM] || {}) }, s = { ...(d[id] || {}) };
+        const c = s.hpMax ? null : await karakter(id), max = s.hpMax || (c && c.hp_max);
+        if (!max) return;
+        s.hp = Math.min(max, (s.hp ?? max) + v); d[id] = s;
+        await OBR.room.setMetadata({ [K_DURUM]: d });
+      }
+    },
+    async sira(islem, a, b) {
+      const m = await OBR.room.getMetadata();
+      if (islem === "bitir") { await OBR.room.setMetadata({ [K_SIRA]: undefined }); return; }
+      const s = m[K_SIRA] || { tur: 1, aktifId: null, liste: [] };
+      if (islem === "deger") { const x = s.liste.find((y) => y.id === a); if (x) x.deger = b; }
+      else if (islem === "cikar") {
+        const i = s.liste.findIndex((x) => x.id === s.aktifId);
+        if (s.aktifId === a) { const k = s.liste.slice(i + 1).concat(s.liste.slice(0, i)).find((x) => x.id !== a); s.aktifId = k ? k.id : null; }
+        s.liste = s.liste.filter((x) => x.id !== a);
+      } else if (islem === "sonraki" && s.liste.length) {
+        const i = s.liste.findIndex((x) => x.id === s.aktifId);
+        if (i === -1) s.aktifId = s.liste[0].id;
+        else if (i + 1 >= s.liste.length) { s.tur += 1; s.aktifId = s.liste[0].id; } else s.aktifId = s.liste[i + 1].id;
+      }
+      s.liste = s.liste.slice().sort((x, y) => (y.deger ?? -99) - (x.deger ?? -99));
+      await OBR.room.setMetadata({ [K_SIRA]: s });
+      const akt = islem === "sonraki" && s.liste.find((x) => x.id === s.aktifId);
+      if (akt) await OBR.broadcast.sendMessage(NS + "/sira", { ad: akt.ad, tur: s.tur }, { destination: "REMOTE" });
+      return s;
+    },
+    bildirim: (metin, tur) => OBR.notification.show(metin, tur || "INFO"),
+  };
 });
 </script>
 </body>
