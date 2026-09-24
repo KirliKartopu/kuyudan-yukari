@@ -199,12 +199,14 @@ function kimlikAdim() {
   <div class="satir"><label for="av">Resim adresi (isteğe bağlı)</label><input class="sec" id="av" data-alan="avatar" value="${esc(Y.avatar)}" placeholder="https://…" style="min-width:280px"></div>`;
   const eks = Object.values(eksikler()).flat();
   if (OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="odaya" type="button" ${C ? "" : "disabled"}>Odaya kaydet</button><span class="not" id="oda-durum">Kaydedince panelde karakter sayfan açılır; seviye atlarken sayfanın altındaki <b>Düzenle</b> ile buraya dönersin.</span></div>`;
-  h += `<div class="satir"><button class="btn ${OBR_MOD ? "" : "birincil"}" data-act="indir" type="button" ${C ? "" : "disabled"}>${OBR_MOD ? "Yedek dosya indir" : "Dosyayı indir"}</button><button class="btn" data-act="kopyala" type="button" ${C ? "" : "disabled"}>Panoya kopyala</button>
+  if (!OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="kod" type="button" ${C ? "" : "disabled"}>Owlbear kodunu kopyala</button><span class="not">Kodu Owlbear'daki üreticinin üstündeki <b>Kod yapıştır</b> kutusuna yapıştıracaksın.</span></div>`;
+  h += `<div class="satir"><button class="btn" data-act="indir" type="button" ${C ? "" : "disabled"}>${OBR_MOD ? "Yedek dosya indir" : "Dosyayı indir"}</button><button class="btn" data-act="kopyala" type="button" ${C ? "" : "disabled"}>Panoya kopyala</button>
     <span class="not">${eks.length ? "Eksik seçimler var (" + eks.length + "); yine de kaydedebilirsin, sonra tamamlarsın." : "Her şey tamam."}</span></div>`;
   if (!OBR_MOD) h += `<div class="detay"><b>Bu karakteri oyuna nasıl alırım?</b>
-    <p>Bu sayfa sitede açık; buradan yapılan karakter doğrudan oyuna girmez, önce dosya olarak indirilir. Oyuna almak için:</p>
-    <ol><li>Owlbear'da odaya gir, <b>Kuyudan Yukarı</b> panelini aç.</li><li><b>Yeni karakter yarat</b>'a bas.</li>
-    <li>Açılan pencerenin üstündeki <b>Dosya aç</b> ile indirdiğin dosyayı seç.</li><li>Son adımda <b>Odaya kaydet</b>'e bas. Karakter sana bağlanır.</li></ol>
+    <p>Bu sayfa sitede açık; tarayıcı, buradaki karakterin Owlbear'a kendiliğinden geçmesine izin vermiyor. Kısa bir kodla taşıyorsun:</p>
+    <ol><li>Yukarıdaki <b>Owlbear kodunu kopyala</b>'ya bas.</li><li>Owlbear'da odaya gir, <b>Kuyudan Yukarı</b> panelini aç, <b>Yeni karakter yarat</b>'a bas.</li>
+    <li>Açılan pencerenin üstündeki <b>Kod yapıştır</b> kutusuna tıkla ve yapıştır (Ctrl+V). Karakterin son adımda açılır.</li><li><b>Odaya kaydet</b>'e bas. Karakter sana bağlanır.</li></ol>
+    <p>Kod yerine dosya da olur: <b>Dosyayı indir</b>, sonra Owlbear'daki pencerede <b>Dosya aç</b>.</p>
     <p>Kısa yol: karakteri baştan Owlbear içinde, panelden yaratırsan dosyaya hiç gerek kalmaz.</p></div>`;
   else h += `<p class="not">Yedek dosya isteğe bağlı: karakter odada saklanıyor.</p>`;
   h += `<h2 style="margin-top:24px">Önizleme</h2><div class="sheet" style="padding:0"><div id="onizleme"></div></div>`;
@@ -276,6 +278,7 @@ document.addEventListener("click", async (e) => {
     Y.zarlar = Array.from({ length: 6 }, () => { const r = [1, 2, 3, 4].map(() => 1 + Math.floor(Math.random() * 6)).sort((a, b) => a - b); return r[1] + r[2] + r[3]; }).sort((a, b) => b - a);
     Y.atama = {};
   } else if (t.dataset.act === "indir") { indir(); return; }
+  else if (t.dataset.act === "kod") { try { await navigator.clipboard.writeText(KOD_ON + (await sikistir(Y))); t.textContent = "Kopyalandı ✓"; } catch (x) { t.textContent = "Kopyalanamadı"; } return; }
   else if (t.dataset.act === "odaya") { odayaKaydet(t); return; }
   else if (t.dataset.act === "kapat") { if (OBR) OBR.modal.close(MODAL); return; }
   else if (t.dataset.act === "kopyala") { try { await navigator.clipboard.writeText(JSON.stringify(C, null, 1)); t.textContent = "Kopyalandı ✓"; } catch (x) { t.textContent = "Kopyalanamadı"; } return; }
@@ -306,6 +309,18 @@ $("#dosya").addEventListener("change", async (e) => {
     Y = y; S = Y.sinif ? await K.sinifYukle(Y.sinif) : null; adim = "sinif"; kaydet(); ciz();
   } catch (x) { alert("Bu dosya bir Kuyudan Yukarı karakter dosyası değil."); }
   e.target.value = "";
+});
+// Owlbear aktarma kodu: "KY1:" + gzip/base64 yapı (oda kaydıyla aynı biçim)
+const KOD_ON = "KY1:";
+$("#kod").addEventListener("input", async (e) => {
+  const t = e.target, v = t.value.trim().replace(/\s+/g, "");
+  if (!v) return;
+  try {
+    const y = await yapiAc(v.startsWith(KOD_ON) ? v.slice(KOD_ON.length) : v);
+    if (!y || y.v !== 1 || !y.secim) throw new Error("biçim");
+    Y = y; S = Y.sinif ? await K.sinifYukle(Y.sinif) : null; adim = "kimlik"; kaydet(); ciz();
+    t.value = ""; t.placeholder = "Yüklendi ✓";
+  } catch (x) { t.value = ""; t.placeholder = "Kod okunamadı"; }
 });
 function indir() {
   const ad = (Y.ad || "karakter").toLocaleLowerCase("tr").replace(/[^a-z0-9ğüşıöç]+/g, "-").replace(/^-|-$/g, "");

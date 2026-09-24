@@ -1,0 +1,447 @@
+{
+ "id": 1790210002,
+ "ad": "Tilki (geçici ad)",
+ "oyuncu": "",
+ "tur": "Human",
+ "background": "Criminal",
+ "siniflar": [
+  {
+   "ad": "Rogue",
+   "seviye": 1,
+   "subclass": null
+  }
+ ],
+ "seviye": 1,
+ "prof_bonus": 2,
+ "yetenekler": {
+  "str": {
+   "puan": 8,
+   "mod": -1
+  },
+  "dex": {
+   "puan": 17,
+   "mod": 3
+  },
+  "con": {
+   "puan": 14,
+   "mod": 2
+  },
+  "int": {
+   "puan": 10,
+   "mod": 0
+  },
+  "wis": {
+   "puan": 12,
+   "mod": 1
+  },
+  "cha": {
+   "puan": 14,
+   "mod": 2
+  }
+ },
+ "saves": {
+  "str": {
+   "prof": false,
+   "bonus": -1
+  },
+  "dex": {
+   "prof": true,
+   "bonus": 5
+  },
+  "con": {
+   "prof": false,
+   "bonus": 2
+  },
+  "int": {
+   "prof": true,
+   "bonus": 2
+  },
+  "wis": {
+   "prof": false,
+   "bonus": 1
+  },
+  "cha": {
+   "prof": false,
+   "bonus": 2
+  }
+ },
+ "skills": [
+  {
+   "ad": "Acrobatics",
+   "yetenek": "dex",
+   "prof": 1,
+   "bonus": 5
+  },
+  {
+   "ad": "Animal Handling",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Arcana",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Athletics",
+   "yetenek": "str",
+   "prof": 0,
+   "bonus": -1
+  },
+  {
+   "ad": "Deception",
+   "yetenek": "cha",
+   "prof": 1,
+   "bonus": 4
+  },
+  {
+   "ad": "History",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Insight",
+   "yetenek": "wis",
+   "prof": 1,
+   "bonus": 3
+  },
+  {
+   "ad": "Intimidation",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Investigation",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Medicine",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Nature",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Perception",
+   "yetenek": "wis",
+   "prof": 1,
+   "bonus": 3
+  },
+  {
+   "ad": "Performance",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Persuasion",
+   "yetenek": "cha",
+   "prof": 1,
+   "bonus": 4
+  },
+  {
+   "ad": "Religion",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Sleight of Hand",
+   "yetenek": "dex",
+   "prof": 2,
+   "bonus": 7
+  },
+  {
+   "ad": "Stealth",
+   "yetenek": "dex",
+   "prof": 2,
+   "bonus": 7
+  },
+  {
+   "ad": "Survival",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  }
+ ],
+ "pasif_perception": 13,
+ "hp_max": 10,
+ "ac": 14,
+ "initiative": 5,
+ "hiz": 30,
+ "duyular": {},
+ "diller": [
+  "Common",
+  "Elvish",
+  "Halfling",
+  "Thieves' Cant"
+ ],
+ "araclar": [
+  "Thieves' Tools"
+ ],
+ "zirh": [
+  "light"
+ ],
+ "silah": [
+  "simple",
+  "Martial weapons that have the Finesse or Light property"
+ ],
+ "direncler": [],
+ "notlar": [],
+ "saldirilar": [
+  {
+   "ad": "Dagger",
+   "tip": "Dagger",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d4+3",
+   "tur": "Piercing",
+   "menzil": "20/60 ft",
+   "mastery": "Nick",
+   "ozellikler": [
+    "Finesse",
+    "Light",
+    "Thrown"
+   ]
+  },
+  {
+   "ad": "Shortsword",
+   "tip": "Shortsword",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d6+3",
+   "tur": "Piercing",
+   "menzil": "5 ft",
+   "mastery": "Vex",
+   "ozellikler": [
+    "Finesse",
+    "Light"
+   ]
+  },
+  {
+   "ad": "Shortbow",
+   "tip": "Shortbow",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d6+3",
+   "tur": "Piercing",
+   "menzil": "80/320 ft",
+   "mastery": null,
+   "ozellikler": [
+    "Ammunition",
+    "Two-Handed"
+   ]
+  },
+  {
+   "ad": "Unarmed Strike",
+   "tip": "",
+   "kusanili": true,
+   "isabet": 1,
+   "hasar": "1",
+   "tur": "Bludgeoning",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": []
+  }
+ ],
+ "buyu": null,
+ "ozellikler": [
+  {
+   "ad": "Expertise",
+   "kaynak": "Rogue",
+   "seviye": 1
+  },
+  {
+   "ad": "Sneak Attack",
+   "kaynak": "Rogue",
+   "seviye": 1
+  },
+  {
+   "ad": "Thieves' Cant",
+   "kaynak": "Rogue",
+   "seviye": 1
+  },
+  {
+   "ad": "Weapon Mastery",
+   "kaynak": "Rogue",
+   "seviye": 1
+  },
+  {
+   "ad": "Resourceful",
+   "kaynak": "Human",
+   "seviye": 1
+  },
+  {
+   "ad": "Skillful",
+   "kaynak": "Human",
+   "seviye": 1
+  },
+  {
+   "ad": "Versatile",
+   "kaynak": "Human",
+   "seviye": 1
+  }
+ ],
+ "featler": [
+  "Alert",
+  "Lucky"
+ ],
+ "envanter": [
+  {
+   "ad": "Leather Armor",
+   "adet": 1,
+   "tip": "Light Armor",
+   "kusanili": true
+  },
+  {
+   "ad": "Dagger",
+   "adet": 4,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Shortsword",
+   "adet": 1,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Shortbow",
+   "adet": 1,
+   "tip": "Ranged Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Arrows (20)",
+   "adet": 1,
+   "tip": "Ammunition",
+   "kusanili": false
+  },
+  {
+   "ad": "Quiver",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Thieves' Tools",
+   "adet": 2,
+   "tip": "Tool",
+   "kusanili": false
+  },
+  {
+   "ad": "Burglar's Pack",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Crowbar",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Pouch",
+   "adet": 2,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Traveler's Clothes",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  }
+ ],
+ "para": {
+  "cp": 0,
+  "sp": 0,
+  "ep": 0,
+  "gp": 24,
+  "pp": 0
+ },
+ "avatar": null,
+ "yerel": true,
+ "guncellendi": "2026-09-24 06:28 UTC",
+ "yapi": {
+  "v": 1,
+  "id": 1790210002,
+  "ad": "Tilki (geçici ad)",
+  "oyuncu": "",
+  "avatar": "",
+  "sinif": "Rogue",
+  "seviye": 1,
+  "background": "Criminal|XPHB",
+  "tur": "Human|XPHB",
+  "yontem": "standart",
+  "temel": {
+   "dex": 15,
+   "cha": 14,
+   "con": 13,
+   "wis": 12,
+   "int": 10,
+   "str": 8
+  },
+  "dunyalar": false,
+  "secim": {
+   "bg:ab": [
+    "21",
+    "dex",
+    "con"
+   ],
+   "bg:ekip": [
+    "A"
+   ],
+   "tur:boy": [
+    "M"
+   ],
+   "tur:skill": [
+    "insight"
+   ],
+   "tur:feat": [
+    "Lucky|XPHB"
+   ],
+   "dil": [
+    "Elvish",
+    "Halfling"
+   ],
+   "sinif:skill": [
+    "acrobatics",
+    "deception",
+    "perception",
+    "persuasion"
+   ],
+   "sinif:exp:1": [
+    "stealth",
+    "sleight of hand"
+   ],
+   "sinif:mastery": [
+    "Dagger",
+    "Shortsword"
+   ],
+   "sinif:ekip": [
+    "A"
+   ]
+  },
+  "atama": {
+   "dex": 0,
+   "cha": 1,
+   "con": 2,
+   "wis": 3,
+   "int": 4,
+   "str": 5
+  }
+ }
+}

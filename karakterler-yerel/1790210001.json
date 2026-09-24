@@ -1,0 +1,449 @@
+{
+ "id": 1790210001,
+ "ad": "Brakk",
+ "oyuncu": "",
+ "tur": "Orc",
+ "background": "Hermit",
+ "siniflar": [
+  {
+   "ad": "Fighter",
+   "seviye": 1,
+   "subclass": null
+  }
+ ],
+ "seviye": 1,
+ "prof_bonus": 2,
+ "yetenekler": {
+  "str": {
+   "puan": 15,
+   "mod": 2
+  },
+  "dex": {
+   "puan": 13,
+   "mod": 1
+  },
+  "con": {
+   "puan": 16,
+   "mod": 3
+  },
+  "int": {
+   "puan": 10,
+   "mod": 0
+  },
+  "wis": {
+   "puan": 13,
+   "mod": 1
+  },
+  "cha": {
+   "puan": 8,
+   "mod": -1
+  }
+ },
+ "saves": {
+  "str": {
+   "prof": true,
+   "bonus": 4
+  },
+  "dex": {
+   "prof": false,
+   "bonus": 1
+  },
+  "con": {
+   "prof": true,
+   "bonus": 5
+  },
+  "int": {
+   "prof": false,
+   "bonus": 0
+  },
+  "wis": {
+   "prof": false,
+   "bonus": 1
+  },
+  "cha": {
+   "prof": false,
+   "bonus": -1
+  }
+ },
+ "skills": [
+  {
+   "ad": "Acrobatics",
+   "yetenek": "dex",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Animal Handling",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Arcana",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Athletics",
+   "yetenek": "str",
+   "prof": 1,
+   "bonus": 4
+  },
+  {
+   "ad": "Deception",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": -1
+  },
+  {
+   "ad": "History",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Insight",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Intimidation",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": -1
+  },
+  {
+   "ad": "Investigation",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Medicine",
+   "yetenek": "wis",
+   "prof": 1,
+   "bonus": 3
+  },
+  {
+   "ad": "Nature",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Perception",
+   "yetenek": "wis",
+   "prof": 1,
+   "bonus": 3
+  },
+  {
+   "ad": "Performance",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": -1
+  },
+  {
+   "ad": "Persuasion",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": -1
+  },
+  {
+   "ad": "Religion",
+   "yetenek": "int",
+   "prof": 1,
+   "bonus": 2
+  },
+  {
+   "ad": "Sleight of Hand",
+   "yetenek": "dex",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Stealth",
+   "yetenek": "dex",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Survival",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  }
+ ],
+ "pasif_perception": 13,
+ "hp_max": 13,
+ "ac": 16,
+ "initiative": 1,
+ "hiz": 30,
+ "duyular": {
+  "Darkvision": 120
+ },
+ "diller": [
+  "Common",
+  "Giant",
+  "Orc"
+ ],
+ "araclar": [
+  "Herbalism Kit"
+ ],
+ "zirh": [
+  "light",
+  "medium",
+  "heavy",
+  "shield"
+ ],
+ "silah": [
+  "simple",
+  "martial"
+ ],
+ "direncler": [],
+ "notlar": [],
+ "saldirilar": [
+  {
+   "ad": "Greatsword",
+   "tip": "Greatsword",
+   "kusanili": true,
+   "isabet": 4,
+   "hasar": "2d6+2",
+   "tur": "Slashing",
+   "menzil": "5 ft",
+   "mastery": "Graze",
+   "ozellikler": [
+    "Heavy",
+    "Two-Handed"
+   ]
+  },
+  {
+   "ad": "Flail",
+   "tip": "Flail",
+   "kusanili": true,
+   "isabet": 4,
+   "hasar": "1d8+2",
+   "tur": "Bludgeoning",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": []
+  },
+  {
+   "ad": "Javelin",
+   "tip": "Javelin",
+   "kusanili": true,
+   "isabet": 4,
+   "hasar": "1d6+2",
+   "tur": "Piercing",
+   "menzil": "30/120 ft",
+   "mastery": "Slow",
+   "ozellikler": [
+    "Thrown"
+   ]
+  },
+  {
+   "ad": "Quarterstaff",
+   "tip": "Quarterstaff",
+   "kusanili": true,
+   "isabet": 4,
+   "hasar": "1d6+2",
+   "tur": "Bludgeoning",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": [
+    "Versatile"
+   ]
+  },
+  {
+   "ad": "Unarmed Strike",
+   "tip": "",
+   "kusanili": true,
+   "isabet": 4,
+   "hasar": "3",
+   "tur": "Bludgeoning",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": []
+  }
+ ],
+ "buyu": null,
+ "ozellikler": [
+  {
+   "ad": "Fighting Style",
+   "kaynak": "Fighter",
+   "seviye": 1
+  },
+  {
+   "ad": "Second Wind",
+   "kaynak": "Fighter",
+   "seviye": 1
+  },
+  {
+   "ad": "Weapon Mastery",
+   "kaynak": "Fighter",
+   "seviye": 1
+  },
+  {
+   "ad": "Adrenaline Rush",
+   "kaynak": "Orc",
+   "seviye": 1
+  },
+  {
+   "ad": "Darkvision",
+   "kaynak": "Orc",
+   "seviye": 1
+  },
+  {
+   "ad": "Relentless Endurance",
+   "kaynak": "Orc",
+   "seviye": 1
+  }
+ ],
+ "featler": [
+  "Healer",
+  "Great Weapon Fighting"
+ ],
+ "envanter": [
+  {
+   "ad": "Chain Mail",
+   "adet": 1,
+   "tip": "Heavy Armor",
+   "kusanili": true
+  },
+  {
+   "ad": "Greatsword",
+   "adet": 1,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Flail",
+   "adet": 1,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Javelin",
+   "adet": 8,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Dungeoneer's Pack",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Quarterstaff",
+   "adet": 1,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Herbalism Kit",
+   "adet": 1,
+   "tip": "Tool",
+   "kusanili": false
+  },
+  {
+   "ad": "Bedroll",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Book",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Lamp",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Oil",
+   "adet": 3,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Traveler's Clothes",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  }
+ ],
+ "para": {
+  "cp": 0,
+  "sp": 0,
+  "ep": 0,
+  "gp": 20,
+  "pp": 0
+ },
+ "avatar": null,
+ "yerel": true,
+ "guncellendi": "2026-09-24 06:28 UTC",
+ "yapi": {
+  "v": 1,
+  "id": 1790210001,
+  "ad": "Brakk",
+  "oyuncu": "",
+  "avatar": "",
+  "sinif": "Fighter",
+  "seviye": 1,
+  "background": "Hermit|XPHB",
+  "tur": "Orc|XPHB",
+  "yontem": "standart",
+  "temel": {
+   "str": 15,
+   "con": 14,
+   "dex": 13,
+   "wis": 12,
+   "int": 10,
+   "cha": 8
+  },
+  "dunyalar": false,
+  "secim": {
+   "bg:ab": [
+    "21",
+    "con",
+    "wis"
+   ],
+   "bg:ekip": [
+    "A"
+   ],
+   "dil": [
+    "Orc",
+    "Giant"
+   ],
+   "sinif:skill": [
+    "athletics",
+    "perception"
+   ],
+   "sinif:mastery": [
+    "Greataxe",
+    "Greatsword",
+    "Javelin"
+   ],
+   "sinif:fp:Fighting Style:1": [
+    "Great Weapon Fighting|XPHB"
+   ],
+   "sinif:ekip": [
+    "A"
+   ]
+  },
+  "atama": {
+   "str": 0,
+   "con": 1,
+   "dex": 2,
+   "wis": 3,
+   "int": 4,
+   "cha": 5
+  }
+ }
+}
