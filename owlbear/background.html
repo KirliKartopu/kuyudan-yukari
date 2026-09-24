@@ -357,7 +357,8 @@ OBR.onReady(async () => {
       // sırada token adıyla kalmış karakterler: yalnız görüntüde düzelt (buradan yazmak eşzamanlı eklemeyi ezerdi)
       const sira = m[K_SIRA] ? { ...m[K_SIRA], liste: [] } : null;
       for (const x of (m[K_SIRA] || {}).liste || []) sira.liste.push(x.karakter != null ? { ...x, ad: (await karakterAdi(x.karakter)) || x.ad } : x);
-      return { sahne: hazir, sira, tokenlar, oyuncular, zarlar: (m[K_ZARLAR] || []).slice(0, 20) };
+      return { sahne: hazir, sira, tokenlar, oyuncular, zarlar: (m[K_ZARLAR] || []).slice(0, 20),
+               karakterDurum: m[K_DURUM] || {}, yerel: m[NS + "/yerel"] || {} };
     },
     async zar(r, gizli) {
       r = { ...r, id: Math.random().toString(36).slice(2) };
@@ -401,6 +402,16 @@ OBR.onReady(async () => {
       return s;
     },
     bildirim: (metin, tur) => OBR.notification.show(metin, tur || "INFO"),
+    // karakter kağıdı (HP, slot, condition): Owlbear panelindeki store.save ile aynı, 16 KB oda sınırı dahil
+    async karakterKaydet(id, s) {
+      const m = await OBR.room.getMetadata();
+      const guncel = { [K_DURUM]: { ...(m[K_DURUM] || {}), [id]: s } };
+      const boyut = (x) => new Blob([JSON.stringify({ ...m, ...x })]).size;
+      if (boyut(guncel) > 15000 && (m[K_ZARLAR] || []).length > 8) guncel[K_ZARLAR] = m[K_ZARLAR].slice(0, 8);
+      if (boyut(guncel) > 16000) throw new Error("Oda verisi dolu: değişiklik kaydedilmedi (eski handout'ları sil).");
+      await OBR.room.setMetadata(guncel);
+      return true;
+    },
   };
 });
 </script>
