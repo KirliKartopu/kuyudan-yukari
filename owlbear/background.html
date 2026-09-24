@@ -18,6 +18,16 @@ const gozlem = (hp, max) => hp <= 0 ? ["Yere yığıldı", "#3A2A2A"] : hp <= ma
 const BASE = new URL("../", import.meta.url).href; // .../kuyudan-yukari/
 const YOL = new URL("../", import.meta.url).pathname; // /kuyudan-yukari/
 const ICON = YOL + "owlbear/icon.svg";
+// Bağlı token'ın karakter adı: üreticide yapılan (oda kaydı) ya da sitedeki karakter dosyası. Bulunamazsa null.
+const kAdOnbellek = {};
+async function karakterAdi(id) {
+  if (id == null) return null;
+  const y = ((await OBR.room.getMetadata())[NS + "/yerel"] || {})[id];
+  if (y && y.ad) return y.ad;
+  if (!(id in kAdOnbellek)) kAdOnbellek[id] = fetch(BASE + "karakterler/" + id + ".json", { cache: "no-cache" })
+    .then((r) => (r.ok ? r.json() : null)).then((c) => (c && c.ad) || null).catch(() => null);
+  return kAdOnbellek[id];
+}
 
 OBR.onReady(async () => {
   // --- bildirimler
@@ -143,7 +153,7 @@ OBR.onReady(async () => {
         if (i > -1) sira.liste.splice(i, 1);
         else {
           const npc = it.metadata[K_NPC];
-          sira.liste.push({ id: it.id, ad: it.text?.plainText || it.name || (npc && npc.ad) || "Token", karakter: it.metadata[K_BAG] || null, ini: npc ? npc.ini || 0 : 0, npc: !!npc, deger: null });
+          sira.liste.push({ id: it.id, ad: (await karakterAdi(it.metadata[K_BAG])) || it.text?.plainText || it.name || (npc && npc.ad) || "Token", karakter: it.metadata[K_BAG] || null, ini: npc ? npc.ini || 0 : 0, npc: !!npc, deger: null });
         }
       }
       await OBR.room.setMetadata({ [K_SIRA]: sira });
@@ -304,13 +314,21 @@ OBR.onReady(async () => {
       for (const i of items) {
         const t = { id: i.id, ad: i.text?.plainText || i.name || "Token", gorunur: i.visible, pc: i.metadata[K_BAG] ?? null, npc: i.metadata[K_NPC] || null };
         if (t.pc != null) {
+          t.ad = (await karakterAdi(t.pc)) || t.ad;
           const s = d[t.pc] || {}, c = s.hpMax ? null : await karakter(t.pc);
           t.hpMax = s.hpMax || (c && c.hp_max) || null; t.hp = s.hp ?? t.hpMax; t.temp = s.temp || 0;
         } else if (t.npc) { t.hp = t.npc.hp; t.hpMax = t.npc.hpMax; t.temp = t.npc.temp || 0; }
         tokenlar.push(t);
       }
       const oyuncular = (await OBR.party.getPlayers()).map((p) => ({ ad: p.name, rol: p.role }));
-      return { sahne: hazir, sira: m[K_SIRA] || null, tokenlar, oyuncular, zarlar: (m[K_ZARLAR] || []).slice(0, 20) };
+      // sırada token adıyla kalmış karakterleri karakter adına düzelt (Owlbear panelinde de düzgün görünsün)
+      const sira = m[K_SIRA] || null;
+      if (sira && sira.liste) {
+        let degisti = false;
+        for (const x of sira.liste) if (x.karakter != null) { const a = await karakterAdi(x.karakter); if (a && a !== x.ad) { x.ad = a; degisti = true; } }
+        if (degisti) await OBR.room.setMetadata({ [K_SIRA]: sira });
+      }
+      return { sahne: hazir, sira, tokenlar, oyuncular, zarlar: (m[K_ZARLAR] || []).slice(0, 20) };
     },
     async zar(r, gizli) {
       r = { ...r, id: Math.random().toString(36).slice(2) };
@@ -345,6 +363,8 @@ OBR.onReady(async () => {
         const [it] = await OBR.scene.items.getItems([a]);
         if (it) { const npc = it.metadata[K_NPC]; s.liste.push({ id: it.id, ad: it.text?.plainText || it.name || (npc && npc.ad) || "Token", karakter: it.metadata[K_BAG] || null, ini: npc ? npc.ini || 0 : 0, npc: !!npc, deger: b ?? null }); }
       }
+      // karaktere bağlı satırlarda token adı değil karakter adı (eski kayıtlar da düzelir)
+      for (const x of s.liste) if (x.karakter != null) x.ad = (await karakterAdi(x.karakter)) || x.ad;
       else if (islem === "cikar") {
         const i = s.liste.findIndex((x) => x.id === s.aktifId);
         if (s.aktifId === a) { const k = s.liste.slice(i + 1).concat(s.liste.slice(0, i)).find((x) => x.id !== a); s.aktifId = k ? k.id : null; }
