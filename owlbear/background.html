@@ -341,6 +341,10 @@ OBR.onReady(async () => {
       if (islem === "bitir") { await OBR.room.setMetadata({ [K_SIRA]: undefined }); return; }
       const s = m[K_SIRA] || { tur: 1, aktifId: null, liste: [] };
       if (islem === "deger") { const x = s.liste.find((y) => y.id === a); if (x) x.deger = b; }
+      else if (islem === "ekle" && !s.liste.some((x) => x.id === a)) {
+        const [it] = await OBR.scene.items.getItems([a]);
+        if (it) { const npc = it.metadata[K_NPC]; s.liste.push({ id: it.id, ad: it.text?.plainText || it.name || (npc && npc.ad) || "Token", karakter: it.metadata[K_BAG] || null, ini: npc ? npc.ini || 0 : 0, npc: !!npc, deger: b ?? null }); }
+      }
       else if (islem === "cikar") {
         const i = s.liste.findIndex((x) => x.id === s.aktifId);
         if (s.aktifId === a) { const k = s.liste.slice(i + 1).concat(s.liste.slice(0, i)).find((x) => x.id !== a); s.aktifId = k ? k.id : null; }
