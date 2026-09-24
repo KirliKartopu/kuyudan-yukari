@@ -78,3 +78,31 @@ export const ADIM_TR = {
   ekip: "Başlangıç eşyaların. Hazır paketi almak en kolayı. Sadece altın alırsan eşyaları DM ile birlikte satın alırsın.",
   kimlik: "Karakterine bir ad ver. Owlbear'da oynuyoruz: karakteri oyuna almanın yolu aşağıda.",
 };
+
+// Alignment (PHB 2024, 4. adım). Adlar keyword olarak İngilizce, açıklama Türkçe.
+export const ALIGN = [
+  ["Lawful Good", "Toplumun doğru saydığı şeyi yapmaya çalışır. Adaletsizliğe karşı savaşan, masumu tereddütsüz koruyan biri."],
+  ["Neutral Good", "Elinden gelenin en iyisini yapar; kurallar içinde çalışır ama onlara bağlı hissetmez. Başkalarına ihtiyaçlarına göre yardım eden iyi kalpli biri."],
+  ["Chaotic Good", "Başkalarının beklentisini pek umursamadan vicdanının sesine uyar. Zalim bir baronun vergi memurlarını soyup parayı yoksullara dağıtan bir asi."],
+  ["Lawful Neutral", "Yasaya, geleneğe ya da kendi koyduğu kurallara göre davranır. Ne muhtaçların isteğine ne kötülüğün cazibesine kapılan, disiplinli bir yaşam süren biri."],
+  ["Neutral", "Ahlak sorularından kaçınır, taraf tutmaz, o an en iyi görüneni yapar. Ahlak tartışmalarından sıkılan biri."],
+  ["Chaotic Neutral", "Kaprislerinin peşinden gider, kişisel özgürlüğünü her şeyin üstünde tutar. Aklıyla geçinip diyar diyar dolaşan bir çapkın."],
+  ["Lawful Evil", "Bir gelenek, sadakat ya da düzen kuralının sınırları içinde, istediğini sistemli biçimde alır. Halkı sömürüp güç için entrika çeviren bir soylu."],
+  ["Neutral Evil", "Arzularının peşinde verdiği zarardan rahatsız olmaz. Canı istediğinde soyan ve öldüren bir suçlu."],
+  ["Chaotic Evil", "Nefret ya da kan hırsıyla keyfi şiddete başvurur. İntikam ve kaos peşindeki bir kötü."],
+];
+// Alignment'a göre kişilik özellikleri (PHB 2024 tablosu)
+export const ALIGN_OZ = {
+  Lawful: ["İş birlikçi", "Sadık", "Yargılayıcı", "Düzenli"], Chaotic: ["Övüngen", "Aceleci", "Asi", "Kendine dönük"],
+  Good: ["Merhametli", "Yardımsever", "Dürüst", "İyi kalpli"], Evil: ["Sahtekâr", "İntikamcı", "Zalim", "Açgözlü"],
+  Neutral: ["Bencil", "İlgisiz", "Az konuşan", "Pragmatik"],
+};
+// Ability puanına göre görünüş ve kişilik sıfatları (PHB 2024, 3. adım): [yüksek, düşük]
+export const SIFAT = {
+  str: [["Kaslı", "Güçsüz"], ["Adaleli", "Çelimsiz"], ["Koruyucu", "Çekingen"], ["Dolaysız", "Dolaylı"]],
+  dex: [["Çevik", "Tedirgin"], ["Hareketli", "Sakar"], ["Kıpır kıpır", "Tereddütlü"], ["Dengeli", "Dengesiz"]],
+  con: [["Enerjik", "Cılız"], ["Dinç", "Midesi hassas"], ["Gürbüz", "Uyuşuk"], ["Sağlam", "Kırılgan"]],
+  int: [["Kararlı", "Basit"], ["Mantıklı", "Mantıksız"], ["Bilgili", "Habersiz"], ["Meraklı", "Havai"]],
+  wis: [["Dingin", "Düşüncesiz"], ["Düşünceli", "Dalgın"], ["Dikkatli", "Bihaber"], ["Temkinli", "Toy"]],
+  cha: [["Çekici", "Ukala"], ["Buyurgan", "Espri anlayışsız"], ["Komik", "İçine kapalı"], ["İlham veren", "Patavatsız"]],
+};

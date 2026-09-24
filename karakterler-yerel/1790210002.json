@@ -4,6 +4,8 @@
  "oyuncu": "",
  "tur": "Human",
  "background": "Criminal",
+ "alignment": "Neutral",
+ "kisilik": "",
  "siniflar": [
   {
    "ad": "Rogue",
@@ -374,7 +376,7 @@
  },
  "avatar": null,
  "yerel": true,
- "guncellendi": "2026-09-24 06:28 UTC",
+ "guncellendi": "2026-09-24 07:19 UTC",
  "yapi": {
   "v": 1,
   "id": 1790210002,
@@ -442,6 +444,8 @@
    "wis": 3,
    "int": 4,
    "str": 5
-  }
+  },
+  "alignment": "Neutral",
+  "kisilik": ""
  }
 }

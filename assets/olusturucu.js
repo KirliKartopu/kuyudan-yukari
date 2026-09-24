@@ -1,7 +1,7 @@
 // Karakter üreticisi arayüzü. Kurallar kural.js'te; burası sadece soruları gösterir ve cevapları yazar.
 import * as K from "./kural.js";
 import { girdi, esc } from "./aciklama.js";
-import { SINIF_TR, TUR_TR, AB_TR, ADIM_TR } from "./olustur-metin.js";
+import { SINIF_TR, TUR_TR, AB_TR, ADIM_TR, ALIGN, ALIGN_OZ, SIFAT } from "./olustur-metin.js";
 import { K_YEREL, ODA_SINIRI, sikistir, ac as yapiAc } from "./oda-karakter.js";
 
 // Owlbear içinde açıldıysa (?obr=1) karakter dosyaya değil doğrudan odaya kaydedilir
@@ -75,7 +75,7 @@ function altDugmeler() {
 }
 function ozetCiz(eks) {
   const sa = (n) => (n >= 0 ? "+" : "") + n;
-  let h = `<h3>${esc(Y.ad || "İsimsiz kahraman")}</h3><p class="alt">${esc([Y.tur && Y.tur.split("|")[0], Y.sinif && Y.sinif + " " + Y.seviye + (sec("subclass")[0] ? " (" + sec("subclass")[0] + ")" : ""), Y.background && Y.background.split("|")[0]].filter(Boolean).join(" · ") || "Henüz seçim yok")}</p>`;
+  let h = `<h3>${esc(Y.ad || "İsimsiz kahraman")}</h3><p class="alt">${esc([Y.tur && Y.tur.split("|")[0], Y.sinif && Y.sinif + " " + Y.seviye + (sec("subclass")[0] ? " (" + sec("subclass")[0] + ")" : ""), Y.background && Y.background.split("|")[0], Y.alignment].filter(Boolean).join(" · ") || "Henüz seçim yok")}</p>`;
   if (C) {
     h += `<div class="say"><div><b>${C.hp_max}</b><small>HP</small></div><div><b>${C.ac}</b><small>AC</small></div><div><b>${sa(C.initiative)}</b><small>Init</small></div><div><b>${C.hiz}</b><small>Speed</small></div></div>`;
     const ana = anaAbility();
@@ -193,10 +193,23 @@ function ekipAdim() {
   return h;
 }
 // --- adım: kimlik
+// PHB 2024: ability puanlarına ve alignment'a göre kişilik sıfatları (fikir olsun diye)
+function kisilikFikir() {
+  if (!C) return "";
+  const sirali = K.AB.map((a) => [a, C.yetenekler[a].puan]).sort((x, y) => y[1] - x[1]);
+  const satir = (a, i) => `<b>${i ? "Düşük" : "Yüksek"} ${a.toUpperCase()}:</b> ${SIFAT[a].map((s) => s[i]).join(", ")}`;
+  const parca = [satir(sirali[0][0], 0), satir(sirali[1][0], 0), satir(sirali[5][0], 1)];
+  if (Y.alignment) { const k = Y.alignment.split(" "); for (const w of new Set(k)) if (ALIGN_OZ[w]) parca.push(`<b>${w}:</b> ${ALIGN_OZ[w].join(", ")}`); }
+  return `<p class="not">Fikir (Player's Handbook): ${parca.join(" · ")}</p>`;
+}
 function kimlikAdim() {
   let h = `<div class="satir"><label for="ad">Karakter adı</label><input class="sec" id="ad" data-alan="ad" value="${esc(Y.ad)}" placeholder="Aldian Symr" style="min-width:240px"></div>
   <div class="satir"><label for="oy">Oyuncu</label><input class="sec" id="oy" data-alan="oyuncu" value="${esc(Y.oyuncu)}" placeholder="Senin adın"></div>
-  <div class="satir"><label for="av">Resim adresi (isteğe bağlı)</label><input class="sec" id="av" data-alan="avatar" value="${esc(Y.avatar)}" placeholder="https://…" style="min-width:280px"></div>`;
+  <div class="satir"><label for="av">Resim adresi (isteğe bağlı)</label><input class="sec" id="av" data-alan="avatar" value="${esc(Y.avatar)}" placeholder="https://…" style="min-width:280px"></div>
+  <div class="satir"><label for="al">Alignment (isteğe bağlı)</label><select class="sec" id="al" data-alan="alignment"><option value="">Seçilmedi</option>${ALIGN.map(([a]) => `<option ${Y.alignment === a ? "selected" : ""}>${a}</option>`).join("")}</select></div>
+  ${Y.alignment ? `<p class="not">${esc((ALIGN.find(([a]) => a === Y.alignment) || [])[1] || "")}</p>` : `<p class="not">Karakterinin ahlaki tutumu: iyi, kötü ya da tarafsız; düzene bağlı, kaotik ya da ikisinin arası. Kötü bir karakter yapacaksan önce DM'e sor.</p>`}
+  <div class="satir"><label for="ks">Görünüş ve kişilik (isteğe bağlı)</label><textarea class="sec" id="ks" data-alan="kisilik" rows="4" maxlength="800" style="min-width:280px;flex:1;font:inherit" placeholder="Nasıl görünüyor, nasıl konuşuyor, neye önem veriyor? Birkaç cümle yeter.">${esc(Y.kisilik || "")}</textarea></div>
+  ${kisilikFikir()}`;
   const eks = Object.values(eksikler()).flat();
   if (OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="odaya" type="button" ${C ? "" : "disabled"}>Odaya kaydet</button><span class="not" id="oda-durum">Kaydedince panelde karakter sayfan açılır; seviye atlarken sayfanın altındaki <b>Düzenle</b> ile buraya dönersin.</span></div>`;
   if (!OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="kod" type="button" ${C ? "" : "disabled"}>Owlbear kodunu kopyala</button><span class="not">Kodu Owlbear'daki üreticinin üstündeki <b>Kod yapıştır</b> kutusuna yapıştıracaksın.</span></div>`;
@@ -288,6 +301,7 @@ document.addEventListener("change", (e) => {
   const t = e.target;
   if (t.dataset.alan === "seviye") Y.seviye = +t.value;
   else if (t.dataset.alan === "dunyalar") { Y.dunyalar = t.checked; acik = { sinif: true, bg: true, tur: true }; }
+  else if (t.dataset.alan === "alignment") Y.alignment = t.value;
   else if (t.dataset.alan === "yontem") { Y.yontem = t.value; Y.atama = {}; if (t.value === "puan") K.AB.forEach((a) => (Y.temel[a] = 8)); }
   else if (t.dataset.alan) { Y[t.dataset.alan] = t.value.trim(); kaydet(); ozetCiz(eksikler()); if (C) { C = K.hesapla(Y, S); onizle(); } return; }
   else if (t.dataset.atama) { Y.atama = Y.atama || {}; if (t.value === "") delete Y.atama[t.dataset.atama]; else Y.atama[t.dataset.atama] = +t.value; }

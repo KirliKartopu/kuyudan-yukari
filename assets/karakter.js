@@ -59,7 +59,7 @@
       var c = C, cls = c.siniflar.map(function (x) { return x.ad + " " + x.seviye + (x.subclass ? " · " + x.subclass : ""); }).join(" / ");
       var h = "";
       h += '<div class="who">' + (c.avatar ? '<img alt="" src="' + esc(c.avatar) + '">' : "<span></span>") +
-        "<div><h1>" + esc(c.ad) + "</h1><p>" + esc(c.tur) + " · " + esc(cls) + (c.background ? " · " + esc(c.background) : "") + (c.oyuncu ? " · <i>" + esc(c.oyuncu) + "</i>" : "") + "</p></div></div>";
+        "<div><h1>" + esc(c.ad) + "</h1><p>" + esc(c.tur) + " · " + esc(cls) + (c.background ? " · " + esc(c.background) : "") + (c.alignment ? " · " + esc(c.alignment) : "") + (c.oyuncu ? " · <i>" + esc(c.oyuncu) + "</i>" : "") + "</p></div></div>";
       h += '<div class="grid">';
       var pct = Math.max(0, Math.min(100, Math.round(100 * S.hp / c.hp_max)));
       h += '<section class="box"><h2>Hit Points</h2><div class="hp">' +
@@ -133,6 +133,7 @@
         (c.notlar && c.notlar.length ? '<p class="feat"><b>Not:</b> ' + c.notlar.map(esc).join(" · ") + "</p>" : "") +
         (c.araclar && c.araclar.length ? '<p class="feat"><b>Tool:</b> ' + c.araclar.map(function (a) { return '<span data-ack="esya|' + esc(a) + '">' + esc(a) + "</span>"; }).join(", ") + "</p>" : "") +
         (c.zirh ? '<p class="feat"><b>Zırh:</b> ' + (c.zirh.length ? c.zirh.map(esc).join(", ") : "yok") + " · <b>Silah:</b> " + c.silah.map(esc).join(", ") + "</p>" : "") + "</section>";
+      if (c.kisilik) h += '<section class="box" data-sekme="kisilik" data-etiket="Kişilik"><h2>Görünüş ve kişilik</h2><p class="feat">' + esc(c.kisilik).replace(/\n/g, "<br>") + "</p></section>";
       h += envanterHTML();
       h += "</div>" + (c.yerel ? '<p class="foot">Kuyudan Yukarı karakter üreticisinde yapıldı · ' + esc(c.guncellendi) + ' · ' + (o.duzenle ? '<button class="btn" data-act="duzenle">Düzenle / seviye atla</button>' : '<a href="' + base + 'olustur/">Üreticide düzenle / seviye atla</a>') + '</p>'
         : '<p class="foot">Beyond\'dan son çekim: ' + esc(c.guncellendi) + ' · <a href="' + esc(c.beyond_url) + '" target="_blank" rel="noopener">D&amp;D Beyond\'da aç</a></p>');

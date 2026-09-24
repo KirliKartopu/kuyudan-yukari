@@ -784,7 +784,7 @@ export function hesapla(Y, S, ek) {
   tumEtki(B, "not").forEach((x) => notlar.push(x.e.not));
   const perc = skills.find((s) => s.ad === "Perception");
   return {
-    id: Y.id, ad: Y.ad || "İsimsiz", oyuncu: Y.oyuncu || "", tur: turAd, background: bg ? bg.name : "",
+    id: Y.id, ad: Y.ad || "İsimsiz", oyuncu: Y.oyuncu || "", tur: turAd, background: bg ? bg.name : "", alignment: Y.alignment || "", kisilik: Y.kisilik || "",
     siniflar: [{ ad: c.name, seviye: L, subclass: sub ? sub.name : null }], seviye: L, prof_bonus: P,
     yetenekler: Object.fromEntries(AB.map((a) => [a, { puan: puan[a], mod: m[a] }])),
     saves, skills, pasif_perception: 10 + perc.bonus, hp_max: hp, ac, initiative: init, hiz, duyular,
@@ -798,5 +798,5 @@ export function hesapla(Y, S, ek) {
 function tipAd(x) { const t = String(x.type || "").split("|")[0]; return { M: "Melee Weapon", R: "Ranged Weapon", LA: "Light Armor", MA: "Medium Armor", HA: "Heavy Armor", S: "Shield", A: "Ammunition", SCF: "Spellcasting Focus", AT: "Artisan's Tools", INS: "Instrument", GS: "Gaming Set", T: "Tool", G: "Adventuring Gear" }[t] || ""; }
 
 export function bosYapi() {
-  return { v: 1, id: Math.floor(Date.now() / 1000), ad: "", oyuncu: "", avatar: "", sinif: "", seviye: 1, background: "", tur: "", yontem: "standart", temel: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, dunyalar: false, secim: {} };
+  return { v: 1, id: Math.floor(Date.now() / 1000), ad: "", oyuncu: "", avatar: "", alignment: "", kisilik: "", sinif: "", seviye: 1, background: "", tur: "", yontem: "standart", temel: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, dunyalar: false, secim: {} };
 }
