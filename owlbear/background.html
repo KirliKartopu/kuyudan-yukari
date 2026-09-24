@@ -28,6 +28,36 @@ async function karakterAdi(id) {
     .then((r) => (r.ok ? r.json() : null)).then((c) => (c && c.ad) || null).catch(() => null);
   return kAdOnbellek[id];
 }
+// Initiative sırasına yazan her yer bundan geçer. Ağ beklemesi (karakter adı) okuma ile yazma arasına girmesin
+// diye adlar önce çözülür; sonra oda verisi yeniden okunup değişiklik bekleme olmadan uygulanır ve yazılır.
+// Aksi halde eski bir kopya, arada yapılan eklemeyi ezip siliyordu.
+async function siraIslem(uygula, ekKarakterler = []) {
+  const m0 = await OBR.room.getMetadata();
+  const idler = new Set([...(((m0[K_SIRA] || {}).liste) || []).map((x) => x.karakter), ...ekKarakterler].filter((x) => x != null));
+  const adlar = {};
+  for (const id of idler) adlar[id] = await karakterAdi(id);
+  const m = await OBR.room.getMetadata();
+  const s = m[K_SIRA] ? { ...m[K_SIRA], liste: m[K_SIRA].liste.map((x) => ({ ...x })) } : { tur: 1, aktifId: null, liste: [] };
+  uygula(s, adlar);
+  for (const x of s.liste) if (x.karakter != null && adlar[x.karakter]) x.ad = adlar[x.karakter];
+  s.liste.sort((x, y) => (y.deger ?? -99) - (x.deger ?? -99));
+  await OBR.room.setMetadata({ [K_SIRA]: s });
+  return s;
+}
+const siraOgesi = (it, adlar, deger) => {
+  const npc = it.metadata[K_NPC], kid = it.metadata[K_BAG] ?? null;
+  return { id: it.id, ad: (kid != null && adlar[kid]) || it.text?.plainText || it.name || (npc && npc.ad) || "Token",
+           karakter: kid, ini: npc ? npc.ini || 0 : 0, npc: !!npc, deger: deger ?? null };
+};
+// listeden çıkar; aktif olan çıkarsa sıra bir sonrakine geçer
+function siraCikar(s, ids) {
+  const i = s.liste.findIndex((x) => x.id === s.aktifId);
+  if (s.aktifId && ids.includes(s.aktifId)) {
+    const kalan = s.liste.slice(i + 1).concat(s.liste.slice(0, i)).find((x) => !ids.includes(x.id));
+    s.aktifId = kalan ? kalan.id : null;
+  }
+  s.liste = s.liste.filter((x) => !ids.includes(x.id));
+}
 
 OBR.onReady(async () => {
   // --- bildirimler
@@ -145,19 +175,12 @@ OBR.onReady(async () => {
   await OBR.contextMenu.create({
     id: NS + "/sira-ekle",
     icons: [{ icon: ICON, label: "Sıraya ekle / çıkar", filter: { roles: ["GM"], every: [{ key: "layer", value: "CHARACTER" }] } }],
-    onClick: async (ctx) => {
-      const m = await OBR.room.getMetadata();
-      const sira = m[K_SIRA] || { tur: 1, aktifId: null, liste: [] };
+    onClick: (ctx) => siraIslem((sira, adlar) => {
       for (const it of ctx.items) {
-        const i = sira.liste.findIndex((x) => x.id === it.id);
-        if (i > -1) sira.liste.splice(i, 1);
-        else {
-          const npc = it.metadata[K_NPC];
-          sira.liste.push({ id: it.id, ad: (await karakterAdi(it.metadata[K_BAG])) || it.text?.plainText || it.name || (npc && npc.ad) || "Token", karakter: it.metadata[K_BAG] || null, ini: npc ? npc.ini || 0 : 0, npc: !!npc, deger: null });
-        }
+        if (sira.liste.some((x) => x.id === it.id)) siraCikar(sira, [it.id]);
+        else sira.liste.push(siraOgesi(it, adlar));
       }
-      await OBR.room.setMetadata({ [K_SIRA]: sira });
-    },
+    }, ctx.items.map((it) => it.metadata[K_BAG])),
   });
 
   // --- HP etiketleri: tek bir istemci yönetsin diye sadece GM
@@ -185,7 +208,7 @@ OBR.onReady(async () => {
   });
   const kCache = {};
   const karakter = async (id) => kCache[id] || (kCache[id] = fetch(BASE + "karakterler/" + id + ".json", { cache: "no-cache" }).then((r) => r.json()).catch(() => null));
-  let calisiyor = false, tekrar = false;
+  let calisiyor = false, tekrar = false, bagliOnce = null;
   async function senkron() {
     if (calisiyor) { tekrar = true; return; }
     calisiyor = true;
@@ -199,6 +222,16 @@ OBR.onReady(async () => {
       const npcTokenlar = items.filter((i) => i.layer === "CHARACTER" && i.metadata[K_NPC] && !i.metadata[K_BAG]);
       const etiketler = items.filter((i) => i.metadata[K_ETIKET]);
       const gozlemler = items.filter((i) => i.metadata[K_GOZLEM]);
+      // Karaktere ya da NPC'ye yeni bağlanan token initiative'e kendiliğinden girer. Yalnız bağlanma anı:
+      // sıradan çıkarılan ya da "savaşı bitir"le temizlenen bağlı token'lar geri eklenmez.
+      const bagliSimdi = new Set([...tokenlar, ...npcTokenlar].map((t) => t.id));
+      if (bagliOnce) {
+        const yeni = [...tokenlar, ...npcTokenlar].filter((t) => !bagliOnce.has(t.id));
+        if (yeni.length) await siraIslem((s, adlar) => {
+          for (const it of yeni) if (!s.liste.some((x) => x.id === it.id)) s.liste.push(siraOgesi(it, adlar));
+        }, yeni.map((it) => it.metadata[K_BAG]));
+      }
+      bagliOnce = bagliSimdi;
       const ekle = [], guncelle = {}, sil = [];
       for (const t of tokenlar) {
         // HP üst sınırı: dosyadaki karakterden, yoksa (üreticide yapılmış karakter) oyun durumundan
@@ -321,13 +354,9 @@ OBR.onReady(async () => {
         tokenlar.push(t);
       }
       const oyuncular = (await OBR.party.getPlayers()).map((p) => ({ ad: p.name, rol: p.role }));
-      // sırada token adıyla kalmış karakterleri karakter adına düzelt (Owlbear panelinde de düzgün görünsün)
-      const sira = m[K_SIRA] || null;
-      if (sira && sira.liste) {
-        let degisti = false;
-        for (const x of sira.liste) if (x.karakter != null) { const a = await karakterAdi(x.karakter); if (a && a !== x.ad) { x.ad = a; degisti = true; } }
-        if (degisti) await OBR.room.setMetadata({ [K_SIRA]: sira });
-      }
+      // sırada token adıyla kalmış karakterler: yalnız görüntüde düzelt (buradan yazmak eşzamanlı eklemeyi ezerdi)
+      const sira = m[K_SIRA] ? { ...m[K_SIRA], liste: [] } : null;
+      for (const x of (m[K_SIRA] || {}).liste || []) sira.liste.push(x.karakter != null ? { ...x, ad: (await karakterAdi(x.karakter)) || x.ad } : x);
       return { sahne: hazir, sira, tokenlar, oyuncular, zarlar: (m[K_ZARLAR] || []).slice(0, 20) };
     },
     async zar(r, gizli) {
@@ -355,28 +384,19 @@ OBR.onReady(async () => {
       }
     },
     async sira(islem, a, b) {
-      const m = await OBR.room.getMetadata();
       if (islem === "bitir") { await OBR.room.setMetadata({ [K_SIRA]: undefined }); return; }
-      const s = m[K_SIRA] || { tur: 1, aktifId: null, liste: [] };
-      if (islem === "deger") { const x = s.liste.find((y) => y.id === a); if (x) x.deger = b; }
-      else if (islem === "ekle" && !s.liste.some((x) => x.id === a)) {
-        const [it] = await OBR.scene.items.getItems([a]);
-        if (it) { const npc = it.metadata[K_NPC]; s.liste.push({ id: it.id, ad: it.text?.plainText || it.name || (npc && npc.ad) || "Token", karakter: it.metadata[K_BAG] || null, ini: npc ? npc.ini || 0 : 0, npc: !!npc, deger: b ?? null }); }
-      }
-      // karaktere bağlı satırlarda token adı değil karakter adı (eski kayıtlar da düzelir)
-      for (const x of s.liste) if (x.karakter != null) x.ad = (await karakterAdi(x.karakter)) || x.ad;
-      else if (islem === "cikar") {
-        const i = s.liste.findIndex((x) => x.id === s.aktifId);
-        if (s.aktifId === a) { const k = s.liste.slice(i + 1).concat(s.liste.slice(0, i)).find((x) => x.id !== a); s.aktifId = k ? k.id : null; }
-        s.liste = s.liste.filter((x) => x.id !== a);
-      } else if (islem === "sonraki" && s.liste.length) {
-        const i = s.liste.findIndex((x) => x.id === s.aktifId);
-        if (i === -1) s.aktifId = s.liste[0].id;
-        else if (i + 1 >= s.liste.length) { s.tur += 1; s.aktifId = s.liste[0].id; } else s.aktifId = s.liste[i + 1].id;
-      }
-      s.liste = s.liste.slice().sort((x, y) => (y.deger ?? -99) - (x.deger ?? -99));
-      await OBR.room.setMetadata({ [K_SIRA]: s });
-      const akt = islem === "sonraki" && s.liste.find((x) => x.id === s.aktifId);
+      const ogeler = islem === "ekle" ? await OBR.scene.items.getItems([a]) : [];
+      const s = await siraIslem((s, adlar) => {
+        if (islem === "deger") { const x = s.liste.find((y) => y.id === a); if (x) x.deger = b; }
+        else if (islem === "ekle") { for (const it of ogeler) if (!s.liste.some((x) => x.id === it.id)) s.liste.push(siraOgesi(it, adlar, b)); }
+        else if (islem === "cikar") siraCikar(s, [a]);
+        else if (islem === "sonraki" && s.liste.length) {
+          const i = s.liste.findIndex((x) => x.id === s.aktifId);
+          if (i === -1) s.aktifId = s.liste[0].id;
+          else if (i + 1 >= s.liste.length) { s.tur += 1; s.aktifId = s.liste[0].id; } else s.aktifId = s.liste[i + 1].id;
+        }
+      }, ogeler.map((it) => it.metadata[K_BAG]));
+      const akt = islem === "sonraki" && s && s.liste.find((x) => x.id === s.aktifId);
       if (akt) await OBR.broadcast.sendMessage(NS + "/sira", { ad: akt.ad, tur: s.tur }, { destination: "REMOTE" });
       return s;
     },
