@@ -572,7 +572,8 @@ if (!OBR.isAvailable) {
     // --- Üreticide yapılıp odaya kaydedilen karakterler
     let yerelKayit = (await OBR.room.getMetadata())[K_YEREL] || {};
     const uretici = (id) => OBR.modal.open({ id: NS + "/olustur", url: YOL + "olustur/?obr=1" + (id ? "&id=" + id : ""), fullScreen: true });
-    const duzenleyebilir = (id) => yerelKayit[id] && (rol === "GM" || yerelKayit[id].sahip === benimId);
+    // GM her karakteri, oyuncu kendi karakterini düzenler (odadaki kayıt ya da sitedeki dosya fark etmez)
+    const duzenleyebilir = async (id) => rol === "GM" || (yerelKayit[id] ? yerelKayit[id].sahip === benimId : (await sahipleriOku())[id]?.oyuncu === benimId);
     const ks = KarakterSayfasi({
       root, pick, mode: document.getElementById("mode"), base: "../", store, onRoll, sekmeli: true,
       yerel: {
@@ -583,7 +584,7 @@ if (!OBR.isAvailable) {
         al: () => hedefler.find((h) => h.id === hedefSec.value) || null,
         uygula: (h, miktar, tur, kaynak) => OBR.broadcast.sendMessage(NS + "/hasar", { itemId: h.id, miktar, tur, kaynak }, { destination: "ALL" }),
       },
-      duzenle: (id) => { if (duzenleyebilir(id)) uretici(id); else OBR.notification.show("Bu karakteri sadece sahibi ve GM düzenleyebilir.", "WARNING"); },
+      duzenle: async (id) => { if (await duzenleyebilir(id)) uretici(id); else OBR.notification.show("Bu karakteri sadece sahibi ve GM düzenleyebilir.", "WARNING"); },
       onSelect: async (id) => {
         document.getElementById("yerel-sil").hidden = !(rol === "GM" && yerelKayit[id]);
         if (rol !== "GM") return;
@@ -596,10 +597,11 @@ if (!OBR.isAvailable) {
     });
 
     let karakterler = [], dosyaKarakterleri = [];
-    const listeyiKur = () => { karakterler = dosyaKarakterleri.concat(Object.entries(yerelKayit).map(([id, k]) => listeOgesi(id, k))); };
+    // sitedeki dosyalar + odaya kaydedilenler; aynı karakter ikisinde de varsa odadaki (düzenlenmiş) kopya geçerli
+    const listeyiKur = () => { karakterler = dosyaKarakterleri.filter((k) => !yerelKayit[k.id]).concat(Object.entries(yerelKayit).map(([id, k]) => listeOgesi(id, k))); };
     async function gmBaslat() {
       const sahip = await sahipleriOku();
-      const liste = karakterler.map((k) => ({ ...k, oyuncu: sahip[k.id] ? sahip[k.id].ad : k.oyuncu, ornek: sahip[k.id] ? false : k.ornek }));
+      const liste = karakterler.map((k) => ({ ...k, oyuncu: sahip[k.id] ? sahip[k.id].ad : k.oyuncu }));
       const secili = pick.value || (await OBR.player.getMetadata())[K_SECIM];
       const want = ks.fill(liste, secili);
       if (want) await ks.open(want);
@@ -619,7 +621,7 @@ if (!OBR.isAvailable) {
         '<p><button class="btn on" data-yeni="1" type="button">Yeni karakter yarat</button> <small class="sub">2024 kurallarıyla adım adım; bitince doğrudan odaya kaydedilir.</small></p><ul class="sahiplen">' +
         karakterler.map((k) => {
           const s = sahip[k.id];
-          return `<li><img alt="" src="${esc(k.avatar || "")}"><span><b>${esc(k.ad)}</b><br><small>${esc(k.siniflar.map((c) => c.ad + " " + c.seviye).join(" / "))}${k.ornek ? " · örnek" : ""}</small></span>` +
+          return `<li><img alt="" src="${esc(k.avatar || "")}"><span><b>${esc(k.ad)}</b><br><small>${esc(k.siniflar.map((c) => c.ad + " " + c.seviye).join(" / "))}</small></span>` +
             (s ? `<small>${esc(s.ad)}</small>` : `<button class="btn" data-sahiplen="${k.id}">Bu benim</button>`) + "</li>";
         }).join("") + "</ul>";
     }

@@ -321,7 +321,7 @@ def main():
                 c = convert(fetch(k["id"]), k.get("oyuncu", ""))
             json.dump(c, open(os.path.join(cikti, f'{k["id"]}.json'), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             ozet.append({"id": c["id"], "ad": c["ad"], "oyuncu": c["oyuncu"], "tur": c["tur"],
-                         "siniflar": c["siniflar"], "avatar": c["avatar"], "ornek": k.get("ornek", False)})
+                         "siniflar": c["siniflar"], "avatar": c["avatar"]})
             print("OK  ", k["id"], c["ad"])
         except Exception as e:  # bir karakter bozuksa diğerleri yine yazılsın
             hata += 1

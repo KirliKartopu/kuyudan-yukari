@@ -200,7 +200,7 @@ function kimlikAdim() {
   const eks = Object.values(eksikler()).flat();
   if (OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="odaya" type="button" ${C ? "" : "disabled"}>Odaya kaydet</button><span class="not" id="oda-durum">Kaydedince panelde karakter sayfan açılır; seviye atlarken sayfanın altındaki <b>Düzenle</b> ile buraya dönersin.</span></div>`;
   if (!OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="kod" type="button" ${C ? "" : "disabled"}>Owlbear kodunu kopyala</button><span class="not">Kodu Owlbear'daki üreticinin üstündeki <b>Kod yapıştır</b> kutusuna yapıştıracaksın.</span></div>`;
-  h += `<div class="satir"><button class="btn" data-act="indir" type="button" ${C ? "" : "disabled"}>${OBR_MOD ? "Yedek dosya indir" : "Dosyayı indir"}</button><button class="btn" data-act="kopyala" type="button" ${C ? "" : "disabled"}>Panoya kopyala</button>
+  h += `<div class="satir"><button class="btn" data-act="indir" type="button" ${C ? "" : "disabled"}>${OBR_MOD ? "Yedek dosya indir" : "Dosyayı indir"}</button>
     <span class="not">${eks.length ? "Eksik seçimler var (" + eks.length + "); yine de kaydedebilirsin, sonra tamamlarsın." : "Her şey tamam."}</span></div>`;
   if (!OBR_MOD) h += `<div class="detay"><b>Bu karakteri oyuna nasıl alırım?</b>
     <p>Bu sayfa sitede açık; tarayıcı, buradaki karakterin Owlbear'a kendiliğinden geçmesine izin vermiyor. Kısa bir kodla taşıyorsun:</p>
@@ -281,7 +281,6 @@ document.addEventListener("click", async (e) => {
   else if (t.dataset.act === "kod") { try { await navigator.clipboard.writeText(KOD_ON + (await sikistir(Y))); t.textContent = "Kopyalandı ✓"; } catch (x) { t.textContent = "Kopyalanamadı"; } return; }
   else if (t.dataset.act === "odaya") { odayaKaydet(t); return; }
   else if (t.dataset.act === "kapat") { if (OBR) OBR.modal.close(MODAL); return; }
-  else if (t.dataset.act === "kopyala") { try { await navigator.clipboard.writeText(JSON.stringify(C, null, 1)); t.textContent = "Kopyalandı ✓"; } catch (x) { t.textContent = "Kopyalanamadı"; } return; }
   else return;
   kaydet(); ciz();
 });
@@ -366,6 +365,10 @@ async function obrBaslat() {
   const ust = document.querySelector(".ol-ust a"); if (ust) ust.outerHTML = `<button class="btn" data-act="kapat" type="button">✕ Kapat</button>`;
   const kayit = ((await OBR.room.getMetadata())[K_YEREL] || {});
   if (DUZ_ID && kayit[DUZ_ID]) { Y = await yapiAc(kayit[DUZ_ID].v); adim = "sinif"; }
+  else if (DUZ_ID) { // sitedeki karakter: dosyasından aç; kaydedince odaya geçer ve oradaki kopya geçerli olur
+    const o = await fetch("../karakterler/" + DUZ_ID + ".json", { cache: "no-cache" }).then((r) => r.json()).catch(() => null);
+    if (o && o.yapi && o.yapi.v === 1) { Y = o.yapi; adim = "sinif"; }
+  }
   else if (!DUZ_ID && kayit[Y.id]) Y = K.bosYapi(); // "yeni karakter" var olan bir kaydın üstüne yazmasın
   if (!Y.oyuncu) Y.oyuncu = benim.ad;
 }

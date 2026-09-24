@@ -365,7 +365,7 @@
       ciz: function () { if (C && S) render(); },
       fill: function (items, want) {
         if (!items.length) { root.innerHTML = '<p class="empty">Henüz karakter yok.</p>'; return null; }
-        o.pick.innerHTML = items.map(function (k) { return '<option value="' + k.id + '">' + esc(k.ad) + (k.ornek ? " (örnek)" : "") + (k.oyuncu && !k.ornek ? " · " + esc(k.oyuncu) : "") + "</option>"; }).join("");
+        o.pick.innerHTML = items.map(function (k) { return '<option value="' + k.id + '">' + esc(k.ad) + (k.oyuncu ? " · " + esc(k.oyuncu) : "") + "</option>"; }).join("");
         if (!items.some(function (k) { return String(k.id) === String(want); })) want = String(items[0].id);
         o.pick.value = want;
         return want;

@@ -28,7 +28,7 @@ OBR.onReady(async () => {
     const sahip = (await OBR.room.getMetadata())["com.kuyudan-yukari/sahipler"] || {};
     if (!list.length) { ul.innerHTML = "<li><p>Henüz karakter yok.</p></li>"; return; }
     ul.innerHTML = list.map((k) =>
-      `<li><button data-id="${k.id}">${k.avatar ? `<img alt="" src="${esc(k.avatar)}">` : "<img alt=\"\">"}<span>${esc(k.ad)}<br><small>${esc(k.siniflar.map((c) => c.ad + " " + c.seviye).join(" / "))}${sahip[k.id] ? " · " + esc(sahip[k.id].ad) : k.ornek ? " · örnek" : ""}</small></span></button></li>`).join("");
+      `<li><button data-id="${k.id}">${k.avatar ? `<img alt="" src="${esc(k.avatar)}">` : "<img alt=\"\">"}<span>${esc(k.ad)}<br><small>${esc(k.siniflar.map((c) => c.ad + " " + c.seviye).join(" / "))}${sahip[k.id] ? " · " + esc(sahip[k.id].ad) : ""}</small></span></button></li>`).join("");
   } catch (e) { ul.innerHTML = "<li><p>Karakter listesi yüklenemedi.</p></li>"; return; }
   ul.addEventListener("click", async (e) => {
     const b = e.target.closest("[data-id]"); if (!b) return;
