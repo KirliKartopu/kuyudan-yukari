@@ -1,0 +1,455 @@
+{
+ "id": 1790180057,
+ "ad": "Darian - sol umn",
+ "oyuncu": "Ender",
+ "tur": "Dhampir",
+ "background": "Shadowmasters Exile",
+ "siniflar": [
+  {
+   "ad": "Rogue",
+   "seviye": 1,
+   "subclass": null
+  }
+ ],
+ "seviye": 1,
+ "prof_bonus": 2,
+ "yetenekler": {
+  "str": {
+   "puan": 10,
+   "mod": 0
+  },
+  "dex": {
+   "puan": 17,
+   "mod": 3
+  },
+  "con": {
+   "puan": 8,
+   "mod": -1
+  },
+  "int": {
+   "puan": 14,
+   "mod": 2
+  },
+  "wis": {
+   "puan": 12,
+   "mod": 1
+  },
+  "cha": {
+   "puan": 14,
+   "mod": 2
+  }
+ },
+ "saves": {
+  "str": {
+   "prof": false,
+   "bonus": 0
+  },
+  "dex": {
+   "prof": true,
+   "bonus": 5
+  },
+  "con": {
+   "prof": false,
+   "bonus": -1
+  },
+  "int": {
+   "prof": true,
+   "bonus": 4
+  },
+  "wis": {
+   "prof": false,
+   "bonus": 1
+  },
+  "cha": {
+   "prof": false,
+   "bonus": 2
+  }
+ },
+ "skills": [
+  {
+   "ad": "Acrobatics",
+   "yetenek": "dex",
+   "prof": 2,
+   "bonus": 7
+  },
+  {
+   "ad": "Animal Handling",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Arcana",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Athletics",
+   "yetenek": "str",
+   "prof": 1,
+   "bonus": 2
+  },
+  {
+   "ad": "Deception",
+   "yetenek": "cha",
+   "prof": 1,
+   "bonus": 4
+  },
+  {
+   "ad": "History",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Insight",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Intimidation",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Investigation",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Medicine",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Nature",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Perception",
+   "yetenek": "wis",
+   "prof": 1,
+   "bonus": 3
+  },
+  {
+   "ad": "Performance",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Persuasion",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Religion",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 2
+  },
+  {
+   "ad": "Sleight of Hand",
+   "yetenek": "dex",
+   "prof": 1,
+   "bonus": 5
+  },
+  {
+   "ad": "Stealth",
+   "yetenek": "dex",
+   "prof": 2,
+   "bonus": 7
+  },
+  {
+   "ad": "Survival",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 1
+  }
+ ],
+ "pasif_perception": 13,
+ "hp_max": 7,
+ "ac": 13,
+ "initiative": 3,
+ "hiz": 35,
+ "duyular": {
+  "Darkvision": 60,
+  "Climb Speed": 35
+ },
+ "diller": [
+  "Common",
+  "Elvish",
+  "Gnomish",
+  "Thieves' Cant"
+ ],
+ "araclar": [
+  "Thieves' Tools"
+ ],
+ "zirh": [
+  "light"
+ ],
+ "silah": [
+  "simple",
+  "Martial weapons that have the Finesse or Light property"
+ ],
+ "direncler": [
+  "Necrotic"
+ ],
+ "notlar": [],
+ "saldirilar": [
+  {
+   "ad": "Dagger",
+   "tip": "Dagger",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d4+3",
+   "tur": "Piercing",
+   "menzil": "20/60 ft",
+   "mastery": "Nick",
+   "ozellikler": [
+    "Finesse",
+    "Light",
+    "Thrown"
+   ]
+  },
+  {
+   "ad": "Vampiric Bite",
+   "tip": "",
+   "kusanili": true,
+   "isabet": 2,
+   "hasar": "1d4-1",
+   "tur": "Piercing",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": []
+  },
+  {
+   "ad": "Unarmed Strike",
+   "tip": "",
+   "kusanili": true,
+   "isabet": 2,
+   "hasar": "1",
+   "tur": "Bludgeoning",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": []
+  }
+ ],
+ "buyu": {
+  "sinif": "Dhampir",
+  "yetenek": "int",
+  "save_dc": 12,
+  "isabet": 4,
+  "slotlar": [],
+  "buyuler": [
+   {
+    "ad": "Speak with Animals",
+    "seviye": 1,
+    "konsantrasyon": false,
+    "ritual": true,
+    "not": "Watchers"
+   },
+   {
+    "ad": "Beast Sense",
+    "seviye": 2,
+    "konsantrasyon": true,
+    "ritual": true,
+    "not": "Watchers"
+   }
+  ]
+ },
+ "ozellikler": [
+  {
+   "ad": "Expertise",
+   "kaynak": "Rogue",
+   "seviye": 1
+  },
+  {
+   "ad": "Sneak Attack",
+   "kaynak": "Rogue",
+   "seviye": 1
+  },
+  {
+   "ad": "Thieves' Cant",
+   "kaynak": "Rogue",
+   "seviye": 1
+  },
+  {
+   "ad": "Weapon Mastery",
+   "kaynak": "Rogue",
+   "seviye": 1
+  },
+  {
+   "ad": "Darkvision",
+   "kaynak": "Dhampir",
+   "seviye": 1
+  },
+  {
+   "ad": "Spider Climb",
+   "kaynak": "Dhampir",
+   "seviye": 1
+  },
+  {
+   "ad": "Trace of Undeath",
+   "kaynak": "Dhampir",
+   "seviye": 1
+  },
+  {
+   "ad": "Vampiric Bite",
+   "kaynak": "Dhampir",
+   "seviye": 1
+  }
+ ],
+ "featler": [
+  "Watchers"
+ ],
+ "envanter": [
+  {
+   "ad": "Daggers",
+   "adet": 2,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Thieves' Tools",
+   "adet": 1,
+   "tip": "Tool",
+   "kusanili": false
+  },
+  {
+   "ad": "Caltrops",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Costume",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Grappling Hook",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Iron Spikes",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Mirror",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Pouches",
+   "adet": 2,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Rope",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Traveler's Clothes",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  }
+ ],
+ "para": {
+  "cp": 0,
+  "sp": 0,
+  "ep": 0,
+  "gp": 103,
+  "pp": 0
+ },
+ "avatar": "https://prnt.sc/5QXEric_aH6z",
+ "yerel": true,
+ "guncellendi": "2026-09-24 06:14 UTC",
+ "yapi": {
+  "v": 1,
+  "id": 1790180057,
+  "ad": "Darian - sol umn",
+  "oyuncu": "Ender",
+  "avatar": "https://prnt.sc/5QXEric_aH6z",
+  "sinif": "Rogue",
+  "seviye": 1,
+  "background": "Shadowmasters Exile|FRHoF",
+  "tur": "Dhampir|RHW",
+  "yontem": "standart",
+  "temel": {
+   "str": 10,
+   "dex": 15,
+   "con": 8,
+   "int": 13,
+   "wis": 12,
+   "cha": 14
+  },
+  "dunyalar": false,
+  "secim": {
+   "bg:ab": [
+    "21",
+    "dex",
+    "int"
+   ],
+   "tur:boy": [
+    "M"
+   ],
+   "dil": [
+    "Elvish",
+    "Gnomish"
+   ],
+   "sinif:skill": [
+    "sleight of hand",
+    "athletics",
+    "deception",
+    "perception"
+   ],
+   "sinif:exp:1": [
+    "stealth",
+    "acrobatics"
+   ],
+   "sinif:mastery": [
+    "Dagger",
+    "Light Crossbow"
+   ],
+   "bg:ekip": [
+    "A"
+   ],
+   "sinif:ekip": [
+    "B"
+   ],
+   "bg:darkgift": [
+    "watchers|rhw"
+   ],
+   "bg:feat:spab": [
+    "int"
+   ]
+  },
+  "atama": {
+   "dex": 0,
+   "cha": 1,
+   "int": 2,
+   "wis": 3,
+   "con": 5,
+   "str": 4
+  }
+ }
+}

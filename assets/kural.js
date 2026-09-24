@@ -132,6 +132,9 @@ function bgFeatSecenek(bg) {
   return out;
 }
 export function bgFeat(bg, Y) {
+  // RHW: DM izniyle Origin feat yerine bir Dark Gift. Üreticide soru yok; DM yapıya "bg:darkgift": ["watchers|rhw"] yazar.
+  const dg = Y && Y.secim && (Y.secim["bg:darkgift"] || [])[0];
+  if (dg) return dg;
   const l = bgFeatSecenek(bg);
   if (l.length <= 1) return l[0] || null;
   const s = Y && (Y.secim["bg:featsec"] || [])[0];
