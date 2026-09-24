@@ -642,6 +642,9 @@ export function hesapla(Y, S, ek) {
   for (const x of B.etkiler) if (x.e.secenek) sec(x.id + ":sec").forEach((v) => ozel.push({ ad: x.kaynak + " (" + v + ")", kaynak: c.name, seviye: 1 }));
   const turAd = tur ? tur.name + (B.surum ? " (" + B.surum + ")" : "") : "";
   for (const e of B.turGirdi) if (e && e.name && !/^(Creature Type|Size|Speed)$/.test(e.name)) ozel.push({ ad: e.name + (e.name === "Draconic Ancestry" && sec("tur:ejderha")[0] ? " (" + sec("tur:ejderha")[0] + ")" : ""), kaynak: tur.name, seviye: 1 });
+  // DM'in masa kuralı: bir tür özelliğini başka bir türünküyle takas. Üreticide soru yok; DM yapıya yazar:
+  // "tur:takas": ["Adrenaline Rush|Human|Resourceful"] (eski özellik | yeni özelliğin türü | yeni özellik)
+  for (const t of sec("tur:takas")) { const [eski, tAd, yeni] = t.split("|"), i = ozel.findIndex((o) => o.ad === eski && o.kaynak === tur.name); if (i >= 0) ozel.splice(i, 1, { ad: yeni, kaynak: tAd + " (takas)", seviye: 1 }); }
   // HP
   const hd = c.hd.faces;
   let hp = hd + m.con + (L - 1) * (hd / 2 + 1 + m.con);
@@ -667,6 +670,8 @@ export function hesapla(Y, S, ek) {
     });
   }
   tumEtki(B, "esya").forEach((x) => x.e.esya.forEach((a) => { if (!envanter.some((e) => e.ad === a)) koy(a, 1, tipAd(V.esya[n(a)] || {})); }));
+  // DM'in izniyle başlangıç eşyası değişimi: "ekip:degis": ["Greatsword|Greataxe"]
+  for (const t of sec("ekip:degis")) { const [eski, yeni] = t.split("|"), e = envanter.find((x) => x.ad === eski), x = V.esya[n(yeni)]; if (e) { e.ad = x ? x.name : yeni; e.tip = x ? tipAd(x) : e.tip; } }
   const oyun = !!(ek && ek.env);
   if (oyun) { envanter.length = 0; ek.env.forEach(([ad, adet, k]) => envanter.push({ ad, adet, tip: tipAd(esyaBul(ad) || {}), kusanili: !!k })); }
   // AC: başlangıçta zırhlı/zırhsız seçeneklerden en iyisi kuşanılır; oyunda oyuncunun kuşandığı esas alınır

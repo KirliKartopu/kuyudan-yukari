@@ -205,14 +205,14 @@
  "notlar": [],
  "saldirilar": [
   {
-   "ad": "Greatsword",
-   "tip": "Greatsword",
+   "ad": "Greataxe",
+   "tip": "Greataxe",
    "kusanili": true,
    "isabet": 4,
-   "hasar": "2d6+2",
+   "hasar": "1d12+2",
    "tur": "Slashing",
    "menzil": "5 ft",
-   "mastery": "Graze",
+   "mastery": "Cleave",
    "ozellikler": [
     "Heavy",
     "Two-Handed"
@@ -285,8 +285,8 @@
    "seviye": 1
   },
   {
-   "ad": "Adrenaline Rush",
-   "kaynak": "Orc",
+   "ad": "Resourceful",
+   "kaynak": "Human (takas)",
    "seviye": 1
   },
   {
@@ -312,7 +312,7 @@
    "kusanili": true
   },
   {
-   "ad": "Greatsword",
+   "ad": "Greataxe",
    "adet": 1,
    "tip": "Melee Weapon",
    "kusanili": true
@@ -387,7 +387,7 @@
  },
  "avatar": null,
  "yerel": true,
- "guncellendi": "2026-09-24 06:28 UTC",
+ "guncellendi": "2026-09-24 06:42 UTC",
  "yapi": {
   "v": 1,
   "id": 1790210001,
@@ -435,6 +435,12 @@
    ],
    "sinif:ekip": [
     "A"
+   ],
+   "tur:takas": [
+    "Adrenaline Rush|Human|Resourceful"
+   ],
+   "ekip:degis": [
+    "Greatsword|Greataxe"
    ]
   },
   "atama": {
