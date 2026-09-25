@@ -9,6 +9,23 @@
   var sgn = function (n) { return (n >= 0 ? "+" : "") + n; };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
   var d = function (n) { return 1 + Math.floor(Math.random() * n); };
+  // ability puanları nasıl belirlendi: zarla kaç kez atıldığı, elle girildiyse o (üreticide "Yeniden at" sınırsız)
+  function puanYontemi(y) {
+    if (!y || !y.yontem || y.yontem === "standart" || y.yontem === "puan") return "";
+    if (y.yontem === "elle") return '<p class="feat"><small>Puanlar elle girildi (DM izniyle).</small></p>';
+    var g = y.zarGecmis || [];
+    if (!g.length) return '<p class="feat"><small>Puanlar 4d6 ile atıldı · kaç kez atıldığı kaydedilmemiş.</small></p>';
+    return '<p class="feat"><small title="' + esc(g.map(function (s, i) { return i + 1 + ". " + s.join(", "); }).join(" · ")) + '">Puanlar 4d6 ile atıldı · <b>' + g.length + " kez</b>" +
+      (g.length > 1 ? " (öncekiler: " + g.slice(0, -1).slice(-3).map(function (s) { return s.join("/"); }).join("; ") + (g.length > 4 ? "; …" : "") + ")" : "") + "</small></p>";
+  }
+  // 2024: Hit Point Dice sınıf seviyesi kadar; Second Wind Fighter 1: 2, 4: 3, 10: 4 (masada kuralı sunucu uygular)
+  var HIT_DIE = { Barbarian: 12, Fighter: 10, Paladin: 10, Ranger: 10, Sorcerer: 6, Wizard: 6 };
+  function kaynaklar(c) {
+    var hd = {}, fi = null;
+    c.siniflar.forEach(function (s) { var f = HIT_DIE[s.ad] || 8; hd[f] = (hd[f] || 0) + (s.seviye || 1); if (s.ad === "Fighter") fi = s; });
+    var sw = fi && c.ozellikler.some(function (f) { return f.ad === "Second Wind"; }) ? (fi.seviye >= 10 ? 4 : fi.seviye >= 4 ? 3 : 2) : 0;
+    return { hd: hd, sw: sw };
+  }
 
   window.KarakterSayfasi = function (o) {
     var root = o.root, base = o.base || "../", store = o.store;
@@ -74,6 +91,15 @@
         (o.oyuncu ? "" : '<div class="hp-ctl"><label for="hpv" hidden>Miktar</label><input id="hpv" type="number" min="0" inputmode="numeric" placeholder="5">' +
         '<button class="btn" data-hp="dmg">Hasar</button><button class="btn" data-hp="heal">İyileş</button><button class="btn" data-hp="temp">Temp HP</button>' +
         '<button class="btn" data-hp="long" title="Long Rest: HP ve büyü slotları dolar">Long Rest</button></div>') + "</div>";
+      if (SUNUCU) {
+        var K = kaynaklar(c), kisa = o.dinlenme && o.dinlenme() === "kisa";
+        h += '<div class="kaynak"><span title="Hit Point Dice: Short Rest\'te harcanır (zar + Con), Long Rest\'te hepsi geri gelir">Hit Dice</span>' +
+          Object.keys(K.hd).map(function (f) {
+            var kalan = K.hd[f] - ((S.hd || {})[f] || 0);
+            return kisa ? '<button class="btn" data-act="hd" data-f="' + f + '"' + (kalan > 0 && S.hp < c.hp_max ? "" : " disabled") + ' title="Short Rest: d' + f + " + Con (" + sgn(c.yetenekler.con.mod) + ') HP">d' + f + " harca · " + kalan + "/" + K.hd[f] + "</button>"
+                        : "<b>d" + f + " " + kalan + "/" + K.hd[f] + "</b>";
+          }).join("") + (kisa ? ' <small class="dinlenme">☕ Short Rest</small>' : "") + "</div>";
+      }
       if (S.hp <= 0) h += '<div style="margin-top:8px"><b>Death Saves</b> · başarı ' + S.ds.s + "/3 · başarısızlık " + S.ds.f + '/3 <button class="btn" data-act="ds">Death Save at</button></div>';
       h += "</section>";
       h += '<section class="box"><h2>Savaş</h2><div class="vitals">' +
@@ -82,8 +108,8 @@
         '<div class="vital"><b>' + c.hiz + "</b><small>Speed ft</small></div>" +
         '<div class="vital"><b>' + sgn(c.prof_bonus) + "</b><small>Prof.</small></div>" +
         '<div class="vital"><b>' + c.pasif_perception + "</b><small>Pasif Perc.</small></div>" +
-        "</div>" + (c.duyular && Object.keys(c.duyular).length ? '<p class="feat" style="margin-top:8px"><small>' + Object.keys(c.duyular).map(function (k) { return esc(k) + " " + c.duyular[k] + " ft"; }).join(" · ") + "</small></p>" : "") + "</section>";
-      h += '<section class="box" data-sekme="yet" data-etiket="Yetenekler"><h2>Yetenekler ve Saving Throw</h2><div class="abil">';
+        "</div>" + (SUNUCU ? saldiriSatiri() : "") + (c.duyular && Object.keys(c.duyular).length ? '<p class="feat" style="margin-top:8px"><small>' + Object.keys(c.duyular).map(function (k) { return esc(k) + " " + c.duyular[k] + " ft"; }).join(" · ") + "</small></p>" : "") + "</section>";
+      h += '<section class="box" data-sekme="yet" data-etiket="Yetenekler"><h2>Yetenekler ve Saving Throw</h2>' + puanYontemi(c.yapi) + '<div class="abil">';
       Object.keys(AB).forEach(function (a) {
         var y = c.yetenekler[a], s = c.saves[a];
         h += '<div class="ab"><div class="nm">' + a.toUpperCase() + "</div>" +
@@ -97,15 +123,15 @@
       });
       h += "</ul></section>";
       var hd = o.hedef && o.hedef.al && o.hedef.al();
-      h += '<section class="box span2" data-sekme="atk" data-etiket="Saldırı"><h2>Saldırılar' + (hd ? ' <small style="color:var(--muted);font-family:var(--body);font-size:14px">→ ' + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") + "</small>" : "") + "</h2>";
-      if (!c.saldirilar.length) h += '<p class="feat">Silah yok.</p>';
-      c.saldirilar.forEach(function (a, i) {
+      if (!SUNUCU) h += '<section class="box span2" data-sekme="atk" data-etiket="Saldırı"><h2>Saldırılar' + (hd ? ' <small style="color:var(--muted);font-family:var(--body);font-size:14px">→ ' + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") + "</small>" : "") + "</h2>";
+      if (!SUNUCU && !c.saldirilar.length) h += '<p class="feat">Silah yok.</p>';
+      if (!SUNUCU) c.saldirilar.forEach(function (a, i) {
         h += '<div class="atk"><span class="n" data-ack="esya|' + esc(a.ad) + "|" + esc(a.tip || "") + '">' + esc(a.ad) + (a.kusanili ? "" : ' <small style="font-weight:400;color:var(--muted)">(çantada)</small>') + "</span>" +
           '<button class="btn" data-roll="atk-' + i + '" title="Attack roll">' + sgn(a.isabet) + " isabet</button>" +
           '<span style="display:flex;gap:4px"><button class="btn" data-roll="dmg-' + i + '">' + esc(a.hasar) + '</button><button class="btn" data-roll="crit-' + i + '" title="Kritik hasar">×2</button></span>' +
           '<span class="meta">' + esc(a.tur) + " · " + esc(a.menzil) + (a.ozellikler.length ? " · " + a.ozellikler.map(esc).join(", ") : "") + (a.mastery ? ' · <span class="kw" data-ack="mastery|' + esc(a.mastery) + '" title="Weapon Mastery: bu silahta ustalığın varsa">' + esc(a.mastery) + "</span>" : "") + "</span></div>";
       });
-      h += "</section>";
+      if (!SUNUCU) h += "</section>";
       if (c.buyu) {
         var b = c.buyu;
         h += '<section class="box span2" data-sekme="buyu" data-etiket="Büyü"><h2>Büyü · ' + esc(b.sinif) + "</h2>" +
@@ -145,6 +171,62 @@
       root.innerHTML = h;
       if (o.sekmeli) sekmele();
     }
+    // --- masa: tek Saldır düğmesi. Sol tık son seçilen silahla (ilk açılışta ilk kuşanılı silah), sağ tık / ▾ menüden seç.
+    // Seçilen silah ve biçimi (iki el / fırlatma) sunucuda kalır; Grapple, Shove ve Cleave tek seferlik.
+    function varsayilanSilah() {
+      var l = C.saldirilar, i = -1;
+      for (var k = 0; k < l.length; k++) if (l[k].ad === S.silah) i = k;
+      if (i < 0) for (var j = 0; j < l.length; j++) if (l[j].ad !== "Unarmed Strike" && l[j].kusanili) { i = j; break; }
+      if (i < 0) i = 0;
+      return l[i] ? { at: l[i], bicim: l[i].ad === S.silah ? S.bicim || "" : "" } : null;
+    }
+    var BICIM = { iki: "iki el", firlat: "fırlat", cleave: "Cleave", grapple: "Grapple", shove: "Shove" };
+    function saldiriSatiri() {
+      var v = varsayilanSilah(), hd = o.hedef && o.hedef.al && o.hedef.al(), K = kaynaklar(C);
+      var h = '<div class="saldir-satir">';
+      if (v) h += '<span class="saldir-grup"><button class="btn saldir" data-act="saldir" title="Sol tık: saldır · sağ tık: silah seç">⚔ ' + esc(v.at.ad) + (v.bicim ? " (" + BICIM[v.bicim] + ")" : "") +
+        " <small>" + sgn(v.at.isabet) + "</small></button>" + '<button class="btn saldir-sec" data-act="saldir-menu" title="Silah seç" aria-label="Silah seç">▾</button></span>';
+      if (K.sw) h += '<button class="btn" data-act="sw" title="Second Wind: Bonus Action, 1d10 + Fighter seviyesi HP. Short Rest\'te 1, Long Rest\'te hepsi geri gelir"' + ((S.sw || 0) >= K.sw || S.hp <= 0 || S.hp >= C.hp_max ? " disabled" : "") + ">Second Wind " + (K.sw - (S.sw || 0)) + "/" + K.sw + "</button>";
+      h += '<span class="hedef-etiket">' + (hd ? "🎯 " + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") : "🎯 hedef yok <small>(haritada token'a sağ tık)</small>") + "</span>";
+      return h + "</div>";
+    }
+    function saldiriMenusu(x, y) {
+      var m = root.querySelector(".saldir-menu"); if (m) m.remove();
+      m = document.createElement("div"); m.className = "saldir-menu"; m.setAttribute("role", "menu");
+      var env = envanter(), h = "";
+      var st = C.yetenekler.str.mod, dc = 8 + st + C.prof_bonus;
+      C.saldirilar.forEach(function (a, i) {
+        var oz = a.ozellikler || [], ek = " <small>" + sgn(a.isabet) + " · " + esc(a.hasar) + " " + esc(a.tur || "") + (a.mastery ? " · " + esc(a.mastery) : "") + "</small>";
+        var bm = function (bicim, etiket, ekler) { return '<button data-sal="' + i + '" data-bicim="' + bicim + '"' + (a.mastery ? ' data-ack="mastery|' + esc(a.mastery) + '"' : "") + ">" + etiket + (ekler == null ? ek : ekler) + "</button>"; };
+        if (a.ad === "Unarmed Strike") {
+          h += '<div class="ayrac"></div>' + bm("", "Unarmed Strike", " <small>" + sgn(a.isabet) + " · " + esc(a.hasar) + " " + esc(a.tur || "") + "</small>") +
+               bm("grapple", "Grapple", " <small>save DC " + dc + " · Grappled</small>") + bm("shove", "Shove", " <small>save DC " + dc + " · it ya da Prone</small>");
+          return;
+        }
+        h += bm("", esc(a.ad) + (a.kusanili ? "" : " <small>(çantada)</small>"));
+        if (oz.indexOf("Versatile") > -1) h += bm("iki", esc(a.ad) + " · iki el", " <small>" + String(a.hasar).replace(/d(\d+)/, function (_, f) { return "d" + (+f + 2); }) + "</small>");
+        if (oz.indexOf("Thrown") > -1) {
+          var x2 = env.filter(function (e) { return e.ad.toLowerCase() === a.ad.toLowerCase(); })[0];
+          h += bm("firlat", esc(a.ad) + " · fırlat", " <small>" + esc(a.menzil) + " · " + (x2 ? x2.adet : 0) + " kaldı</small>");
+        }
+        if (a.mastery === "Cleave") h += bm("cleave", esc(a.ad) + " · Cleave", " <small>2. hedef, Str eklenmez, turda 1</small>");
+      });
+      m.innerHTML = h || "<p>Silah yok.</p>";
+      root.appendChild(m);
+      var r2 = m.getBoundingClientRect();
+      m.style.left = Math.max(4, Math.min(x, innerWidth - r2.width - 8)) + "px";
+      m.style.top = Math.max(4, Math.min(y, innerHeight - r2.height - 8)) + "px";
+    }
+    function menuKapat() { var m = root.querySelector(".saldir-menu"); if (m) m.remove(); }
+    if (SUNUCU) {
+      root.addEventListener("contextmenu", function (e) {
+        if (!e.target.closest('[data-act="saldir"]') || !C) return;
+        e.preventDefault(); saldiriMenusu(e.clientX, e.clientY);
+      });
+      document.addEventListener("pointerdown", function (e) { if (!e.target.closest(".saldir-menu,[data-act=saldir-menu]")) menuKapat(); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") menuKapat(); });
+    }
+
     // --- envanter: başlangıç listesi karakterden gelir; ilk değişiklikte kopyası durum'a (S.env, S.para) alınır
     var ESYA = null, esyaYukleniyor = null;
     var PARA = ["pp", "gp", "ep", "sp", "cp"];
@@ -270,6 +352,8 @@
         }
         return;
       }
+      var sal = e.target.closest("[data-sal]");
+      if (sal && C) { menuKapat(); niyet({ tip: "saldir", i: +sal.getAttribute("data-sal"), bicim: sal.getAttribute("data-bicim"), mod: mode }); return; }
       var t = e.target.closest("[data-roll],[data-hp],[data-cond],[data-act]");
       if (!t || !C) return;
       var r = t.getAttribute("data-roll");
@@ -301,7 +385,10 @@
       var act = t.getAttribute("data-act");
       if (act === "duzenle") { if (o.duzenle) o.duzenle(C.id); return; }
       if (act === "portre") { if (o.portre) o.portre(C.id); return; }
-      if ((act === "insp" || act === "ds") && SUNUCU) { niyet({ tip: act }); return; }
+      if ((act === "insp" || act === "ds" || act === "sw") && SUNUCU) { niyet({ tip: act }); return; }
+      if (act === "saldir" && SUNUCU) { niyet({ tip: "saldir", mod: mode }); return; }
+      if (act === "saldir-menu" && SUNUCU) { var rc = t.getBoundingClientRect(); if (root.querySelector(".saldir-menu")) menuKapat(); else saldiriMenusu(rc.left, rc.bottom + 4); return; }
+      if (act === "hd" && SUNUCU) { niyet({ tip: "hd", f: +t.getAttribute("data-f") }); return; }
       if (act === "insp") { S.insp = !S.insp; persist(); render(); return; }
       if (act === "ds") {
         var n = d(20), dz = "1d20@" + n;
