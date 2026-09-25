@@ -177,7 +177,7 @@
  ],
  "pasif_perception": 13,
  "hp_max": 7,
- "ac": 13,
+ "ac": 14,
  "initiative": 3,
  "hiz": 35,
  "duyular": {
@@ -203,7 +203,9 @@
  "direncler": [
   "Necrotic"
  ],
- "notlar": [],
+ "notlar": [
+  "Watchers: Search action'da ability check'e +1d4 · d20'de 1 gelirse Wis save (DC 13 + PB), başarısızsa 1 dakika D20 Test'lerde Disadvantage · Scrying'e karşı save'lerde Disadvantage"
+ ],
  "saldirilar": [
   {
    "ad": "Dagger",
@@ -218,6 +220,34 @@
     "Finesse",
     "Light",
     "Thrown"
+   ]
+  },
+  {
+   "ad": "Shortsword",
+   "tip": "Shortsword",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d6+3",
+   "tur": "Piercing",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": [
+    "Finesse",
+    "Light"
+   ]
+  },
+  {
+   "ad": "Shortbow",
+   "tip": "Shortbow",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d6+3",
+   "tur": "Piercing",
+   "menzil": "80/320 ft",
+   "mastery": null,
+   "ozellikler": [
+    "Ammunition",
+    "Two-Handed"
    ]
   },
   {
@@ -313,15 +343,51 @@
  ],
  "envanter": [
   {
-   "ad": "Daggers",
-   "adet": 2,
+   "ad": "Leather Armor",
+   "adet": 1,
+   "tip": "Light Armor",
+   "kusanili": true
+  },
+  {
+   "ad": "Dagger",
+   "adet": 4,
    "tip": "Melee Weapon",
    "kusanili": true
   },
   {
-   "ad": "Thieves' Tools",
+   "ad": "Shortsword",
    "adet": 1,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Shortbow",
+   "adet": 1,
+   "tip": "Ranged Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Arrows (20)",
+   "adet": 1,
+   "tip": "Ammunition",
+   "kusanili": false
+  },
+  {
+   "ad": "Quiver",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Thieves' Tools",
+   "adet": 2,
    "tip": "Tool",
+   "kusanili": false
+  },
+  {
+   "ad": "Burglar's Pack",
+   "adet": 1,
+   "tip": "Adventuring Gear",
    "kusanili": false
   },
   {
@@ -355,7 +421,7 @@
    "kusanili": false
   },
   {
-   "ad": "Pouches",
+   "ad": "Pouch",
    "adet": 2,
    "tip": "Adventuring Gear",
    "kusanili": false
@@ -377,12 +443,12 @@
   "cp": 0,
   "sp": 0,
   "ep": 0,
-  "gp": 103,
+  "gp": 11,
   "pp": 0
  },
  "avatar": "https://prnt.sc/5QXEric_aH6z",
  "yerel": true,
- "guncellendi": "2026-09-24 06:14 UTC",
+ "guncellendi": "2026-09-25T08:25:28.738Z",
  "yapi": {
   "v": 1,
   "id": 1790180057,
@@ -434,7 +500,7 @@
     "A"
    ],
    "sinif:ekip": [
-    "B"
+    "A"
    ],
    "bg:darkgift": [
     "watchers|rhw"
