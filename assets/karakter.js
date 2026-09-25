@@ -61,17 +61,19 @@
     function render() {
       var c = C, cls = c.siniflar.map(function (x) { return x.ad + " " + x.seviye + (x.subclass ? " · " + x.subclass : ""); }).join(" / ");
       var h = "";
-      h += '<div class="who">' + (c.avatar ? '<img alt="" src="' + esc(c.avatar) + '">' : "<span></span>") +
+      var portre = o.portre ? '<button class="portre" data-act="portre" title="Portre ekle / değiştir">' + (c.avatar ? '<img alt="Portre" src="' + esc(c.avatar) + '">' : "<span>Portre<br>ekle</span>") + "</button>"
+                                   : (c.avatar ? '<img alt="" src="' + esc(c.avatar) + '">' : "<span></span>");
+      h += '<div class="who">' + portre +
         "<div><h1>" + esc(c.ad) + "</h1><p>" + esc(c.tur) + " · " + esc(cls) + (c.background ? " · " + esc(c.background) : "") + (c.alignment ? " · " + esc(c.alignment) : "") + (c.oyuncu ? " · <i>" + esc(c.oyuncu) + "</i>" : "") + "</p></div></div>";
       h += '<div class="grid">';
       var pct = Math.max(0, Math.min(100, Math.round(100 * S.hp / c.hp_max)));
       h += '<section class="box"><h2>Hit Points</h2><div class="hp">' +
-        '<div class="hp-num">' + S.hp + " <small>/ " + c.hp_max + (S.temp ? " · temp " + S.temp : "") + "</small></div>" +
+        '<div class="hp-num ' + (S.hp <= 0 ? "hp-0" : pct <= 50 ? "hp-yari" : "hp-iyi") + '">' + S.hp + " <small>/ " + c.hp_max + (S.temp ? " · temp " + S.temp : "") + "</small></div>" +
         '<button class="btn ' + (S.insp ? "on" : "") + '" data-act="insp" title="Heroic Inspiration: bir zarı yeniden at">Inspiration</button>' +
         '<div class="hpbar"><i style="width:' + pct + '%"></i></div>' +
-        '<div class="hp-ctl"><label for="hpv" hidden>Miktar</label><input id="hpv" type="number" min="0" inputmode="numeric" placeholder="5">' +
+        (o.oyuncu ? "" : '<div class="hp-ctl"><label for="hpv" hidden>Miktar</label><input id="hpv" type="number" min="0" inputmode="numeric" placeholder="5">' +
         '<button class="btn" data-hp="dmg">Hasar</button><button class="btn" data-hp="heal">İyileş</button><button class="btn" data-hp="temp">Temp HP</button>' +
-        '<button class="btn" data-hp="long" title="Long Rest: HP ve büyü slotları dolar">Long Rest</button></div></div>';
+        '<button class="btn" data-hp="long" title="Long Rest: HP ve büyü slotları dolar">Long Rest</button></div>') + "</div>";
       if (S.hp <= 0) h += '<div style="margin-top:8px"><b>Death Saves</b> · başarı ' + S.ds.s + "/3 · başarısızlık " + S.ds.f + '/3 <button class="btn" data-act="ds">Death Save at</button></div>';
       h += "</section>";
       h += '<section class="box"><h2>Savaş</h2><div class="vitals">' +
@@ -293,11 +295,12 @@
         if (hp === "long") { S.hp = C.hp_max; S.temp = 0; S.slots = {}; S.ds = { s: 0, f: 0 }; }
         persist(); render(); return;
       }
-      var cd = t.getAttribute("data-cond");
+      var cd = o.oyuncu ? null : t.getAttribute("data-cond");
       if (cd && SUNUCU) { niyet({ tip: "cond", ad: cd }); return; }
       if (cd) { var i = S.conds.indexOf(cd); if (i > -1) S.conds.splice(i, 1); else S.conds.push(cd); persist(); render(); return; }
       var act = t.getAttribute("data-act");
       if (act === "duzenle") { if (o.duzenle) o.duzenle(C.id); return; }
+      if (act === "portre") { if (o.portre) o.portre(C.id); return; }
       if ((act === "insp" || act === "ds") && SUNUCU) { niyet({ tip: act }); return; }
       if (act === "insp") { S.insp = !S.insp; persist(); render(); return; }
       if (act === "ds") {
