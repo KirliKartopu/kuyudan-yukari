@@ -92,6 +92,7 @@ async function bul0(tur, ad, ek) {
     const sinif = n(ek || "").replace(/[^a-z]/g, "");
     if (sinif) {
       try {
+        if (!SINIFLAR.includes(sinif)) throw 0;   // tür adı (Orc, Elf…): sınıf dosyası yok, boşuna 404 istemesin
         const d = await cek(`class/class-${sinif}.json`);
         const x = sec((d.classFeature || []).concat(d.subclassFeature || []), ad);
         if (x) return { baslik: x.name, alt: `${x.className}${x.subclassShortName ? " (" + x.subclassShortName + ")" : ""} · Sv ${x.level}`, govde: girdi(x.entries) };
@@ -160,4 +161,5 @@ document.addEventListener("scroll", gizle, true);
 
 }
 
+const SINIFLAR = ["artificer", "barbarian", "bard", "cleric", "druid", "fighter", "monk", "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"];
 export { bul as aciklamaBul, cek, girdi, n as normal, esc, sirala, sec };
