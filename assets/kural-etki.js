@@ -71,6 +71,7 @@ export const ETKI = {
   "Ranger|Gloom Stalker|Iron Mind": { saveProf: ["wis"], saveYedek: ["int", "cha"] },
   "Ranger|Winter Walker|Frigid Explorer": { direnc: ["Cold"] },
   // Rogue
+  "Rogue||Thieves' Cant": { dilSec: 1 },   // 2024: "Thieves' Cant and one other language of your choice"
   "Rogue||Slippery Mind": { saveProf: ["wis", "cha"] },
   "Rogue|Assassin|Assassin's Tools": { tool: ["Disguise Kit", "Poisoner's Kit"], esya: ["Disguise Kit", "Poisoner's Kit"] },
   "Rogue|Assassin|Assassinate": { initAv: true },
@@ -132,6 +133,8 @@ export const ETKI = {
   // Species (metinde kalan etkiler)
   "tur:Warforged|Integrated Protection": { acEk: { deger: 1, kosul: "her" } },
   "tur:Dwarf|Dwarven Toughness": { hp: { seviye: 1 } },
+  // Dark Gift (RHW): masada unutulan dezavantaj ve Search bonusu kağıtta not olarak
+  "feat:Watchers": { not: "Watchers: Search action'da ability check'e +1d4 · d20'de 1 gelirse Wis save (DC 13 + PB), başarısızsa 1 dakika D20 Test'lerde Disadvantage · Scrying'e karşı save'lerde Disadvantage" },
   "tur:Dhampir|Vampiric Bite": { unarmed: { zar: "1d4", ab: "con", tur: "Piercing", ad: "Vampiric Bite" } },
   "tur:Lupin|Feral Pounce": { unarmedTur: "Slashing" },
   "tur:Khoravar|Skill Versatility": { skillSec: { from: "hepsi", adet: 1 } },

@@ -825,7 +825,8 @@ export function hesapla(Y, S, ek) {
       if (it.equipmentType || it.equipmentTypes) { if (secilen) koy(secilen, 1); return; }
       const r = ref(it.item), x = V.esya[n(r.ad)], g = V.grup[n(r.ad)];
       if (g) { koy(secilen || g.name, 1); return; }
-      koy(it.displayName || (x ? x.name : buyuk(r.ad)), it.quantity || 1, x ? tipAd(x) : "");
+      const cogul = it.displayName && x && [n(x.name) + "s", n(x.name) + "es"].includes(n(it.displayName));
+      koy(it.displayName && !cogul ? it.displayName : x ? x.name : buyuk(r.ad), it.quantity || 1, x ? tipAd(x) : "");
     });
   }
   tumEtki(B, "esya").forEach((x) => x.e.esya.forEach((a) => { if (!envanter.some((e) => e.ad === a)) koy(a, 1, tipAd(V.esya[n(a)] || {})); }));
