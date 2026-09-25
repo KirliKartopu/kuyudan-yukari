@@ -52,6 +52,16 @@
   .slots label{display:flex;gap:4px;align-items:center;font-size:14px}
   .slots input{accent-color:var(--accent);width:16px;height:16px}
   .spl{font-size:15px;margin:0 0 6px}
+  .spl .buyu-not{font-size:.68em;padding:0 5px;color:var(--muted)}
+  /* sınırlı kullanımlar: ad · ●●○ · kalan/en fazla · ne zaman dolar · [Kullan] [↺] */
+  .kul-satir{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0;font-size:14.5px}
+  .kul-satir:last-child{border-bottom:0}
+  .kul-ad{font-weight:700;flex:1 1 11em;min-width:0}
+  .kul-satir .pip{color:var(--accent);letter-spacing:1px;font-size:13px}
+  .kul-satir small{color:var(--muted)}
+  .kul-dolar{font-size:12px}
+  .kul-satir .btn{font-size:13px;padding:3px 9px}
+  .kul-satir select{font-size:13px;padding:2px 4px}
   .spl b{font-family:var(--mono);font-size:12px;color:var(--brass);margin-right:6px}
   .tags{display:flex;flex-wrap:wrap;gap:6px}
   .conds .btn{font-size:13px;padding:4px 8px}
