@@ -136,3 +136,45 @@ export const ETKI = {
   "tur:Lupin|Feral Pounce": { unarmedTur: "Slashing" },
   "tur:Khoravar|Skill Versatility": { skillSec: { from: "hepsi", adet: 1 } },
 };
+
+// Sınırlı kullanımlı özellikler: karakter kağıdındaki sayaçlar. Buradakiler metinden okunamayanlar ya da okunanı düzeltenler;
+// geri kalanını kural.js metinden okur ("Once you use this…", "a number of times equal to your … modifier", "Proficiency Bonus").
+//   adet: sayı | "pb" | ability ("wis": mod, en az 1) | "tablo:Sütun" | "seviye" | "seviye*5" | "1+seviye" | { seviye: adet } (eşikler)
+//   yenile: "uzun" | "kisa" (Short Rest'te hepsi)   kisaBir: Short Rest'te bir kullanım döner   kisaSv: bu seviyeden sonra yenile "kisa"
+//   kisaGeri: Short Rest'te dönen miktar ("seviye/2")   zar: kullanımda atılan ("1d10+seviye", "pb d4"; havuzda tek zar: "d6" ya da eşikler)
+//   havuz: true (adet zar ya da puan; kullanırken kaç tane)   tekSefer: bir seferde en fazla   birim: "zar" | "HP" | "puan"
+//   iyilestir: "kendi" | "hedef" (masada seçili hedef, yoksa kendine)   ad: kağıttaki ad   yok: true (sayaç yok)
+export const KULLANIM = {
+  "Barbarian||Rage": { adet: "tablo:Rages", yenile: "uzun", kisaBir: true },
+  "Barbarian||Persistent Rage": { yok: true },
+  "Barbarian|Zealot|Warrior of the Gods": { adet: { 3: 4, 6: 5, 12: 6, 17: 7 }, yenile: "uzun", havuz: true, birim: "zar", zar: "d12", iyilestir: "kendi" },
+  "Bard||Bardic Inspiration": { adet: "cha", yenile: "uzun", kisaSv: 5, zar: "tablo:Bardic Die", ad: "Bardic Inspiration" },
+  "Bard||Font of Inspiration": { yok: true },
+  "Cleric||Channel Divinity": { adet: "tablo:Channel Divinity", yenile: "uzun", kisaBir: true },
+  "Cleric|Light|Warding Flare": { adet: "wis", yenile: "uzun", kisaSv: 6 },
+  "Cleric|Light|Improved Warding Flare": { yok: true },
+  "Druid||Wild Shape": { adet: "tablo:Wild Shape", yenile: "uzun", kisaBir: true },
+  "Druid||Wild Resurgence": { adet: 1, yenile: "uzun", ad: "Wild Resurgence (slot)" },
+  "Fighter||Second Wind": { adet: "tablo:Second Wind", yenile: "uzun", kisaBir: true, zar: "1d10+seviye", iyilestir: "kendi" },
+  "Fighter||Action Surge": { adet: { 2: 1, 17: 2 }, yenile: "kisa" },
+  "Fighter||Indomitable": { adet: { 9: 1, 13: 2, 17: 3 }, yenile: "uzun" },
+  "Fighter|Battle Master|Combat Superiority": { adet: { 3: 4, 7: 5, 15: 6 }, yenile: "kisa", havuz: true, birim: "zar", tekSefer: 1, zar: { 3: "d8", 10: "d10", 18: "d12" }, ad: "Superiority Dice" },
+  "Fighter|Psi Warrior|Psionic Power": { adet: { 3: 4, 5: 6, 9: 8, 13: 10, 17: 12 }, yenile: "uzun", kisaBir: true, havuz: true, birim: "zar", tekSefer: 1, zar: { 3: "d6", 5: "d8", 11: "d10", 17: "d12" }, ad: "Psionic Energy Dice" },
+  "Rogue|Soulknife|Psionic Power": { adet: { 3: 4, 5: 6, 9: 8, 13: 10, 17: 12 }, yenile: "uzun", kisaBir: true, havuz: true, birim: "zar", tekSefer: 1, zar: { 3: "d6", 5: "d8", 11: "d10", 17: "d12" }, ad: "Psionic Energy Dice" },
+  "Monk||Monk's Focus": { adet: "tablo:Focus Points", yenile: "kisa", havuz: true, birim: "puan", ad: "Focus Points" },
+  "Paladin||Lay on Hands": { adet: "seviye*5", yenile: "uzun", havuz: true, birim: "HP", iyilestir: "hedef" },
+  "Paladin||Paladin's Smite": { adet: 1, yenile: "uzun", ad: "Divine Smite (slotsuz)" },
+  "Paladin||Channel Divinity": { adet: "tablo:Channel Divinity", yenile: "uzun", kisaBir: true },
+  "Paladin||Faithful Steed": { adet: 1, yenile: "uzun", ad: "Find Steed (slotsuz)" },
+  "Ranger||Favored Enemy": { adet: "tablo:Favored Enemy", yenile: "uzun", ad: "Hunter's Mark (slotsuz)" },
+  "Sorcerer||Font of Magic": { adet: "tablo:Sorcery Points", yenile: "uzun", havuz: true, birim: "puan", ad: "Sorcery Points" },
+  "Sorcerer||Sorcerous Restoration": { yok: true, kisaGeriHedef: "Sorcerer||Font of Magic", kisaGeri: "seviye/2" },
+  "Warlock|Celestial|Healing Light": { adet: "1+seviye", yenile: "uzun", havuz: true, birim: "zar", tekSefer: "cha", zar: "d6", iyilestir: "hedef" },
+  "Warlock||Mystic Arcanum": { adet: { 11: 1, 13: 2, 15: 3, 17: 4 }, yenile: "uzun", ad: "Mystic Arcanum (her büyü 1)" },
+  "Wizard||Signature Spells": { adet: 2, yenile: "kisa", ad: "Signature Spells (her büyü 1)" },
+  "Wizard|Diviner|Portent": { adet: { 3: 2, 14: 3 }, yenile: "uzun", ad: "Portent zarları" },
+  "Wizard||Memorize Spell": { yok: true },
+  "tur:Aasimar|Healing Hands": { adet: 1, yenile: "uzun", zar: "pb d4", iyilestir: "hedef" },
+  "tur:Gnome|Speak with Animals": { adet: "pb", yenile: "uzun" },   // Forest Gnome: slotsuz büyü PB kadar
+  "opt:Gift of the Depths": { adet: 1, yenile: "uzun", ad: "Water Breathing (slotsuz)" },
+};

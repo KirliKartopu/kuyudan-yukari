@@ -6,7 +6,7 @@
 //   { v, id, ad, oyuncu, avatar, sinif, seviye, background, tur, yontem, temel{str..cha}, dunyalar, secim{anahtar: [değer..]} }
 // secimler(Y, S) -> o anki seçim soruları;  hesapla(Y, S) -> karakter sayfası JSON'u
 import { cek, normal as n } from "./aciklama.js";
-import { ETKI } from "./kural-etki.js";
+import { ETKI, KULLANIM } from "./kural-etki.js";
 
 export const AB = ["str", "dex", "con", "int", "wis", "cha"];
 export const AB_AD = { str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma" };
@@ -189,10 +189,11 @@ export function ozellikler(S, Y) { // seviyeye kadar kazanılan class ve subclas
     if (f && f.level <= L) out.push({ f, alt: false });
   }
   const sub = altSinif(S, Y);
-  if (sub) for (const s of sub.subclassFeatures || []) {
+  if (sub) for (const [i, s] of (sub.subclassFeatures || []).entries()) {
     const f = altOzellik(S, s);
     if (!f || f.level > L) continue;
-    out.push({ f, alt: true, baslik: true });
+    // yalnız ilki subclass'ın giriş başlığıdır ("Warrior of the Open Hand"); sonrakiler (Wholeness of Body…) özelliğin kendisi
+    out.push({ f, alt: true, baslik: i === 0 });
     const gez = (entries, derin) => tara(entries, (tur, e) => {
       if (tur !== "ref" || derin > 3) return;
       const g = e.subclassFeature ? altOzellik(S, e.subclassFeature) : sinifOzellik(S, e.classFeature);
@@ -205,9 +206,9 @@ export function ozellikler(S, Y) { // seviyeye kadar kazanılan class ve subclas
 function buyuSuzgec(filtre, sinirSeviye) { // "level=0|class=Wizard"
   const p = {}; for (const k of String(filtre).split("|")) { const [a, b] = k.split("="); p[a] = b; }
   const lv = p.level != null ? p.level.split(";").map(Number) : null, cl = p.class ? p.class.split(";") : null;
-  const rit = /ritual/.test(p["components & miscellaneous"] || "");
+  const rit = /ritual/.test(p["components & miscellaneous"] || ""), okul = p.school ? p.school.split(";") : null;   // school=D;E (Fey Touched)
   return Object.values(V.buyu).filter((s) => izin(s.source) && (!lv || lv.includes(s.level)) && (sinirSeviye == null || s.level <= sinirSeviye) &&
-    (!rit || !!(s.meta && s.meta.ritual)) &&
+    (!rit || !!(s.meta && s.meta.ritual)) && (!okul || okul.includes(s.school)) &&
     (!cl || cl.some((c) => sinifListesinde(s, c)))).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
 }
 function sinifListesinde(s, sinif) {
@@ -519,11 +520,12 @@ export function secimler(Y, S) {
   for (const x of B.featler) for (const lp of x.f.languageProficiencies || []) Object.keys(lp).forEach((q) => lp[q] === true && sabitDil.add(buyuk(q)));
   tumEtki(B, "dil").forEach((x) => x.e.dil.forEach((d) => sabitDil.add(d)));
   const dilSoru = out.filter((q) => q.k === "dil" || /:dil$/.test(q.k));
-  for (const q of dilSoru) {
-    const baska = new Set(sabitDil);
-    for (const r of dilSoru) if (r !== q) sec(r.k).forEach((x) => baska.add(x));
+  dilSoru.forEach((q, i) => {
+    const baska = new Set(sabitDil), benim = new Set(sec(q.k));
+    // başka soruda seçilen dil kapalı; bu soruda da seçiliyse yalnız daha önceki soru seçtiyse (ilk seçen kalır)
+    dilSoru.forEach((r, j) => { if (r !== q) sec(r.k).forEach((x) => { if (!benim.has(x) || j < i) baska.add(x); }); });
     for (const o of q.secenekler) if (baska.has(o.d)) o.devre = sabitDil.has(o.d) ? "bu dili zaten biliyorsun" : "başka bir seçimde zaten seçtin";
-  }
+  });
   // aynı büyü iki kez alınmaz: subclass, species, feat ya da invocation'dan zaten gelen, ya da daha önceki bir soruda seçilen büyü kapalı
   // (Pact of the Tome bunu açıkça yasaklar; Magic Initiate gibi yerlerde seçim boşa gider). Wizard'ın Hazır büyüleri Spellbook'tan seçilir, sayılmaz.
   const sabitBuyu = new Map(), bk = (ad, kaynak) => { if (ad && !sabitBuyu.has(n(ad))) sabitBuyu.set(n(ad), kaynak); };
@@ -531,12 +533,13 @@ export function secimler(Y, S) {
   if (B.turV && B.turV.additionalSpells) ekBuyuler(B.turV.additionalSpells, L, "tur:sp", B.turV.additionalSpells.length > 1 ? B.surum : null).sabit.forEach((x) => bk(x.ad, B.tur.name));
   for (const x of B.featler) if (x.f.additionalSpells && x.f.additionalSpells.length === 1) ekBuyuler(x.f.additionalSpells, 20, "", null).sabit.forEach((y) => bk(y.ad, x.f.name));
   for (const { o, e } of optBuyuleri(B)) e.sabit.forEach((x) => bk(x.ad, o.name));
-  // öncelik: class'ın kendi cantrip ve hazır büyüleri, sonra feat/species, en son invocation (Tome) seçimleri
-  const oncelik = (q) => (q.k.startsWith("buyu:") ? 0 : q.k.startsWith("opt:") ? 2 : 1);
+  // öncelik: feat/species büyüleri (her zaman hazır, hazırlanan sayıya dahil değil) > class'ın cantrip ve hazır büyüleri
+  // (istenince değişir) > Pact of the Tome (kuralı: zaten hazır olan büyü seçilemez)
+  const oncelik = (q) => (q.k.startsWith("buyu:") ? 1 : q.k.startsWith("opt:") ? 2 : 0);
   const buyuSoru = out.filter((q) => q.adim === "buyu" && q.k !== "buyu:kitap").sort((x, y) => oncelik(x) - oncelik(y));
   buyuSoru.forEach((q, i) => {
-    const onceki = new Map();
-    for (const r of buyuSoru.slice(0, i)) sec(r.k).forEach((x) => onceki.has(n(x)) || onceki.set(n(x), r.baslik));
+    const onceki = new Map(), benim = new Set(sec(q.k).map(n));
+    buyuSoru.forEach((r, j) => { if (r !== q) sec(r.k).forEach((x) => { if ((!benim.has(n(x)) || j < i) && !onceki.has(n(x))) onceki.set(n(x), r.baslik); }); });
     for (const o of q.secenekler) {
       const a = n(o.ad);
       if (sabitBuyu.has(a)) o.devre = "zaten var: " + sabitBuyu.get(a);
@@ -546,11 +549,11 @@ export function secimler(Y, S) {
   // aynı skill iki kaynaktan alınamaz
   const sabitSkill = profSabit(B);
   const skillSoru = out.filter((q) => !q.dinamik && q.secenekler.some((o) => SKILLS[o.d]));
-  for (const q of skillSoru) {
-    const baska = new Set(sabitSkill);
-    for (const r of skillSoru) if (r !== q) sec(r.k).forEach((x) => baska.add(x));
+  skillSoru.forEach((q, i) => {
+    const baska = new Set(sabitSkill), benim = new Set(sec(q.k));
+    skillSoru.forEach((r, j) => { if (r !== q) sec(r.k).forEach((x) => { if (!benim.has(x) || j < i) baska.add(x); }); });
     for (const o of q.secenekler) if (SKILLS[o.d] && baska.has(o.d)) o.devre = sabitSkill.has(o.d) ? "başka bir kaynaktan zaten var" : "başka bir seçimden zaten var";
-  }
+  });
   for (const q of out) {
     const v = sec(q.k);
     q.deger = v;
@@ -589,6 +592,106 @@ function optBuyuleri(B) {
   }
   return out;
 }
+// ---------- sınırlı kullanımlı özellikler (karakter kağıdındaki sayaçlar)
+// Önce KULLANIM tablosu (kural-etki.js), yoksa özelliğin metni okunur. Sonuç: { id, ad, kaynak, max, yenile, ... }
+const ETIKETSIZ = (s) => String(s).replace(/\{@\w+ ([^}|]+)(?:\|([^}|]*))?(?:\|([^}]*))?\}/g, (m, a, b, c) => c || a);
+const AB_TAM = { Strength: "str", Dexterity: "dex", Constitution: "con", Intelligence: "int", Wisdom: "wis", Charisma: "cha" };
+function metinKullanim(entries) {
+  const t = ETIKETSIZ(JSON.stringify(entries || []));
+  const dinlenme = t.match(/finish(?:es)? an? (Short or Long|Long|Short) Rest/i);
+  if (!dinlenme) return null;
+  let adet = null, buyu = false;
+  const ab = t.match(/number of times equal to (?:your )?(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) modifier/i);
+  if (ab) adet = AB_TAM[ab[1][0].toUpperCase() + ab[1].slice(1).toLowerCase()];
+  else if (/(?:number of times|uses?|Points?) equal to your Proficiency Bonus/i.test(t)) adet = "pb";
+  else { const k = t.match(/can use (?:this|it|these) [^.]{0,40}?\b(twice|three times)\b/i); if (k) adet = k[1] === "twice" ? 2 : 3; }
+  if (adet == null && (/Once you [^.]*?, you (?:can't|must finish)/i.test(t) || /you can't (?:use|do|cast) [^.]*?again until you finish/i.test(t) ||
+      /must (?:[^.]*? or )?finish an? (?:Short or Long|Long|Short) Rest before/i.test(t) || /once without (?:expending )?a spell slot/i.test(t))) adet = 1;
+  if (adet == null) return null;
+  buyu = /without (?:expending )?a spell slot/i.test(t);
+  // dinlenme türü: kullanım sınırını söyleyen cümleden ("When you finish a Short Rest… Once you use this… Long Rest" → Long)
+  const cumle = t.split(/(?<=\.)\s|","/).find((c) => /(?:number of times|Once you|can't (?:use|do|cast)|must finish|twice|three times|once without)/i.test(c) && /finish(?:es)? an? (?:Short or Long|Long|Short) Rest/i.test(c));
+  const d2 = cumle ? cumle.match(/finish(?:es)? an? (Short or Long|Long|Short) Rest/i) : dinlenme;
+  const kisa = /Short/i.test(d2[1]);
+  return { adet, yenile: kisa ? "kisa" : "uzun", kisaBir: !kisa && /regain one [^.]*?when you finish a Short Rest/i.test(t), buyu };
+}
+function kaynakHesapla(B, S, Y, m, P, ozel) {
+  const L = Y.seviye, out = [], var_ = new Set();
+  const deger = (x) => {
+    if (x == null) return 0;
+    if (typeof x === "number") return x;
+    if (typeof x === "object") { let v = 0; for (const [lv, a] of Object.entries(x)) if (L >= +lv) v = a; return v; }
+    if (x === "pb") return P;
+    if (AB.includes(x)) return Math.max(1, m[x]);
+    if (x.startsWith("tablo:")) return parseInt(tabloSutun(S, Y, x.slice(6)), 10) || 0;
+    const t = x.replace(/seviye/g, L).replace(/\s/g, ""), a = t.match(/^(\d+)([*+/])(\d+)$/);
+    if (a) return a[2] === "*" ? +a[1] * +a[3] : a[2] === "+" ? +a[1] + +a[3] : Math.floor(+a[1] / +a[3]);
+    return parseInt(t, 10) || 0;
+  };
+  const zarYaz = (z) => {
+    if (z == null) return null;
+    if (typeof z === "object") { let v = null; for (const [lv, a] of Object.entries(z)) if (L >= +lv) v = a; return v; }
+    if (z.startsWith("tablo:")) return String(tabloSutun(S, Y, z.slice(6)) || "").toLowerCase() || null;
+    return z.replace(/^pb d/, P + "d").replace(/seviye/g, L);
+  };
+  const ekle = (anahtar, ad, kaynak, girdi) => {
+    const el = KULLANIM[anahtar];
+    if (el && el.yok) return;
+    const oku = el ? null : metinKullanim(girdi);
+    if (!el && !oku) return;
+    const spec = el || oku, max = deger(spec.adet);
+    if (!max) return;
+    const id = anahtar.replace(/[^\w|:' -]/g, "");
+    if (var_.has(id)) { const i = out.findIndex((o) => o.id === id); if (i > -1) out.splice(i, 1); }   // aynı özelliğin üst seviyesi (Indomitable)
+    var_.add(id);
+    const o = { id, ad: (el && el.ad) || ad, kaynak, max, yenile: spec.kisaSv && L >= spec.kisaSv ? "kisa" : spec.yenile || "uzun" };
+    if (spec.kisaBir) o.kisaBir = true;
+    for (const k of ["havuz", "birim", "iyilestir"]) if (el && el[k]) o[k] = el[k];
+    if (el && el.tekSefer) o.tekSefer = deger(el.tekSefer);
+    const z = el && zarYaz(el.zar); if (z) o.zar = z;
+    out.push(o);
+  };
+  const c = S.c, secilen = new Set(ozel.map((o) => o.ad));
+  for (const { f } of ozellikler(S, Y)) if (secilen.has(f.name)) ekle(`${c.name}|${f.subclassShortName || ""}|${f.name}`, f.name, c.name, f.entries);
+  // Sorcerous Restoration gibi: başka bir sayacın Short Rest'te dönen miktarı
+  for (const [k, el] of Object.entries(KULLANIM)) if (el.kisaGeriHedef && secilen.has(k.split("|")[2])) {
+    const h = out.find((o) => o.id === el.kisaGeriHedef); if (h) h.kisaGeri = deger(el.kisaGeri);
+  }
+  for (const [k, v] of Object.entries(Y.secim)) if (k.startsWith("sinif:opt:")) for (const ad of v) {
+    const l = V.opt.filter((x) => x.name === ad && izin(x.source)), op = l.find((x) => x.source === "XPHB") || l[0];
+    if (op) ekle("opt:" + ad, ad, c.name, KULLANIM["opt:" + ad] ? null : []);   // invocation büyüleri sınırsız; yalnız tablodakiler
+  }
+  // species: özellikler (büyü veren özellik hariç: büyüler aşağıda tek tek) ve 1+ seviye büyüler
+  const tur = B.tur;
+  if (tur) {
+    const takas = sec_(Y, "tur:takas").map((t) => t.split("|"));
+    for (const e of B.turGirdi) if (e && e.name && !takas.some(([eski]) => eski === e.name)) {
+      const oku = metinKullanim(e.entries);
+      if (!KULLANIM["tur:" + tur.name + "|" + e.name] && oku && oku.buyu) continue;
+      ekle("tur:" + tur.name + "|" + e.name, e.name, tur.name, e.entries);
+    }
+    for (const [, tAd, yeni] of takas) { const t2 = V.tur.find((x) => x.name === tAd); const e = t2 && (t2.entries || []).find((x) => x && x.name === yeni); if (e) ekle("tur:" + tAd + "|" + yeni, yeni, tAd + " (takas)", e.entries); }
+    if (B.turV && B.turV.additionalSpells) for (const x of ekBuyuler(B.turV.additionalSpells, L, "tur:sp", B.turV.additionalSpells.length > 1 ? B.surum : null).sabit) {
+      const sp = V.buyu[n(x.ad)]; if (!sp || !sp.level) continue;
+      const el = KULLANIM["tur:" + tur.name + "|" + sp.name];
+      out.push({ id: "tur:" + tur.name + "|" + sp.name, ad: sp.name + " (slotsuz)", kaynak: tur.name, max: el ? deger(el.adet) : 1, yenile: "uzun" });
+    }
+  }
+  // feat'ler: "once without a spell slot" diyen feat'in her 1+ seviye büyüsü ayrı sayaç (Magic Initiate, Fey-Touched)
+  for (const x of B.featler) {
+    const oku = metinKullanim(x.f.entries);
+    if (oku && oku.buyu && x.f.additionalSpells) {
+      const adlar = [];
+      if (x.f.additionalSpells.length === 1) ekBuyuler(x.f.additionalSpells, 20, "", null).sabit.forEach((y) => adlar.push(y.ad));
+      for (const [k, v] of Object.entries(Y.secim)) if (k.startsWith(x.k + ":sp:")) adlar.push(...v);
+      for (const a of adlar) { const sp = V.buyu[n(a)]; if (sp && sp.level) out.push({ id: "feat:" + x.f.name + "|" + sp.name, ad: sp.name + " (slotsuz)", kaynak: x.f.name, max: 1, yenile: "uzun" }); }
+      continue;
+    }
+    ekle("feat:" + x.f.name, x.f.name, "Feat", x.f.entries);
+  }
+  return out;
+}
+const sec_ = (Y, k) => Y.secim[k] || [];
 function herZamanHazir(B) {
   const S = B.S, L = B.L, out = [], alt = (B.Y.secim["sinif:altset"] || [])[0];
   for (const k of [S.c, B.sub].filter(Boolean)) for (const e of k.additionalSpells || []) {
@@ -794,10 +897,12 @@ export function hesapla(Y, S, ek) {
   const spell = (ad, etiket) => { const s = V.buyu[n(ad)]; return s ? { ad: s.name, seviye: s.level, konsantrasyon: !!(s.duration || []).some((d) => d.concentration), ritual: !!(s.meta && s.meta.ritual), not: etiket || "" } : null; };
   const l = [];
   if (bc) { sec("buyu:cantrip").forEach((x) => l.push(spell(x))); sec("buyu:hazir").forEach((x) => l.push(spell(x))); herZamanHazir(B).forEach((x) => l.push(spell(x, "her zaman hazır"))); }
-  for (const [k, v] of Object.entries(Y.secim)) if (/:sp:\d+$/.test(k) && !k.startsWith("opt:")) v.forEach((x) => l.push(spell(x)));
+  // feat ve species'ten seçilen büyüler: kaynağın adıyla (Magic Initiate, Fey-Touched, Elf…)
+  const spKaynak = (k) => { const f = B.featler.find((x) => k.startsWith(x.k + ":sp:")); return f ? f.f.name : k.startsWith("tur:") && tur ? tur.name : ""; };
+  for (const [k, v] of Object.entries(Y.secim)) if (/:sp:\d+$/.test(k) && !k.startsWith("opt:")) v.forEach((x) => l.push(spell(x, spKaynak(k))));
   for (const { o, e } of optBuyuleri(B)) {                 // bırakılan invocation'ın eski seçimleri sayılmaz
     e.sabit.forEach((x) => l.push(spell(x.ad, o.name + (x.tur === "innate" ? ": slot harcamadan" : ""))));
-    e.secim.forEach((q) => sec(q.k).forEach((x) => l.push(spell(x, o.name))));
+    e.secim.forEach((q) => sec(q.k).forEach((x) => l.push(spell(x, o.name === "Pact of the Tome" ? "Pact of the Tome: kitap üstündeyken hazır" : o.name))));
   }
   if (turV && turV.additionalSpells) ekBuyuler(turV.additionalSpells, L, "tur:sp", turV.additionalSpells.length > 1 ? B.surum : null).sabit.forEach((x) => l.push(spell(x.ad, turAd)));
   for (const x of B.featler) if (x.f.additionalSpells && x.f.additionalSpells.length === 1) ekBuyuler(x.f.additionalSpells, 20, "", null).sabit.forEach((y) => l.push(spell(y.ad, x.f.name)));
@@ -829,7 +934,7 @@ export function hesapla(Y, S, ek) {
     saves, skills, pasif_perception: 10 + perc.bonus, hp_max: hp, ac, initiative: init, hiz, duyular,
     diller: [...diller].sort(), araclar: [...araclar_].sort(), zirh: [...zirh], silah: c.startingProficiencies.weapons.concat(ekSilahProf(B)).map(etiketsiz),
     direncler: [...direnc].sort(), notlar,
-    saldirilar, buyu, ozellikler: ozel, featler: B.featler.map((x) => x.f.name),
+    saldirilar, buyu, ozellikler: ozel, kaynaklar: kaynakHesapla(B, S, Y, m, P, ozel), featler: B.featler.map((x) => x.f.name),
     envanter, para, avatar: Y.avatar || null, yerel: true,
     guncellendi: new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC", yapi: Y,
   };

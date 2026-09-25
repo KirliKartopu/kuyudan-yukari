@@ -31,7 +31,26 @@ function altBolum(o, ad) {
   return null;
 }
 
+// 5e.tools "_copy": başka bir türü temel alan türler (Lorwyn'in Kithkin'i Halfling'den) — kural.js'teki kopyaCoz'un kısa hali
+function kopyaGirdi(x, hepsi, derin = 0) {
+  if (!x._copy || derin > 4) return x.entries || [];
+  const c = x._copy, t = hepsi.find((y) => y.name === c.name && y.source === c.source);
+  let ent = t ? kopyaGirdi(t, hepsi, derin + 1).slice() : [];
+  for (const m of [].concat((c._mod && c._mod.entries) || [])) {
+    const items = [].concat(m.items || []);
+    if (m.mode === "replaceArr") { const i = ent.findIndex((e) => e && e.name === m.replace); if (i > -1) ent.splice(i, 1, ...items); }
+    else if (m.mode === "removeArr") ent = ent.filter((e) => !(e && [].concat(m.names || []).includes(e.name)));
+    else ent = ent.concat(items);
+  }
+  return x.entries || ent;
+}
+
 async function bul(tur, ad, ek) {
+  // "Draconic Ancestry (Black)", "Aspect of the Wilds (Owl)": seçenekli özelliğin kendisi bulunamazsa parantezsiz adıyla
+  if (tur === "ozellik" && / \([^)]+\)$/.test(ad)) { const r = await bul0(tur, ad, ek); return r || bul0(tur, ad.replace(/ \([^)]+\)$/, ""), ek); }
+  return bul0(tur, ad, ek);
+}
+async function bul0(tur, ad, ek) {
   if (tur === "skill") { const d = await cek("skills.json"); const x = sec(d.skill, ad); return x && { baslik: x.name, alt: "Skill · " + (x.ability || "").toUpperCase(), govde: girdi(x.entries) }; }
   if (tur === "cond") { const d = await cek("conditionsdiseases.json"); const x = sec(d.condition, ad); return x && { baslik: x.name, alt: "Condition", govde: girdi(x.entries) }; }
   if (tur === "feat") { const d = await cek("feats.json"); const x = sec(d.feat, ad); return x && { baslik: x.name, alt: "Feat · " + x.source, govde: girdi(x.entries) }; }
@@ -88,7 +107,7 @@ async function bul(tur, ad, ek) {
     }
     const r = await cek("races.json");
     const turler = sirala(r.race.filter((x) => ek && n(ek).includes(n(x.name))));
-    for (const t of turler) { const b = altBolum(t.entries, ad); if (b) return { baslik: b.name, alt: t.name + " · " + t.source, govde: girdi(b.entries) }; }
+    for (const t of turler) { const b = altBolum(kopyaGirdi(t, r.race), ad); if (b) return { baslik: b.name, alt: t.name + " · " + t.source, govde: girdi(b.entries) }; }
     const f = await cek("feats.json"); const x = sec(f.feat, ad);
     if (x) return { baslik: x.name, alt: "Feat", govde: girdi(x.entries) };
     return null;
