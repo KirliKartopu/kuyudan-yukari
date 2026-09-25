@@ -15,7 +15,10 @@
     var mode = "norm", C = null, S = null, aktifSekme = "atk";
 
     function fresh() { return { hp: C.hp_max, temp: 0, slots: {}, conds: [], insp: false, ds: { s: 0, f: 0 } }; }
-    function persist() { if (C) store.save(C.id, S); }
+    // o.sunucu(id, niyet) verilirse (kendi masamız) kağıt yalnız görüntüler: zarı sunucu atar, durumu sunucu değiştirir
+    var SUNUCU = typeof o.sunucu === "function";
+    function niyet(e) { o.sunucu(C.id, e); }
+    function persist() { if (C && !SUNUCU) store.save(C.id, S); }
 
     // --- zar
     function emit(r) { r.karakter = C ? C.ad : ""; o.onRoll(r); }
@@ -194,14 +197,15 @@
         (S.env || S.para ? ' · <a href="#" data-env="sifirla">Başlangıç envanterine dön</a>' : "") + "</small></p></section>";
       return h;
     }
-    function envDegis(fn) {
+    function envDegis(fn, e) {
+      if (SUNUCU) { niyet(e); return; }
       var l = envanter(); fn(l);
       S.env = l.filter(function (i) { return i.adet > 0; }).map(function (i) { return [i.ad, i.adet, i.kusanili ? 1 : 0]; });
       persist(); render(); yenidenHesapla();
     }
     // AC ve HP üst sınırı durumda da dursun: hedef listesi ve HP etiketleri sayfayı açmadan bilsin
     function ozetKaydet() {
-      if (!C || (S.ac === C.ac && S.hpMax === C.hp_max)) return;
+      if (SUNUCU || !C || (S.ac === C.ac && S.hpMax === C.hp_max)) return;
       S.ac = C.ac; S.hpMax = C.hp_max; persist();
     }
     // üreticide yapılmış karakterlerde kuşanma AC'yi ve saldırıları değiştirir: sayfa yeniden hesaplanır
@@ -248,11 +252,11 @@
       if (ev && C) {
         e.preventDefault();
         var tur = ev.getAttribute("data-env"), n = +ev.getAttribute("data-i");
-        if (tur === "+") envDegis(function (l) { l[n].adet++; });
-        else if (tur === "-") envDegis(function (l) { l[n].adet--; });
-        else if (tur === "x") envDegis(function (l) { l[n].adet = 0; });
-        else if (tur === "k") envDegis(function (l) { l[n].kusanili = !l[n].kusanili; });
-        else if (tur === "sifirla") { if (confirm("Envanter ve para, karakterin başlangıç hâline dönsün mü?")) { delete S.env; delete S.para; persist(); render(); } }
+        if (tur === "+") envDegis(function (l) { l[n].adet++; }, { tip: "env", ne: "+", i: n });
+        else if (tur === "-") envDegis(function (l) { l[n].adet--; }, { tip: "env", ne: "-", i: n });
+        else if (tur === "x") envDegis(function (l) { l[n].adet = 0; }, { tip: "env", ne: "x", i: n });
+        else if (tur === "k") envDegis(function (l) { l[n].kusanili = !l[n].kusanili; }, { tip: "env", ne: "k", i: n });
+        else if (tur === "sifirla") { if (confirm("Envanter ve para, karakterin başlangıç hâline dönsün mü?")) { if (SUNUCU) niyet({ tip: "env", ne: "sifirla" }); else { delete S.env; delete S.para; persist(); render(); } } }
         else if (tur === "ekle") {
           var ad = root.querySelector("#env-ara").value.trim(), adet = Math.max(1, parseInt(root.querySelector("#env-adet").value, 10) || 1);
           if (!ad) return;
@@ -260,13 +264,14 @@
           envDegis(function (l) {
             var var_ = l.filter(function (i) { return i.ad.toLowerCase() === ad.toLowerCase(); })[0];
             if (var_) var_.adet += adet; else l.push({ ad: x ? x.ad : ad, adet: adet, tip: x ? x.tip : "", kusanili: false });
-          });
+          }, { tip: "env", ne: "ekle", ad: x ? x.ad : ad, adet: adet });
         }
         return;
       }
       var t = e.target.closest("[data-roll],[data-hp],[data-cond],[data-act]");
       if (!t || !C) return;
       var r = t.getAttribute("data-roll");
+      if (r && SUNUCU) { niyet({ tip: "zar", kod: r, mod: mode }); return; }
       if (r) {
         if (r === "init") d20("Initiative", C.initiative);
         else if (r === "spatk") d20("Spell attack", C.buyu.isabet, true);
@@ -281,6 +286,7 @@
       var hp = t.getAttribute("data-hp");
       if (hp) {
         var v = Math.max(0, parseInt(root.querySelector("#hpv").value, 10) || 0);
+        if (SUNUCU) { niyet({ tip: "hp", ne: hp, v: v }); return; }
         if (hp === "dmg") { var rest = v; if (S.temp) { var used = Math.min(S.temp, rest); S.temp -= used; rest -= used; } S.hp = Math.max(0, S.hp - rest); }
         if (hp === "heal") { S.hp = Math.min(C.hp_max, S.hp + v); if (S.hp > 0) S.ds = { s: 0, f: 0 }; }
         if (hp === "temp") S.temp = Math.max(S.temp, v);
@@ -288,9 +294,11 @@
         persist(); render(); return;
       }
       var cd = t.getAttribute("data-cond");
+      if (cd && SUNUCU) { niyet({ tip: "cond", ad: cd }); return; }
       if (cd) { var i = S.conds.indexOf(cd); if (i > -1) S.conds.splice(i, 1); else S.conds.push(cd); persist(); render(); return; }
       var act = t.getAttribute("data-act");
       if (act === "duzenle") { if (o.duzenle) o.duzenle(C.id); return; }
+      if ((act === "insp" || act === "ds") && SUNUCU) { niyet({ tip: act }); return; }
       if (act === "insp") { S.insp = !S.insp; persist(); render(); return; }
       if (act === "ds") {
         var n = d(20), dz = "1d20@" + n;
@@ -303,6 +311,8 @@
     });
     root.addEventListener("change", function (e) {
       var t = e.target;
+      if (t.matches("[data-para]") && SUNUCU) { niyet({ tip: "para", k: t.getAttribute("data-para"), v: parseInt(t.value, 10) || 0 }); return; }
+      if (t.matches("[data-slot]") && SUNUCU) { niyet({ tip: "slot", lv: +t.getAttribute("data-slot"), k: +t.getAttribute("data-k"), dolu: t.checked }); return; }
       if (t.matches("[data-para]")) { var pp = para(); pp[t.getAttribute("data-para")] = Math.max(0, parseInt(t.value, 10) || 0); S.para = PARA.map(function (k) { return pp[k]; }); persist(); render(); return; }
       if (!t.matches("[data-slot]")) return;
       var lv = t.getAttribute("data-slot"), k = +t.getAttribute("data-k");
