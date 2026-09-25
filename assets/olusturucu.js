@@ -162,7 +162,7 @@ function yetenekAdim() {
     <option value="zar" ${Y.yontem === "zar" ? "selected" : ""}>Zar at (4d6, en düşüğü at)</option>
     <option value="elle" ${Y.yontem === "elle" ? "selected" : ""}>Elle gir (DM izniyle)</option></select>
     ${Y.yontem === "puan" ? `<span class="not">Harcanan: <b>${puanHarcanan()}</b> / 27</span>` : ""}
-    ${Y.yontem === "zar" ? `<button class="btn" data-act="zarat" type="button">${(Y.zarlar || []).length ? "Yeniden at" : "Zarları at"}</button> <span class="not">${(Y.zarlar || []).join(", ")}</span>` : ""}</div>`;
+    ${Y.yontem === "zar" ? `<button class="btn" data-act="zarat" type="button">${(Y.zarlar || []).length ? "Yeniden at" : "Zarları at"}</button> <span class="not">${(Y.zarlar || []).join(", ")}${(Y.zarGecmis || []).length ? ` · ${Y.zarGecmis.length}. atış (hepsi karaktere kaydedilir, DM görür)` : ""}</span>` : ""}</div>`;
   if (ana2) h += `<p class="not">${esc(Y.sinif)} için en önemli: <b>${ana2}</b>. En yüksek puanı buraya ver.</p>`;
   const dizi = Y.yontem === "zar" ? Y.zarlar || [] : K.STANDART, at = Y.atama || {};
   h += `<div class="abtablo">${K.AB.map((a) => {
@@ -292,6 +292,8 @@ document.addEventListener("click", async (e) => {
     Y.temel[a] = yeni; if (puanHarcanan() > 27) { Y.temel[a] -= y; return; }
   } else if (t.dataset.act === "zarat") {
     Y.zarlar = Array.from({ length: 6 }, () => { const r = [1, 2, 3, 4].map(() => 1 + Math.floor(Math.random() * 6)).sort((a, b) => a - b); return r[1] + r[2] + r[3]; }).sort((a, b) => b - a);
+    // her atış karaktere kaydedilir: DM kaç kez yeniden atıldığını karakter sayfasında görür
+    Y.zarGecmis = (Y.zarGecmis || []).concat([Y.zarlar]).slice(-100);
     Y.atama = {};
   } else if (t.dataset.act === "indir") { indir(); return; }
   else if (t.dataset.act === "kod") { try { await navigator.clipboard.writeText(KOD_ON + (await sikistir(Y))); t.textContent = "Kopyalandı ✓"; } catch (x) { t.textContent = "Kopyalanamadı"; } return; }

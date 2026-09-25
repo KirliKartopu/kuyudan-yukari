@@ -205,7 +205,9 @@ export function ozellikler(S, Y) { // seviyeye kadar kazanılan class ve subclas
 function buyuSuzgec(filtre, sinirSeviye) { // "level=0|class=Wizard"
   const p = {}; for (const k of String(filtre).split("|")) { const [a, b] = k.split("="); p[a] = b; }
   const lv = p.level != null ? p.level.split(";").map(Number) : null, cl = p.class ? p.class.split(";") : null;
+  const rit = /ritual/.test(p["components & miscellaneous"] || "");
   return Object.values(V.buyu).filter((s) => izin(s.source) && (!lv || lv.includes(s.level)) && (sinirSeviye == null || s.level <= sinirSeviye) &&
+    (!rit || !!(s.meta && s.meta.ritual)) &&
     (!cl || cl.some((c) => sinifListesinde(s, c)))).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
 }
 function sinifListesinde(s, sinif) {
@@ -453,6 +455,10 @@ export function secimler(Y, S) {
       const adet = Array.isArray(op.progression) ? op.progression[L - 1] : Object.entries(op.progression).filter(([lv]) => +lv <= L).reduce((m, [, v]) => Math.max(m, v), 0);
       if (adet) ekle("sinif", { k: "sinif:opt:" + op.name, tur: "coklu", baslik: op.name, adet, secenekler: V.opt.filter((o) => izin(o.source) && o.featureType.some((t) => op.featureType.includes(t)) && optUygun(o, L, Y)).map((o) => ({ d: o.name, ad: o.name, alt: KAYNAK_AD[o.source] || "", ack: "ozellik|" + o.name + "|" + c.name })) });
     }
+    for (const { o, e } of optBuyuleri(B)) for (const s of e.secim) ekle("buyu", { k: s.k, tur: "coklu", adet: s.adet,
+      baslik: o.name + ": " + (/level=0/.test(s.filtre) ? "cantrip" : /ritual/.test(s.filtre) ? "ritual büyü" : "büyü"),
+      aciklama: /level=0/.test(s.filtre) || /ritual/.test(s.filtre) ? "Herhangi bir class'ın listesinden; senin için Warlock büyüsü sayılır. Zaten hazır olan bir büyü seçilemez." : "",
+      secenekler: buyuSuzgec(s.filtre).map(buyuSecenek), ack: "ozellik|" + o.name + "|" + c.name });
     for (const { f } of ozellikler(S, Y)) {
       if (f.name === "Ability Score Improvement" || f.name === "Epic Boon") {
         const k = "sinif:asi:" + f.level, kat = f.name === "Epic Boon" ? ["EB"] : ["G"];
@@ -518,6 +524,25 @@ export function secimler(Y, S) {
     for (const r of dilSoru) if (r !== q) sec(r.k).forEach((x) => baska.add(x));
     for (const o of q.secenekler) if (baska.has(o.d)) o.devre = sabitDil.has(o.d) ? "bu dili zaten biliyorsun" : "başka bir seçimde zaten seçtin";
   }
+  // aynı büyü iki kez alınmaz: subclass, species, feat ya da invocation'dan zaten gelen, ya da daha önceki bir soruda seçilen büyü kapalı
+  // (Pact of the Tome bunu açıkça yasaklar; Magic Initiate gibi yerlerde seçim boşa gider). Wizard'ın Hazır büyüleri Spellbook'tan seçilir, sayılmaz.
+  const sabitBuyu = new Map(), bk = (ad, kaynak) => { if (ad && !sabitBuyu.has(n(ad))) sabitBuyu.set(n(ad), kaynak); };
+  if (S) herZamanHazir(B).forEach((x) => bk(x, B.sub ? B.sub.name : S.c.name));
+  if (B.turV && B.turV.additionalSpells) ekBuyuler(B.turV.additionalSpells, L, "tur:sp", B.turV.additionalSpells.length > 1 ? B.surum : null).sabit.forEach((x) => bk(x.ad, B.tur.name));
+  for (const x of B.featler) if (x.f.additionalSpells && x.f.additionalSpells.length === 1) ekBuyuler(x.f.additionalSpells, 20, "", null).sabit.forEach((y) => bk(y.ad, x.f.name));
+  for (const { o, e } of optBuyuleri(B)) e.sabit.forEach((x) => bk(x.ad, o.name));
+  // öncelik: class'ın kendi cantrip ve hazır büyüleri, sonra feat/species, en son invocation (Tome) seçimleri
+  const oncelik = (q) => (q.k.startsWith("buyu:") ? 0 : q.k.startsWith("opt:") ? 2 : 1);
+  const buyuSoru = out.filter((q) => q.adim === "buyu" && q.k !== "buyu:kitap").sort((x, y) => oncelik(x) - oncelik(y));
+  buyuSoru.forEach((q, i) => {
+    const onceki = new Map();
+    for (const r of buyuSoru.slice(0, i)) sec(r.k).forEach((x) => onceki.has(n(x)) || onceki.set(n(x), r.baslik));
+    for (const o of q.secenekler) {
+      const a = n(o.ad);
+      if (sabitBuyu.has(a)) o.devre = "zaten var: " + sabitBuyu.get(a);
+      else if (onceki.has(a)) o.devre = "zaten seçtin: " + onceki.get(a);
+    }
+  });
   // aynı skill iki kaynaktan alınamaz
   const sabitSkill = profSabit(B);
   const skillSoru = out.filter((q) => !q.dinamik && q.secenekler.some((o) => SKILLS[o.d]));
@@ -554,6 +579,16 @@ function optUygun(o, L, Y) {
 }
 function featUygun(f, L) { return (f.prerequisite || [{}]).some((p) => !p.level || (p.level.level || p.level) <= L); }
 export function ekipOzet(l) { return (l || []).map((x) => typeof x === "string" ? buyuk(ref(x).ad) : x.item ? (x.quantity > 1 ? x.quantity + "× " : "") + (x.displayName || buyuk(ref(x.item).ad)) : x.value ? x.value / 100 + " gp" : x.special || "").filter(Boolean).join(", "); }
+// seçilen invocation'ların büyüleri (5e.tools additionalSpells): Armor of Shadows → Mage Armor, Otherworldly Leap → Jump,
+// Pact of the Tome → 3 cantrip + 2 ritual seçimi. Sorunun anahtarı "opt:<ad>:sp:<i>".
+function optBuyuleri(B) {
+  const out = [];
+  for (const [k, v] of Object.entries(B.Y.secim)) if (k.startsWith("sinif:opt:")) for (const ad of v) {
+    const l = V.opt.filter((x) => x.name === ad && izin(x.source)), o = l.find((x) => x.source === "XPHB") || l[0];
+    if (o && o.additionalSpells) out.push({ o, e: ekBuyuler(o.additionalSpells, B.L, "opt:" + ad + ":sp", null) });
+  }
+  return out;
+}
 function herZamanHazir(B) {
   const S = B.S, L = B.L, out = [], alt = (B.Y.secim["sinif:altset"] || [])[0];
   for (const k of [S.c, B.sub].filter(Boolean)) for (const e of k.additionalSpells || []) {
@@ -759,7 +794,11 @@ export function hesapla(Y, S, ek) {
   const spell = (ad, etiket) => { const s = V.buyu[n(ad)]; return s ? { ad: s.name, seviye: s.level, konsantrasyon: !!(s.duration || []).some((d) => d.concentration), ritual: !!(s.meta && s.meta.ritual), not: etiket || "" } : null; };
   const l = [];
   if (bc) { sec("buyu:cantrip").forEach((x) => l.push(spell(x))); sec("buyu:hazir").forEach((x) => l.push(spell(x))); herZamanHazir(B).forEach((x) => l.push(spell(x, "her zaman hazır"))); }
-  for (const [k, v] of Object.entries(Y.secim)) if (/:sp:\d+$/.test(k)) v.forEach((x) => l.push(spell(x)));
+  for (const [k, v] of Object.entries(Y.secim)) if (/:sp:\d+$/.test(k) && !k.startsWith("opt:")) v.forEach((x) => l.push(spell(x)));
+  for (const { o, e } of optBuyuleri(B)) {                 // bırakılan invocation'ın eski seçimleri sayılmaz
+    e.sabit.forEach((x) => l.push(spell(x.ad, o.name + (x.tur === "innate" ? ": slot harcamadan" : ""))));
+    e.secim.forEach((q) => sec(q.k).forEach((x) => l.push(spell(x, o.name))));
+  }
   if (turV && turV.additionalSpells) ekBuyuler(turV.additionalSpells, L, "tur:sp", turV.additionalSpells.length > 1 ? B.surum : null).sabit.forEach((x) => l.push(spell(x.ad, turAd)));
   for (const x of B.featler) if (x.f.additionalSpells && x.f.additionalSpells.length === 1) ekBuyuler(x.f.additionalSpells, 20, "", null).sabit.forEach((y) => l.push(spell(y.ad, x.f.name)));
   for (const x of B.etkiler) if (x.e.secenek) sec(x.id + ":sec").forEach((v) => { const r = x.e.secenek.liste.find((z) => z[0] === v); if (r && r[2] && V.buyu[n(r[2])]) l.push(spell(r[2], x.kaynak)); });

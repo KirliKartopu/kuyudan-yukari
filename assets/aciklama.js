@@ -77,6 +77,14 @@ async function bul(tur, ad, ek) {
         const x = sec((d.classFeature || []).concat(d.subclassFeature || []), ad);
         if (x) return { baslik: x.name, alt: `${x.className}${x.subclassShortName ? " (" + x.subclassShortName + ")" : ""} · Sv ${x.level}`, govde: girdi(x.entries) };
       } catch (e) { /* sınıf değil, tür olabilir */ }
+      // Eldritch Invocation, Metamagic, Maneuver gibi seçenekler ayrı dosyada
+      const o = await cek("optionalfeatures.json");
+      const y = sec(o.optionalfeature, ad);
+      if (y) {
+        const TIP = { EI: "Eldritch Invocation", MM: "Metamagic", "MV:B": "Maneuver", AS: "Arcane Shot", PB: "Pact Boon", AI: "Artificer Infusion", RN: "Rune" };
+        const on = (y.prerequisite || []).flatMap((p) => [p.level ? "Sv " + (p.level.level || p.level) : "", ...(p.optionalfeature || []).map((q) => q.split("|")[0].split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")), p.spell ? "hasar veren bir cantrip" : ""]).filter(Boolean);
+        return { baslik: y.name, alt: [(y.featureType || []).map((t) => TIP[t] || t).join(", "), y.source, on.length ? "Önkoşul: " + on.join(", ") : ""].filter(Boolean).join(" · "), govde: girdi(y.entries) };
+      }
     }
     const r = await cek("races.json");
     const turler = sirala(r.race.filter((x) => ek && n(ek).includes(n(x.name))));
