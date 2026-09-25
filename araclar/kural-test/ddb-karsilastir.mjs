@@ -50,7 +50,15 @@ for (const dosya of readdirSync(DIZIN).filter((f) => /^k_\d+\.json$/.test(f))) {
   kars("HP", C.hp_max, E.hp_max); kars("AC", C.ac, E.ac); kars("Initiative", C.initiative, E.initiative); kars("Speed", C.hiz, E.hiz);
   kars("PB", C.prof_bonus, E.prof_bonus); kars("Pasif Perception", C.pasif_perception, E.pasif_perception);
   AB.forEach((a) => kars("Save " + a, [C.saves[a].prof, C.saves[a].bonus], [E.saves[a].prof, E.saves[a].bonus]));
-  for (const s of E.skills) { const b = C.skills.find((x) => x.ad === s.ad); kars("Skill " + s.ad, [b.prof, b.bonus], [s.prof, s.bonus]); }
+  // Thaumaturge (Cleric) ve Magician (Druid): Int (Arcana/Religion ya da Arcana/Nature) check'lerine Wis bonusu (en az +1).
+  // D&D Beyond'un skill sayısı bunu içermiyor; kural metni koşulsuz ekler, bu yüzden beklenene biz ekleriz.
+  const secimAd = new Set((d.secim || []).map((x) => x[1])), wis = Math.max(1, E.yetenekler.wis.mod);
+  const orderEk = { Thaumaturge: ["Arcana", "Religion"], Magician: ["Arcana", "Nature"] };
+  for (const s of E.skills) {
+    const b = C.skills.find((x) => x.ad === s.ad);
+    const ek = Object.entries(orderEk).some(([o, l]) => secimAd.has(o) && l.includes(s.ad)) ? wis : 0;
+    kars("Skill " + s.ad, [b.prof, b.bonus], [s.prof, s.bonus + ek]);
+  }
   kars("Diller", C.diller.slice().sort(), E.diller.slice().sort());
   kars("Darkvision", C.duyular.Darkvision || null, (E.duyular || {}).darkvision || null);
   for (const a of E.saldirilar) { const b = C.saldirilar.find((x) => low(x.ad) === low(a.ad)); kars("Saldırı " + a.ad, b ? [b.isabet, b.hasar.replace(/\s/g, "")] : null, [a.isabet, a.hasar.replace(/\s/g, "")]); }

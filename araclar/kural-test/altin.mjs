@@ -85,7 +85,7 @@ const atk = (c, ad) => c.saldirilar.find((a) => a.ad === ad) || {};
 { const { c } = await kur("Cleric", { seviye: 3, background: "Acolyte|XPHB", tur: "Human|XPHB", temel: T([10, 12, 13, 14, 15, 8]) },
   { subclass: ["Knowledge Domain"], "bg:ab": ["21", "wis", "int"], "tur:feat": ["Alert|XPHB"], "tur:skill": ["perception"], "sinif:skill": ["history", "medicine"], "sinif:sec:Divine Order:1": ["Thaumaturge"], "etki:Cleric_Knowledge_Blessings_of_Knowledge:skill": ["arcana", "nature"], "etki:Cleric_Knowledge_Blessings_of_Knowledge:tool": ["Smith's Tools"], "sinif:ekip": ["A"], "bg:ekip": ["A"] });
   console.log("G9 Cleric Knowledge");
-  bekle("Arcana expertise Int2 + 2×2", skill(c, "Arcana").bonus, 6); bekle("Nature expertise", skill(c, "Nature").prof, 2);
+  bekle("Arcana expertise Int2 + 2×2 + Thaumaturge Wis3", skill(c, "Arcana").bonus, 9); bekle("Nature expertise", skill(c, "Nature").prof, 2);
   bekle("Smith's Tools", c.araclar.includes("Smith's Tools"), true); bekle("AC Chain Shirt 13+1 + Shield 2", c.ac, 16); }
 
 // G10 Fighter 3 Arcane Archer + Sage (Arcana zaten var) -> yedek skill sorusu çıkmalı

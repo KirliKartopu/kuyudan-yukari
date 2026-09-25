@@ -654,6 +654,7 @@ function kaynakHesapla(B, S, Y, m, P, ozel) {
     if (var_.has(id)) { const i = out.findIndex((o) => o.id === id); if (i > -1) out.splice(i, 1); }   // aynı özelliğin üst seviyesi (Indomitable)
     var_.add(id);
     const o = { id, ad: (el && el.ad) || ad, kaynak, max, yenile: spec.kisaSv && L >= spec.kisaSv ? "kisa" : spec.yenile || "uzun" };
+    if (o.ad !== ad) o.ozellik = ad;   // kağıtta başka adla görünen sayacın açıklaması özelliğin kendi adıyla (Monk's Focus → Focus Points)
     if (spec.kisaBir) o.kisaBir = true;
     for (const k of ["havuz", "birim", "iyilestir"]) if (el && el[k]) o[k] = el[k];
     if (el && el.tekSefer) o.tekSefer = deger(el.tekSefer);
@@ -696,6 +697,9 @@ function kaynakHesapla(B, S, Y, m, P, ozel) {
       for (const a of adlar) { const sp = V.buyu[n(a)]; if (sp && sp.level) out.push({ id: "feat:" + x.f.name + "|" + sp.name, ad: sp.name + " (slotsuz)", kaynak: x.f.name, max: 1, yenile: "uzun" }); }
       continue;
     }
+    // birden çok bölümlü feat: sayaç sınırlı olan bölümün adıyla (Cult of the Dragon Initiate → Inspired by Fear; Dragon's Terror sınırsız)
+    const bolum = (x.f.entries || []).filter((e) => e && e.name && e.entries);
+    if (bolum.length > 1 && !KULLANIM["feat:" + x.f.name]) { for (const e of bolum) ekle("feat:" + x.f.name + "|" + e.name, e.name, x.f.name, e.entries); continue; }
     ekle("feat:" + x.f.name, x.f.name, "Feat", x.f.entries);
   }
   return out;
@@ -782,7 +786,8 @@ export function hesapla(Y, S, ek) {
   const chaEk = tumEtki(B, "chaCheck").reduce((t, x) => t + Math.max(x.e.chaCheck.min || -99, m[x.e.chaCheck.ab]), 0);
   const skills = Object.entries(SKILLS).map(([k, [ad, ab]]) => {
     const p = exp.has(k) && prof.has(k) ? 2 : prof.has(k) ? 1 : 0;
-    return { ad, yetenek: ab, prof: p, bonus: m[ab] + P * p + (!p && jack ? Math.floor(P / 2) : 0) + (ab === "cha" ? chaEk : 0) };
+    const ek = tumEtki(B, "skillEk").filter((x) => x.e.skillEk.skill.includes(k)).reduce((t, x) => t + Math.max(x.e.skillEk.min ?? -99, m[x.e.skillEk.ab]), 0);   // Thaumaturge, Magician
+    return { ad, yetenek: ab, prof: p, bonus: m[ab] + P * p + (!p && jack ? Math.floor(P / 2) : 0) + (ab === "cha" ? chaEk : 0) + ek };
   });
   // özellik listesi
   const ozel = [], esyaStat = [];

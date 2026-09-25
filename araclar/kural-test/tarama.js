@@ -31,6 +31,7 @@ const {pathToFileURL}=require("url");
      if(!x.secenekler.length&&x.tur!=="bgab")not("seçeneksiz soru",x.baslik,yer);}
     for(const f of C.ozellikler) if(!(await ack("ozellik|"+f.ad+"|"+f.kaynak))) not("açıklaması yok (özellik)",f.ad+" ["+f.kaynak+"]",yer);
     for(const b of (C.buyu?C.buyu.buyuler:[])) if(!(await ack("buyu|"+b.ad))) not("açıklaması yok (büyü)",b.ad,yer);
+    for(const k of C.kaynaklar||[]){const ad=(k.ozellik||k.ad).replace(/ \((slotsuz|slot|her büyü 1)\)$/,"");if(!(await ack("ozellik|"+ad+"|"+k.kaynak))&&!(await ack("buyu|"+ad))) not("açıklaması yok (sayaç)",k.ad+" ["+k.kaynak+"]",yer);}
     for(const x of q) for(const o of x.secenekler) if(o.ack&&!/^(skill|buyu)\|/.test(o.ack)&&!(await ack(o.ack))) not("açıklaması yok (seçenek)",o.ack,x.baslik);
     if(!(C.hp_max>0))not("HP hatalı",String(C.hp_max),yer);
     for(const k of C.kaynaklar||[]){if(!(Number.isInteger(k.max)&&k.max>0&&k.max<500))not("sayaç sayısı hatalı",k.ad+"="+k.max,yer);

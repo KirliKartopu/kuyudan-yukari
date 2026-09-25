@@ -110,6 +110,9 @@ async function bul0(tur, ad, ek) {
     for (const t of turler) { const b = altBolum(kopyaGirdi(t, r.race), ad); if (b) return { baslik: b.name, alt: t.name + " · " + t.source, govde: girdi(b.entries) }; }
     const f = await cek("feats.json"); const x = sec(f.feat, ad);
     if (x) return { baslik: x.name, alt: "Feat", govde: girdi(x.entries) };
+    // feat'in bir bölümü (Lucky → Luck Points, Cult of the Dragon Initiate → Inspired by Fear): ek = feat adı
+    const fx = ek && sec(f.feat, ek), fb = fx && altBolum(fx.entries, ad);
+    if (fb) return { baslik: fb.name, alt: fx.name + " · Feat", govde: girdi(fb.entries) };
     return null;
   }
   return null;

@@ -6,7 +6,7 @@
 //   ac:{taban:[ability..], kosul:"zirhsiz"|"zirhsiz_kalkansiz", sabit?}   taban AC formülü (10 + modlar ya da sabit + modlar)
 //   acEk:{deger, kosul:"zirhli"|"her"}   hp:{seviye|sabit}   hiz:{deger, kosul:"agirsiz"|"zirhsiz_kalkansiz"|"her"}
 //   hareket:{Climb|Swim|Fly: "hiz"|sayı}   init:"wis"|"pb"   initAv:true (advantage notu)
-//   saveProf:[..]|"hepsi"   saveEk:{hedef:"hepsi"|ability, ab, min}   chaCheck:{ab, min}
+//   saveProf:[..]|"hepsi"   saveEk:{hedef:"hepsi"|ability, ab, min}   chaCheck:{ab, min}   skillEk:{skill:[..], ab, min} (bu skill'lere ability bonusu)
 //   skill:[..] sabit   skillSec:{from:[..]|"sinif"|"hepsi", adet}   skillYedek:"sinif" (zaten varsa yerine seçim)
 //   exp:{from:[..]|"prof", adet} (soru)   expSabit:"skillSec" (seçilen skill'lere otomatik expertise)
 //   tool:[..]   toolSec:{tur:"AT"|"GS"|"INS", adet}   toolYedek:"AT"   dil:[..]   dilSec:adet
@@ -34,13 +34,13 @@ export const ETKI = {
   "Bard|Spirits|Channeler": { toolSec: { tur: "GS", adet: 1 } },
   // Cleric
   "sec:Protector": { silah: ["martial"], zirh: ["heavy"] },
-  "sec:Thaumaturge": { cantripEk: 1 },
+  "sec:Thaumaturge": { cantripEk: 1, skillEk: { skill: ["arcana", "religion"], ab: "wis", min: 1 } },
   "Cleric|Arcana|Student of Arcana": { skillSec: { from: ["arcana", "history", "insight", "medicine", "persuasion", "religion"], adet: 1 } },
   "Cleric|Knowledge|Blessings of Knowledge": { toolSec: { tur: "AT", adet: 1 }, skillSec: { from: ["arcana", "history", "nature", "religion"], adet: 2 }, expSabit: "skillSec" },
   "Cleric|Knowledge|Unfettered Mind": { saveProf: ["int"] },
   // Druid
   "sec:Warden": { silah: ["martial"], zirh: ["medium"] },
-  "sec:Magician": { cantripEk: 1 },
+  "sec:Magician": { cantripEk: 1, skillEk: { skill: ["arcana", "nature"], ab: "wis", min: 1 } },
   // Fighter
   "Fighter|Arcane Archer|Arcane Archer Lore": { skill: ["arcana", "nature"], skillYedek: "sinif" },
   "Fighter|Banneret|Knightly Envoy": { dilSec: 1, skillSec: { from: ["insight", "intimidation", "persuasion", "performance"], adet: 1 } },

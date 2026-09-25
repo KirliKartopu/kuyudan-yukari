@@ -199,7 +199,7 @@
           [40, 50, 60, 80, 100].forEach(function (v) { if (v <= ust && ust > 30) secenek.push('<option value="' + v + '">' + v + "</option>"); });
           kac = '<select class="sec" data-kul-n="' + esc(r.id) + '" aria-label="' + esc(r.ad) + ': kaç tane">' + secenek.join("") + "</select>";
         }
-        return '<div class="kul-satir"><span class="kul-ad" data-ack="ozellik|' + esc(r.ad.replace(/ \((slotsuz|slot|her büyü 1)\)$/, "")) + "|" + esc(r.kaynak) + '">' + esc(r.ad) + "</span>" +
+        return '<div class="kul-satir"><span class="kul-ad" data-ack="ozellik|' + esc((r.ozellik || r.ad).replace(/ \((slotsuz|slot|her büyü 1)\)$/, "")) + "|" + esc(r.kaynak) + '">' + esc(r.ad) + "</span>" +
           gosterge + '<b class="num">' + kalan + "/" + r.max + birim + "</b>" + (r.zar && !r.havuz ? " <small>" + esc(r.zar) + "</small>" : "") +
           '<small class="kul-dolar">' + nitelik + "</small>" + kac +
           '<button class="btn" data-kul="' + esc(r.id) + '" data-kul-ne="kullan"' + (kalan > 0 ? "" : " disabled") + ">Kullan</button>" +
