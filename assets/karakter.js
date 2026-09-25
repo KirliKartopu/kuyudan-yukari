@@ -177,7 +177,8 @@
     // büyünün nereden geldiği, kısa etiketle (üstüne gelince tamamı)
     function buyuNotu(not) {
       if (!not) return "";
-      var kisa = /her zaman hazır/.test(not) ? "hazır" : /slot harcamadan/.test(not) ? "slotsuz" : /kitap/.test(not) ? "kitap" : not;
+      var kisa = /her zaman hazır/.test(not) ? "hazır" : /slot harcamadan/.test(not) ? "slotsuz" : /^Spellbook/.test(not) ? (/ritual/.test(not) ? "kitapta · ritual" : "kitapta")
+        : /kitap üstünde/.test(not) ? "Tome" : not;
       return ' <small class="kw buyu-not" title="' + esc(not) + '">' + esc(kisa) + "</small>";
     }
     // --- sınırlı özellikler (C.kaynaklar, kural motoru): kalan / en fazla, ne zaman dolduğu. Havuzda (Healing Light, Lay on Hands)

@@ -427,7 +427,7 @@ export function secimler(Y, S) {
       const f = sec("tur:feat")[0]; if (f) topla("tur", featSorulari(bulFeat(f), "tur:featx", { Y }));
     }
     if (B.turV.additionalSpells) {
-      const cok = B.turV.additionalSpells.length > 1, e = ekBuyuler(B.turV.additionalSpells, L, "tur:sp", cok ? B.surum : null);
+      const cok = B.turV.additionalSpells.length > 1, e = ekBuyuler(B.turV.additionalSpells, L, "tur:sp", cok ? B.surum || "-" : null);
       if (e.set && e.set.ability && e.set.ability.choose && (!cok || B.surum)) ekle("tur", { k: "tur:spab", tur: "tek", baslik: tur.name + " büyüleri için ability", aciklama: "Species büyülerini hangi ability ile yaparsın (Int, Wis ya da Cha)?", adet: 1, secenekler: e.set.ability.choose.map((x) => ({ d: x, ad: AB_AD[x] })) });
       for (const s of e.secim) ekle("buyu", { k: s.k, tur: "coklu", baslik: tur.name + ": " + (/level=0/.test(s.filtre) ? "cantrip" : "büyü"), adet: s.adet, secenekler: buyuSuzgec(s.filtre).map(buyuSecenek) });
     }
@@ -483,7 +483,11 @@ export function secimler(Y, S) {
       const hz = kk.preparedSpellsProgression ? kk.preparedSpellsProgression[L - 1] : 0;
       if (c.name === "Wizard") {
         ekle("buyu", { k: "buyu:kitap", tur: "coklu", baslik: "Spellbook", aciklama: "Wizard büyülerini kitabında taşır. Her gün bunlardan bir kısmını hazırlar.", adet: 6 + 2 * (L - 1), secenekler: buyuSuzgec("level=" + aralik(1, maxSv) + "|class=Wizard").map(buyuSecenek) });
-        ekle("buyu", { k: "buyu:hazir", tur: "coklu", baslik: "Hazır büyüler", aciklama: "Spellbook'undan bugün hazırladıkların (Long Rest'te değiştirebilirsin).", adet: hz, secenekler: sec("buyu:kitap").map((x) => V.buyu[n(x)]).filter(Boolean).map(buyuSecenek) });
+        const sv = savant(B, maxSv);
+        if (sv) ekle("buyu", { k: "sinif:savant", tur: "coklu", baslik: sv.ad, adet: sv.adet, ack: "ozellik|" + sv.ad + "|Wizard",
+          aciklama: `Bu okuldan ${sv.adet} büyü spellbook'una bedava girer (3. seviyede 2, sonra her yeni slot seviyesinde 1). Spellbook sayına dahil değil.`,
+          secenekler: buyuSuzgec("level=" + aralik(1, maxSv) + "|class=Wizard|school=" + sv.okul).map(buyuSecenek) });
+        ekle("buyu", { k: "buyu:hazir", tur: "coklu", baslik: "Hazır büyüler", aciklama: "Spellbook'undan bugün hazırladıkların (Long Rest'te değiştirebilirsin).", adet: hz, secenekler: kitap(sec).map((x) => V.buyu[n(x)]).filter(Boolean).map(buyuSecenek) });
       } else if (hz) ekle("buyu", { k: "buyu:hazir", tur: "coklu", baslik: "Hazır büyüler", aciklama: `En fazla ${maxSv}. seviye büyü. Her zaman hazır olanlar (${her.length ? her.map(buyuk).join(", ") : "yok"}) bu sayıya dahil değil.`, adet: hz, secenekler: buyuSuzgec("level=" + aralik(1, maxSv) + "|class=" + b.liste).filter((s) => !her.includes(n(s.name))).map(buyuSecenek) });
     }
     const ce = ekipSec(c.startingEquipment.defaultData[0]);
@@ -530,13 +534,18 @@ export function secimler(Y, S) {
   // (Pact of the Tome bunu açıkça yasaklar; Magic Initiate gibi yerlerde seçim boşa gider). Wizard'ın Hazır büyüleri Spellbook'tan seçilir, sayılmaz.
   const sabitBuyu = new Map(), bk = (ad, kaynak) => { if (ad && !sabitBuyu.has(n(ad))) sabitBuyu.set(n(ad), kaynak); };
   if (S) herZamanHazir(B).forEach((x) => bk(x, B.sub ? B.sub.name : S.c.name));
-  if (B.turV && B.turV.additionalSpells) ekBuyuler(B.turV.additionalSpells, L, "tur:sp", B.turV.additionalSpells.length > 1 ? B.surum : null).sabit.forEach((x) => bk(x.ad, B.tur.name));
+  if (B.turV && B.turV.additionalSpells) ekBuyuler(B.turV.additionalSpells, L, "tur:sp", B.turV.additionalSpells.length > 1 ? B.surum || "-" : null).sabit.forEach((x) => bk(x.ad, B.tur.name));
   for (const x of B.featler) if (x.f.additionalSpells && x.f.additionalSpells.length === 1) ekBuyuler(x.f.additionalSpells, 20, "", null).sabit.forEach((y) => bk(y.ad, x.f.name));
   for (const { o, e } of optBuyuleri(B)) e.sabit.forEach((x) => bk(x.ad, o.name));
   // öncelik: feat/species büyüleri (her zaman hazır, hazırlanan sayıya dahil değil) > class'ın cantrip ve hazır büyüleri
   // (istenince değişir) > Pact of the Tome (kuralı: zaten hazır olan büyü seçilemez)
   const oncelik = (q) => (q.k.startsWith("buyu:") ? 1 : q.k.startsWith("opt:") ? 2 : 0);
-  const buyuSoru = out.filter((q) => q.adim === "buyu" && q.k !== "buyu:kitap").sort((x, y) => oncelik(x) - oncelik(y));
+  const buyuSoru = out.filter((q) => q.adim === "buyu" && q.k !== "buyu:kitap" && q.k !== "sinif:savant").sort((x, y) => oncelik(x) - oncelik(y));
+  const kq = out.find((q) => q.k === "buyu:kitap"), sq = out.find((q) => q.k === "sinif:savant");
+  if (kq && sq) {
+    for (const o of sq.secenekler) if (sec("buyu:kitap").includes(o.d)) o.devre = "zaten spellbook'ta";
+    for (const o of kq.secenekler) if (sec("sinif:savant").includes(o.d) && !sec("buyu:kitap").includes(o.d)) o.devre = "Savant'tan zaten geliyor";
+  }
   buyuSoru.forEach((q, i) => {
     const onceki = new Map(), benim = new Set(sec(q.k).map(n));
     buyuSoru.forEach((r, j) => { if (r !== q) sec(r.k).forEach((x) => { if ((!benim.has(n(x)) || j < i) && !onceki.has(n(x))) onceki.set(n(x), r.baslik); }); });
@@ -671,7 +680,7 @@ function kaynakHesapla(B, S, Y, m, P, ozel) {
       ekle("tur:" + tur.name + "|" + e.name, e.name, tur.name, e.entries);
     }
     for (const [, tAd, yeni] of takas) { const t2 = V.tur.find((x) => x.name === tAd); const e = t2 && (t2.entries || []).find((x) => x && x.name === yeni); if (e) ekle("tur:" + tAd + "|" + yeni, yeni, tAd + " (takas)", e.entries); }
-    if (B.turV && B.turV.additionalSpells) for (const x of ekBuyuler(B.turV.additionalSpells, L, "tur:sp", B.turV.additionalSpells.length > 1 ? B.surum : null).sabit) {
+    if (B.turV && B.turV.additionalSpells) for (const x of ekBuyuler(B.turV.additionalSpells, L, "tur:sp", B.turV.additionalSpells.length > 1 ? B.surum || "-" : null).sabit) {
       const sp = V.buyu[n(x.ad)]; if (!sp || !sp.level) continue;
       const el = KULLANIM["tur:" + tur.name + "|" + sp.name];
       out.push({ id: "tur:" + tur.name + "|" + sp.name, ad: sp.name + " (slotsuz)", kaynak: tur.name, max: el ? deger(el.adet) : 1, yenile: "uzun" });
@@ -692,6 +701,18 @@ function kaynakHesapla(B, S, Y, m, P, ozel) {
   return out;
 }
 const sec_ = (Y, k) => Y.secim[k] || [];
+// Wizard subclass'ının Savant'ı (Abjuration Savant…): okuldan 2 büyü, sonra her yeni slot seviyesinde 1; en fazla eldeki slot seviyesi
+function savant(B, maxSv) {
+  if (!B.S || B.S.c.name !== "Wizard") return null;
+  for (const { f } of ozellikler(B.S, B.Y)) {
+    if (!/ Savant$/.test(f.name)) continue;
+    const m = JSON.stringify(f.entries || []).match(/school=([A-Z])/);
+    if (m) return { ad: f.name, okul: m[1], adet: 2 + Math.max(0, maxSv - 2) };
+  }
+  return null;
+}
+// spellbook: seçilen büyüler ve Savant'ın bedava büyüleri
+const kitap = (sec) => [...new Set(sec("buyu:kitap").concat(sec("sinif:savant")))];
 function herZamanHazir(B) {
   const S = B.S, L = B.L, out = [], alt = (B.Y.secim["sinif:altset"] || [])[0];
   for (const k of [S.c, B.sub].filter(Boolean)) for (const e of k.additionalSpells || []) {
@@ -890,7 +911,8 @@ export function hesapla(Y, S, ek) {
   const u = ua.reduce((a, b) => (deger(b) > deger(a) ? b : a));
   const uaTur = (tumEtki(B, "unarmedTur")[0] || { e: {} }).e.unarmedTur || u.tur || "Bludgeoning";
   const uaIsabetAb = u.ab === "dex" || (monk && m.dex > m.str) ? "dex" : "str";
-  saldirilar.push({ ad: "Unarmed Strike", tip: "", kusanili: true, isabet: m[uaIsabetAb] + P, hasar: u.zar ? u.zar + sgn(m[u.ab]) : String(Math.max(1, 1 + m[u.ab])), tur: uaTur, menzil: "5 ft", mastery: null, ozellikler: [] });
+  // PHB 2024 (Damage Rolls): "it's possible to deal 0 damage but not negative damage" — Str -3'te 1 + (-3) → 0
+  saldirilar.push({ ad: "Unarmed Strike", tip: "", kusanili: true, isabet: m[uaIsabetAb] + P, hasar: u.zar ? u.zar + sgn(m[u.ab]) : String(Math.max(0, 1 + m[u.ab])), tur: uaTur, menzil: "5 ft", mastery: null, ozellikler: [] });
   // büyü
   let buyu = null;
   const bc = sinifBuyucu(S, Y);
@@ -904,9 +926,13 @@ export function hesapla(Y, S, ek) {
     e.sabit.forEach((x) => l.push(spell(x.ad, o.name + (x.tur === "innate" ? ": slot harcamadan" : ""))));
     e.secim.forEach((q) => sec(q.k).forEach((x) => l.push(spell(x, o.name === "Pact of the Tome" ? "Pact of the Tome: kitap üstündeyken hazır" : o.name))));
   }
-  if (turV && turV.additionalSpells) ekBuyuler(turV.additionalSpells, L, "tur:sp", turV.additionalSpells.length > 1 ? B.surum : null).sabit.forEach((x) => l.push(spell(x.ad, turAd)));
+  if (turV && turV.additionalSpells) ekBuyuler(turV.additionalSpells, L, "tur:sp", turV.additionalSpells.length > 1 ? B.surum || "-" : null).sabit.forEach((x) => l.push(spell(x.ad, turAd)));
   for (const x of B.featler) if (x.f.additionalSpells && x.f.additionalSpells.length === 1) ekBuyuler(x.f.additionalSpells, 20, "", null).sabit.forEach((y) => l.push(spell(y.ad, x.f.name)));
   for (const x of B.etkiler) if (x.e.secenek) sec(x.id + ":sec").forEach((v) => { const r = x.e.secenek.liste.find((z) => z[0] === v); if (r && r[2] && V.buyu[n(r[2])]) l.push(spell(r[2], x.kaynak)); });
+  // Wizard'ın spellbook'unda olup hazırlanmayanlar en sonda: başka yerden (species, feat) her zaman hazır gelen büyü o etiketle kalsın
+  if (c.name === "Wizard") for (const x of kitap(sec)) if (!sec("buyu:hazir").includes(x)) {
+    const s = V.buyu[n(x)]; if (s) l.push(spell(x, s.meta && s.meta.ritual ? "Spellbook: hazır değil, ritual olarak atılır (Ritual Adept)" : "Spellbook: hazır değil"));
+  }
   const temiz = []; l.filter(Boolean).forEach((s) => { if (!temiz.some((t) => t.ad === s.ad)) temiz.push(s); });
   if (bc || temiz.length) {
     const ab = bc ? bc.ab : sec("tur:spab")[0] || sec("bg:feat:spab")[0] || "cha";

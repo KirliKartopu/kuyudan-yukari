@@ -57,7 +57,8 @@ for (const dosya of readdirSync(DIZIN).filter((f) => /^k_\d+\.json$/.test(f))) {
   if (E.buyu || C.buyu) {
     kars("Spell DC", C.buyu && C.buyu.save_dc, E.buyu && E.buyu.save_dc); kars("Spell atk", C.buyu && C.buyu.isabet, E.buyu && E.buyu.isabet);
     kars("Slotlar", C.buyu ? C.buyu.slotlar : [], E.buyu ? E.buyu.slotlar : []);
-    kars("Büyüler", (C.buyu ? C.buyu.buyuler.map((x) => x.ad) : []).sort(), (E.buyu ? E.buyu.buyuler.map((x) => x.ad) : []).sort());
+    // Wizard'ın spellbook'unda olup hazırlanmayanlar kağıtta ayrıca görünür; D&D Beyond yalnız hazırlananları verir
+    kars("Büyüler", (C.buyu ? C.buyu.buyuler.filter((x) => !/^Spellbook:/.test(x.not || "")).map((x) => x.ad) : []).sort(), (E.buyu ? E.buyu.buyuler.map((x) => x.ad) : []).sort());
   }
   toplamFark += farklar.length;
   console.log(`\n## ${d.ad}: ${d.tur} ${d.sinif} ${d.seviye}, ${d.bg}` + (eksik.length ? `  (eşleşmeyen seçim: ${eksik.join(", ")})` : ""));
