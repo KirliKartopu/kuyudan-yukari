@@ -54,7 +54,7 @@ export async function bul(ad, kaynak) {
 // --- sayılar
 const mod = (s) => Math.floor(((s || 10) - 10) / 2);
 const sgn = (n) => (n >= 0 ? "+" : "") + n;
-export const crSayi = (cr) => { const c = typeof cr === "object" && cr ? cr.cr : cr; if (!c) return 0; return String(c).includes("/") ? eval(c) : Number(c); };
+export const crSayi = (cr) => { const c = typeof cr === "object" && cr ? cr.cr : cr; if (!c) return 0; const [p, q] = String(c).split("/"); return q ? Number(p) / Number(q) : Number(p); };   // eval değil: masanın CSP'si yasaklar
 export const pb = (m) => { const c = crSayi(m.cr); return c < 5 ? 2 : 2 + Math.floor((c - 1) / 4); };
 export function acDeger(m) { const a = (m.ac || [])[0]; return typeof a === "number" ? a : (a && a.ac) || 10; }
 export function iniBonus(m) { return mod(m.dex) + (m.initiative && m.initiative.proficiency ? pb(m) * m.initiative.proficiency : 0); }
