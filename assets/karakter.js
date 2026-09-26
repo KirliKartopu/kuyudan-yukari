@@ -255,6 +255,7 @@
         " <small>" + sgn(v.at.isabet) + "</small></button>" + '<button class="btn saldir-sec" data-act="saldir-menu" title="Silah seç" aria-label="Silah seç">▾</button></span>';
       if (sw) { var swk = sw.max - (kul()[sw.id] || 0), swNeden = swk <= 0 ? " · kullanım kalmadı" : S.hp <= 0 ? " · 0 HP'de kullanılamaz" : S.hp >= C.hp_max ? " · HP dolu (boşa harcanmasın diye kapalı)" : "";
         h += '<button class="btn" data-act="sw" title="Second Wind: Bonus Action, ' + esc(sw.zar) + ' HP. Short Rest\'te 1, Long Rest\'te hepsi geri gelir' + swNeden + '"' + (swNeden ? " disabled" : "") + ">Second Wind " + swk + "/" + sw.max + "</button>"; }
+      (S.hafif && S.hafif.silahlar || []).forEach(function (x) { h += '<button class="btn ana' + modSinifi("ek") + '" data-act="ek" data-i="' + x.i + '" title="Light (' + esc(S.hafif.silah) + ' ile saldırdın): ' + esc(x.ad) + ' ile ek saldırı; hasara yetenek bonusu eklenmez. ' + (x.nick ? "Nick: Attack action\'ın parçası, Bonus Action harcamaz" : "Bonus Action") + '">＋ ' + esc(x.ad) + ' <small>(Light' + (x.nick ? ", Nick" : ", Bonus") + ')</small></button>'; });
       var cl = S.cleave && S.cleave.hedefler || [];
       cl.forEach(function (x) { h += '<button class="btn ana' + modSinifi("cleave") + '" data-act="cleave" data-hedef="' + esc(x.id) + '" title="Cleave (' + esc(S.cleave.silah) + '): ilk hedefin yanındaki düşmana bir saldırı daha; yetenek bonusu hasara eklenmez, turda bir kez">🪓 Cleave → ' + esc(x.ad) + "</button>"; });
       h += '<span class="hedef-etiket">' + (hd ? "🎯 " + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") : "🎯 hedef yok <small>(haritada token'a Ctrl+tık)</small>") + "</span>";
@@ -290,7 +291,7 @@
     if (SUNUCU) {
       // sağ tık: d20 atan her düğmede normal → avantaj → dezavantaj (silah menüsü ▾ düğmesinden)
       root.addEventListener("contextmenu", function (e) {
-        var b = e.target.closest('[data-roll],[data-act="saldir"],[data-act="cleave"]'); if (!b || !C) return;
+        var b = e.target.closest('[data-roll],[data-act="saldir"],[data-act="cleave"],[data-act="ek"]'); if (!b || !C) return;
         var r = b.getAttribute("data-roll");
         if (r && !/^(init|chk-|sv-|sk-|spatk|atk-|ds)/.test(r)) return;   // hasar zarları d20 değil
         e.preventDefault();
@@ -474,6 +475,7 @@
       if (act === "portre") { if (o.portre) o.portre(C.id); return; }
       if ((act === "insp" || act === "ds" || act === "sw") && SUNUCU) { niyet({ tip: act }); return; }
       if (act === "saldir" && SUNUCU) { niyet({ tip: "saldir", mod: modAl("saldir") }); render(); return; }
+      if (act === "ek" && SUNUCU) { niyet({ tip: "saldir", bicim: "ek", i: +t.getAttribute("data-i"), mod: modAl("ek") }); render(); return; }
       if (act === "cleave" && SUNUCU) { niyet({ tip: "saldir", bicim: "cleave", hedef: t.getAttribute("data-hedef"), mod: modAl("cleave") }); render(); return; }
       if (act === "saldir-menu" && SUNUCU) { var rc = t.getBoundingClientRect(); if (root.querySelector(".saldir-menu")) menuKapat(); else saldiriMenusu(rc.left, rc.bottom + 4); return; }
       if (act === "hd" && SUNUCU) { niyet({ tip: "hd", f: +t.getAttribute("data-f") }); return; }
