@@ -110,14 +110,14 @@
           }).join("") + (kisa ? ' <small class="dinlenme">☕ Short Rest</small>' : "") + "</div>";
       }
       if (S.hp <= 0) bolum += '<div style="margin-top:8px"><b>Death Saves</b> · başarı ' + S.ds.s + "/3 · başarısızlık " + S.ds.f + '/3 <button class="btn" data-act="ds">Death Save at</button></div>';
-      if (bolum) h += '<section class="box"><h2>Hit Dice</h2>' + bolum + "</section>";
-      h += '<section class="box"><h2>Savaş</h2><div class="vitals">' +
+      h += '<section class="box savas"><h2>Savaş</h2><div class="vitals">' +
         '<div class="vital"><b>' + c.ac + "</b><small>AC</small></div>" +
         '<button class="vital" data-roll="init"><b>' + sgn(c.initiative) + "</b><small>Initiative</small></button>" +
         '<div class="vital"><b>' + c.hiz + "</b><small>Speed ft</small></div>" +
         '<div class="vital"><b>' + sgn(c.prof_bonus) + "</b><small>Prof.</small></div>" +
         '<div class="vital"><b>' + c.pasif_perception + "</b><small>Pasif Perc.</small></div>" +
-        "</div>" + (SUNUCU ? saldiriSatiri() : "") + (c.duyular && Object.keys(c.duyular).length ? '<p class="feat" style="margin-top:8px"><small>' + Object.keys(c.duyular).map(function (k) { return esc(k) + " " + c.duyular[k] + " ft"; }).join(" · ") + "</small></p>" : "") + "</section>";
+        "</div>" + (SUNUCU ? saldiriSatiri() : "") + bolum +   // Hit Dice / Death Save: Savaş'ın altında tek satır (ayrı kutu yer kaplıyordu)
+         (c.duyular && Object.keys(c.duyular).length ? '<p class="feat" style="margin-top:8px"><small>' + Object.keys(c.duyular).map(function (k) { return esc(k) + " " + c.duyular[k] + " ft"; }).join(" · ") + "</small></p>" : "") + "</section>";
       h += kaynakHTML();
       h += '<section class="box" data-sekme="yet" data-etiket="Yetenekler"><h2>Yetenekler ve Saving Throw</h2>' + puanYontemi(c.yapi) + '<div class="abil">';
       Object.keys(AB).forEach(function (a) {
@@ -257,7 +257,7 @@
         h += '<button class="btn" data-act="sw" title="Second Wind: Bonus Action, ' + esc(sw.zar) + ' HP. Short Rest\'te 1, Long Rest\'te hepsi geri gelir' + swNeden + '"' + (swNeden ? " disabled" : "") + ">Second Wind " + swk + "/" + sw.max + "</button>"; }
       var cl = S.cleave && S.cleave.hedefler || [];
       cl.forEach(function (x) { h += '<button class="btn ana' + modSinifi("cleave") + '" data-act="cleave" data-hedef="' + esc(x.id) + '" title="Cleave (' + esc(S.cleave.silah) + '): ilk hedefin yanındaki düşmana bir saldırı daha; yetenek bonusu hasara eklenmez, turda bir kez">🪓 Cleave → ' + esc(x.ad) + "</button>"; });
-      h += '<span class="hedef-etiket">' + (hd ? "🎯 " + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") : "🎯 hedef yok <small>(haritada token'a sağ tık)</small>") + "</span>";
+      h += '<span class="hedef-etiket">' + (hd ? "🎯 " + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") : "🎯 hedef yok <small>(haritada token'a Ctrl+tık)</small>") + "</span>";
       return h + "</div>";
     }
     function saldiriMenusu(x, y) {
