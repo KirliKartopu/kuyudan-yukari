@@ -6,6 +6,18 @@ import { metin } from "./canavar.js";
 // ?veri=... ile yerel bir kopya denenebilir (geliştirme)
 const VERI = (typeof location !== "undefined" && new URLSearchParams(location.search).get("veri")) || "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data/";
 const onbellek = {};
+// eşyanın 5etools görseli (fluff-items.json, _copy zinciri). Masada (/k/ altından) dış görsel masanın vekilinden gelir (CSP).
+async function esyaGorseli(x) {
+  const f = (await cek("fluff-items.json")).itemFluff || [];
+  let k = f.find((y) => y.name === x.name && y.source === x.source);
+  for (let i = 0; i < 4 && k; i++) {
+    const im = (k.images || []).find((y) => y.href && y.href.type === "internal" && y.href.path);
+    if (im) { const u = "https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/main/" + im.href.path.split("/").map(encodeURIComponent).join("/");
+              return VERI.startsWith("/k/") ? "/g?u=" + encodeURIComponent(u) : u; }
+    k = k._copy ? f.find((y) => y.name === k._copy.name && y.source === k._copy.source) : null;
+  }
+  return null;
+}
 const cek = (yol) => onbellek[yol] || (onbellek[yol] = fetch(VERI + yol).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }));
 const n = (s) => String(s || "").toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ").trim();
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -84,7 +96,9 @@ async function bul0(tur, ad, ek) {
     for (const a of adaylar) { x = sec(m.item, a) || sec(b.baseitem, a); if (x) break; }
     if (!x) return null;
     const meta = [x.weight ? x.weight + " lb." : "", x.value ? x.value / 100 + " gp" : "", x.dmg1 ? x.dmg1 + " " + ({ S: "Slashing", P: "Piercing", B: "Bludgeoning" }[x.dmgType] || "") : "", x.ac ? "AC " + x.ac : ""].filter(Boolean).join(" · ");
-    return { baslik: x.name, alt: (x.rarity && x.rarity !== "none" ? x.rarity + " · " : "") + meta, govde: girdi(x.entries) || "<p><i>Açıklama yok.</i></p>" };
+    const g = await esyaGorseli(x).catch(() => null);
+    return { baslik: x.name, alt: (x.rarity && x.rarity !== "none" ? x.rarity + " · " : "") + meta,
+             govde: (g ? `<img class="ack-gorsel" alt="" src="${esc(g)}" style="display:block;max-width:100%;max-height:170px;margin:0 auto 6px;border-radius:6px">` : "") + (girdi(x.entries) || "<p><i>Açıklama yok.</i></p>") };
   }
   if (tur === "ozellik") {
     // önce sınıf özelliği, sonra tür özelliği, sonra feat
