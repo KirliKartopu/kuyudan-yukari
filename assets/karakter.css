@@ -22,6 +22,15 @@
   .hp-num{font-family:var(--mono);font-size:30px;font-variant-numeric:tabular-nums}
   .hp-num small{font-size:16px;color:var(--muted)}
   .hpbar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;grid-column:1/-1}
+  /* HP ad ve portrenin yanında */
+  .who{grid-template-columns:auto 1fr minmax(220px,320px)}
+  .who-hp{align-self:center}
+  @media (max-width:720px){ .who{grid-template-columns:auto 1fr} .who-hp{grid-column:1/-1} }
+  /* sağ tıkla seçilen avantaj / dezavantaj (bir atış) */
+  .m-adv,.m-dis{position:relative;outline:2px solid var(--m-renk);outline-offset:-2px}
+  .m-adv{--m-renk:#5fa86b}.m-dis{--m-renk:#c0584b}
+  .m-adv::after,.m-dis::after{position:absolute;top:1px;right:3px;font-size:11px;font-weight:700;color:var(--m-renk);line-height:1}
+  .m-adv::after{content:"▲ADV"}.m-dis::after{content:"▼DIS"}
   .hpbar i{display:block;height:100%;background:var(--accent);transition:width .2s}
   .hp-ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;grid-column:1/-1}
   .hp-ctl input{width:70px;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink)}
