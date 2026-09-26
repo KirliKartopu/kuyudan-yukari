@@ -28,9 +28,9 @@ jobs:
       - name: Siteyi topla
         run: |
           mkdir _site
-          cp -r index.html assets rehber sozluk karakter olustur owlbear .nojekyll _site/
-      - name: Karakterleri topla (karakterler-yerel/; varsa D&D Beyond)
-        run: python araclar/ddb_cevir.py karakterler.json _site/karakterler
+          cp -r index.html assets rehber sozluk karakter olustur .nojekyll _site/
+      - name: Karakterleri topla (karakterler-yerel/, masadan eşitlenir)
+        run: python araclar/karakterleri_topla.py karakterler.json _site/karakterler
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

@@ -4,6 +4,8 @@
  "oyuncu": "Ender",
  "tur": "Dhampir",
  "background": "Shadowmasters Exile",
+ "alignment": "",
+ "kisilik": "",
  "siniflar": [
   {
    "ad": "Rogue",
@@ -338,6 +340,29 @@
    "seviye": 1
   }
  ],
+ "kaynaklar": [
+  {
+   "id": "tur:Dhampir|Vampiric Bite",
+   "ad": "Vampiric Bite",
+   "kaynak": "Dhampir",
+   "max": 2,
+   "yenile": "uzun"
+  },
+  {
+   "id": "feat:Watchers|Beast Sense",
+   "ad": "Beast Sense (slotsuz)",
+   "kaynak": "Watchers",
+   "max": 1,
+   "yenile": "uzun"
+  },
+  {
+   "id": "feat:Watchers|Speak with Animals",
+   "ad": "Speak with Animals (slotsuz)",
+   "kaynak": "Watchers",
+   "max": 1,
+   "yenile": "uzun"
+  }
+ ],
  "featler": [
   "Watchers"
  ],
@@ -448,7 +473,7 @@
  },
  "avatar": "https://prnt.sc/5QXEric_aH6z",
  "yerel": true,
- "guncellendi": "2026-09-25T08:25:28.738Z",
+ "guncellendi": "2026-09-25T08:20:55.508Z",
  "yapi": {
   "v": 1,
   "id": 1790180057,

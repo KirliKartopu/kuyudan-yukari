@@ -2,17 +2,13 @@
 import * as K from "./kural.js";
 import { girdi, esc } from "./aciklama.js";
 import { SINIF_TR, TUR_TR, AB_TR, ADIM_TR, ALIGN, ALIGN_OZ, SIFAT } from "./olustur-metin.js";
-import { K_YEREL, ODA_SINIRI, sikistir, ac as yapiAc } from "./oda-karakter.js";
 
-// Owlbear içinde açıldıysa (?obr=1) karakter dosyaya değil doğrudan odaya kaydedilir.
 // Kendi masamızda açıldıysa (?masa=1, sayfa masa sunucusundan /k/olustur/) karakter masaya kaydedilir.
-const PARAM = new URLSearchParams(location.search), OBR_MOD = PARAM.has("obr"), MASA_MOD = PARAM.has("masa"), DUZ_ID = PARAM.get("id");
-const NS = "com.kuyudan-yukari", K_SAHIP = NS + "/sahipler", MODAL = NS + "/olustur";
-let OBR = null, benim = null;
+const PARAM = new URLSearchParams(location.search), MASA_MOD = PARAM.has("masa"), DUZ_ID = PARAM.get("id");
 
 const ADIMLAR = [["sinif", "Class"], ["bg", "Background"], ["tur", "Species"], ["yetenek", "Ability'ler"], ["sec", "Class seçimleri"], ["buyu", "Büyüler"], ["ekip", "Ekipman"], ["kimlik", "Ad ve kaydet"]];
 // taslak: düzenlenen oda karakteri kendi anahtarında, yeni karakter ayrı anahtarda
-const TASLAK = MASA_MOD ? "ky-olustur-masa-" + (DUZ_ID || "yeni") : OBR_MOD ? (DUZ_ID ? "ky-olustur-duz-" + DUZ_ID : "ky-olustur-taslak-obr") : "ky-olustur-taslak";
+const TASLAK = MASA_MOD ? "ky-olustur-masa-" + (DUZ_ID || "yeni") : "ky-olustur-taslak";
 const $ = (s) => document.querySelector(s);
 const ana = $("#ana"), adimlarEl = $("#adimlar"), ozetEl = $("#ozet");
 
@@ -63,7 +59,7 @@ function ciz() {
   ozetCiz(eks);
   const f = { sinif: sinifAdim, bg: bgAdim, tur: turAdim, yetenek: yetenekAdim, sec: soruAdim, buyu: soruAdim, ekip: ekipAdim, kimlik: kimlikAdim }[adim];
   const baslik = (ADIMLAR.find((x) => x[0] === adim) || [])[1];
-  const giris = OBR_MOD && adim === "kimlik" ? "Karakterine bir ad ver ve Odaya kaydet'e bas. Karakter panelde açılır ve sana bağlanır; seviye atlayınca karakter sayfasının altındaki Düzenle ile buraya dönersin." : ADIM_TR[adim] || "";
+  const giris = ADIM_TR[adim] || "";
   ana.innerHTML = `<h2>${baslik}</h2><p class="giris">${giris}</p>` + f() + altDugmeler();
   if (adim === "kimlik" && C) onizle();
   const odak = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.araK;
@@ -213,18 +209,13 @@ function kimlikAdim() {
   ${kisilikFikir()}`;
   const eks = Object.values(eksikler()).flat();
   if (MASA_MOD) h += `<div class="satir"><button class="btn birincil" data-act="masaya" type="button" ${C ? "" : "disabled"}>Masaya kaydet</button><span class="not" id="oda-durum">Kaydedince karakter sayfan açılır; seviye atlarken sayfadaki <b>Düzenle</b> ile buraya dönersin.</span></div>`;
-  else if (OBR_MOD) h += `<div class="satir"><button class="btn birincil" data-act="odaya" type="button" ${C ? "" : "disabled"}>Odaya kaydet</button><span class="not" id="oda-durum">Kaydedince panelde karakter sayfan açılır; seviye atlarken sayfanın altındaki <b>Düzenle</b> ile buraya dönersin.</span></div>`;
-  if (!OBR_MOD && !MASA_MOD) h += `<div class="satir"><button class="btn birincil" data-act="kod" type="button" ${C ? "" : "disabled"}>Owlbear kodunu kopyala</button><span class="not">Kodu Owlbear'daki üreticinin üstündeki <b>Kod yapıştır</b> kutusuna yapıştıracaksın.</span></div>`;
-  h += `<div class="satir"><button class="btn" data-act="indir" type="button" ${C ? "" : "disabled"}>${OBR_MOD ? "Yedek dosya indir" : "Dosyayı indir"}</button>
+  h += `<div class="satir"><button class="btn" data-act="indir" type="button" ${C ? "" : "disabled"}>Dosyayı indir</button>
     <span class="not">${eks.length ? "Eksik seçimler var (" + eks.length + "); yine de kaydedebilirsin, sonra tamamlarsın." : "Her şey tamam."}</span></div>`;
   if (MASA_MOD) h += `<p class="not">Yedek dosya isteğe bağlı: karakter masada saklanıyor.</p>`;
-  else if (!OBR_MOD) h += `<div class="detay"><b>Bu karakteri oyuna nasıl alırım?</b>
-    <p>Bu sayfa sitede açık; tarayıcı, buradaki karakterin Owlbear'a kendiliğinden geçmesine izin vermiyor. Kısa bir kodla taşıyorsun:</p>
-    <ol><li>Yukarıdaki <b>Owlbear kodunu kopyala</b>'ya bas.</li><li>Owlbear'da odaya gir, <b>Kuyudan Yukarı</b> panelini aç, <b>Yeni karakter yarat</b>'a bas.</li>
-    <li>Açılan pencerenin üstündeki <b>Kod yapıştır</b> kutusuna tıkla ve yapıştır (Ctrl+V). Karakterin son adımda açılır.</li><li><b>Odaya kaydet</b>'e bas. Karakter sana bağlanır.</li></ol>
-    <p>Kod yerine dosya da olur: <b>Dosyayı indir</b>, sonra Owlbear'daki pencerede <b>Dosya aç</b>.</p>
-    <p>Kısa yol: karakteri baştan Owlbear içinde, panelden yaratırsan dosyaya hiç gerek kalmaz.</p></div>`;
-  else h += `<p class="not">Yedek dosya isteğe bağlı: karakter odada saklanıyor.</p>`;
+  else h += `<div class="detay"><b>Bu karakteri oyuna nasıl alırım?</b>
+    <p>Bu sayfa sitede açık; karakter yalnız bu tarayıcıda taslak olarak durur. İki yol var:</p>
+    <ol><li><b>En kolayı:</b> seans sırasında masada <b>📜 Karakterim</b> → <b>Yeni karakter</b> ile karakteri orada yarat; doğrudan masaya kaydedilir.</li>
+    <li>Ya da <b>Dosyayı indir</b>'e bas ve dosyayı DM'e gönder. DM masadaki üreticide <b>Dosya aç</b> ile yükleyip masaya kaydeder.</li></ol></div>`;
   h += `<h2 style="margin-top:24px">Önizleme</h2><div class="sheet" style="padding:0"><div id="onizleme"></div></div>`;
   return h;
 }
@@ -296,10 +287,7 @@ document.addEventListener("click", async (e) => {
     Y.zarGecmis = (Y.zarGecmis || []).concat([Y.zarlar]).slice(-100);
     Y.atama = {};
   } else if (t.dataset.act === "indir") { indir(); return; }
-  else if (t.dataset.act === "kod") { try { await navigator.clipboard.writeText(KOD_ON + (await sikistir(Y))); t.textContent = "Kopyalandı ✓"; } catch (x) { t.textContent = "Kopyalanamadı"; } return; }
-  else if (t.dataset.act === "odaya") { odayaKaydet(t); return; }
   else if (t.dataset.act === "masaya") { masayaKaydet(t); return; }
-  else if (t.dataset.act === "kapat") { if (OBR) OBR.modal.close(MODAL); return; }
   else return;
   kaydet(); ciz();
 });
@@ -328,18 +316,6 @@ $("#dosya").addEventListener("change", async (e) => {
     Y = y; S = Y.sinif ? await K.sinifYukle(Y.sinif) : null; adim = "sinif"; kaydet(); ciz();
   } catch (x) { alert("Bu dosya bir Kuyudan Yukarı karakter dosyası değil."); }
   e.target.value = "";
-});
-// Owlbear aktarma kodu: "KY1:" + gzip/base64 yapı (oda kaydıyla aynı biçim)
-const KOD_ON = "KY1:";
-$("#kod").addEventListener("input", async (e) => {
-  const t = e.target, v = t.value.trim().replace(/\s+/g, "");
-  if (!v) return;
-  try {
-    const y = await yapiAc(v.startsWith(KOD_ON) ? v.slice(KOD_ON.length) : v);
-    if (!y || y.v !== 1 || !y.secim) throw new Error("biçim");
-    Y = y; S = Y.sinif ? await K.sinifYukle(Y.sinif) : null; adim = "kimlik"; kaydet(); ciz();
-    t.value = ""; t.placeholder = "Yüklendi ✓";
-  } catch (x) { t.value = ""; t.placeholder = "Kod okunamadı"; }
 });
 function indir() {
   const ad = (Y.ad || "karakter").toLocaleLowerCase("tr").replace(/[^a-z0-9ğüşıöç]+/g, "-").replace(/^-|-$/g, "");
@@ -375,55 +351,9 @@ async function masaBaslat() {
   if (ust) { ust.textContent = "← Karakter sayfası"; ust.href = "/karakter.html"; }
 }
 
-// ---------- Owlbear: odaya kaydet
-async function odayaKaydet(dugme) {
-  const durum = document.getElementById("oda-durum");
-  try {
-    dugme.disabled = true;
-    const m = await OBR.room.getMetadata(), tum = { ...(m[K_YEREL] || {}) }, eski = tum[Y.id];
-    if (eski && eski.sahip !== benim.id && benim.rol !== "GM") throw new Error("Bu karakter senin değil; sadece sahibi ve GM kaydedebilir.");
-    tum[Y.id] = { v: await sikistir(Y), ad: C.ad, tur: C.tur, siniflar: C.siniflar, avatar: C.avatar,
-      sahip: eski ? eski.sahip : benim.id, sahipAd: eski ? eski.sahipAd : benim.ad, guncellendi: C.guncellendi };
-    const guncel = { [K_YEREL]: tum };
-    // oyuncunun yeni karakteri otomatik olarak ona bağlanır (bir oyuncu, bir karakter)
-    if (!eski && benim.rol !== "GM") {
-      const sahip = { ...(m[K_SAHIP] || {}) };
-      for (const id of Object.keys(sahip)) if (sahip[id].oyuncu === benim.id) delete sahip[id];
-      sahip[Y.id] = { oyuncu: benim.id, ad: benim.ad };
-      guncel[K_SAHIP] = sahip;
-    }
-    const boyut = new Blob([JSON.stringify({ ...m, ...guncel })]).size;
-    if (boyut > ODA_SINIRI) throw new Error(`Oda verisi dolu (${boyut} bayt). GM eski zar günlüğünü ya da handout'ları temizlemeli.`);
-    await OBR.room.setMetadata(guncel);
-    try { localStorage.removeItem(TASLAK); } catch (e) { /* yok */ }
-    OBR.notification.show(`${C.ad} odaya kaydedildi.`, "SUCCESS");
-    OBR.modal.close(MODAL);
-  } catch (e) {
-    dugme.disabled = false;
-    if (durum) durum.textContent = "Kaydedilemedi: " + e.message;
-  }
-}
-async function obrBaslat() {
-  OBR = (await import("https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@3.1.0/+esm")).default;
-  await new Promise((r) => OBR.onReady(r));
-  const tema = (t) => { document.documentElement.dataset.theme = t.mode === "DARK" ? "dark" : "light"; };
-  tema(await OBR.theme.getTheme()); OBR.theme.onChange(tema);
-  benim = { id: await OBR.player.getId(), ad: await OBR.player.getName(), rol: await OBR.player.getRole() };
-  const ust = document.querySelector(".ol-ust a"); if (ust) ust.outerHTML = `<button class="btn" data-act="kapat" type="button">✕ Kapat</button>`;
-  const kayit = ((await OBR.room.getMetadata())[K_YEREL] || {});
-  if (DUZ_ID && kayit[DUZ_ID]) { Y = await yapiAc(kayit[DUZ_ID].v); adim = "sinif"; }
-  else if (DUZ_ID) { // sitedeki karakter: dosyasından aç; kaydedince odaya geçer ve oradaki kopya geçerli olur
-    const o = await fetch("../karakterler/" + DUZ_ID + ".json", { cache: "no-cache" }).then((r) => r.json()).catch(() => null);
-    if (o && o.yapi && o.yapi.v === 1) { Y = o.yapi; adim = "sinif"; }
-  }
-  else if (!DUZ_ID && kayit[Y.id]) Y = K.bosYapi(); // "yeni karakter" var olan bir kaydın üstüne yazmasın
-  if (!Y.oyuncu) Y.oyuncu = benim.ad;
-}
-
 // ---------- başlat
 (async () => {
   try {
-    if (OBR_MOD) await obrBaslat();
     if (MASA_MOD) await masaBaslat();
     window.__V = await K.veriYukle();
     if (Y.sinif) S = await K.sinifYukle(Y.sinif);

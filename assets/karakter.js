@@ -1,4 +1,4 @@
-// Karakter sayfası: site ve Owlbear paneli aynı kodu kullanır.
+// Karakter sayfası: site ve masa (araclar/masa, /k/ altından) aynı kodu kullanır.
 // KarakterSayfasi({ root, pick, mode, base, store, onRoll, onSelect })
 //   store:   { load(id) -> Promise<durum|null>, save(id, durum), onChange(cb(id, durum)) }
 //   onRoll:  function(sonuç) — zar sonucunu gösterir ya da yayınlar
@@ -541,7 +541,7 @@
         })
         .catch(function (e) {
           if (yerel) { console.warn(e); root.innerHTML = '<p class="empty">Karakter hesaplanamadı (kural verisi inmedi olabilir). Paneli kapatıp açmayı dene.</p>'; return; }
-          root.innerHTML = '<p class="empty">Bu karakter yüklenemedi. D&amp;D Beyond\'da <b>Public</b> olduğundan emin ol; site saatte bir güncelleniyor.</p>';
+          root.innerHTML = '<p class="empty">Bu karakter yüklenemedi. Sayfayı yenile; sorun sürerse DM\'e haber ver.</p>';
         });
     }
     function list() {

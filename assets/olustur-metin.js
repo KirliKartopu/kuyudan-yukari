@@ -76,7 +76,7 @@ export const ADIM_TR = {
   sec: "Class'ının sana sunduğu seçimler: skill'ler, ustalıklar, özel teknikler. Fareyi bir seçeneğin üstüne getirince açıklaması çıkar.",
   buyu: "Cantrip'ler bedavadır, istediğin kadar yapılır. Diğer büyüler spell slot harcar ve long rest'te yenilenir.",
   ekip: "Başlangıç eşyaların. Hazır paketi almak en kolayı. Sadece altın alırsan eşyaları DM ile birlikte satın alırsın.",
-  kimlik: "Karakterine bir ad ver. Owlbear'da oynuyoruz: karakteri oyuna almanın yolu aşağıda.",
+  kimlik: "Karakterine bir ad ver. Kendi masamızda oynuyoruz: karakteri oyuna almanın yolu aşağıda.",
 };
 
 // Alignment (PHB 2024, 4. adım). Adlar keyword olarak İngilizce, açıklama Türkçe.

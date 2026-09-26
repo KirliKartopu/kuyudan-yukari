@@ -1,6 +1,22 @@
 [
-  {"id": 1790180057, "oyuncu": "Ender", "yerel": true},
-  {"id": 1790210001, "oyuncu": "", "yerel": true},
-  {"id": 1790210002, "oyuncu": "", "yerel": true},
-  {"id": 1790210003, "oyuncu": "", "yerel": true}
+ {
+  "id": 1790180057,
+  "oyuncu": "Ender",
+  "yerel": true
+ },
+ {
+  "id": 1790210001,
+  "oyuncu": "",
+  "yerel": true
+ },
+ {
+  "id": 1790210002,
+  "oyuncu": "",
+  "yerel": true
+ },
+ {
+  "id": 1790210003,
+  "oyuncu": "",
+  "yerel": true
+ }
 ]

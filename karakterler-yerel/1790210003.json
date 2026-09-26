@@ -4,6 +4,8 @@
  "oyuncu": "",
  "tur": "Human",
  "background": "Sage",
+ "alignment": "",
+ "kisilik": "",
  "siniflar": [
   {
    "ad": "Wizard",
@@ -229,7 +231,7 @@
    "tip": "",
    "kusanili": true,
    "isabet": 1,
-   "hasar": "1",
+   "hasar": "0",
    "tur": "Bludgeoning",
    "menzil": "5 ft",
    "mastery": null,
@@ -271,14 +273,14 @@
     "seviye": 0,
     "konsantrasyon": false,
     "ritual": false,
-    "not": ""
+    "not": "Magic Initiate"
    },
    {
     "ad": "Prestidigitation",
     "seviye": 0,
     "konsantrasyon": false,
     "ritual": false,
-    "not": ""
+    "not": "Magic Initiate"
    },
    {
     "ad": "Burning Hands",
@@ -288,11 +290,18 @@
     "not": ""
    },
    {
+    "ad": "Detect Magic",
+    "seviye": 1,
+    "konsantrasyon": true,
+    "ritual": true,
+    "not": "Spellbook: hazır değil, ritual olarak atılır (Ritual Adept)"
+   },
+   {
     "ad": "Mage Armor",
     "seviye": 1,
     "konsantrasyon": false,
     "ritual": false,
-    "not": ""
+    "not": "Magic Initiate"
    },
    {
     "ad": "Magic Missile",
@@ -307,6 +316,13 @@
     "konsantrasyon": false,
     "ritual": false,
     "not": ""
+   },
+   {
+    "ad": "Sleep",
+    "seviye": 1,
+    "konsantrasyon": true,
+    "ritual": false,
+    "not": "Spellbook: hazır değil"
    },
    {
     "ad": "Thunderwave",
@@ -347,6 +363,22 @@
    "ad": "Versatile",
    "kaynak": "Human",
    "seviye": 1
+  }
+ ],
+ "kaynaklar": [
+  {
+   "id": "Wizard||Arcane Recovery",
+   "ad": "Arcane Recovery",
+   "kaynak": "Wizard",
+   "max": 1,
+   "yenile": "uzun"
+  },
+  {
+   "id": "feat:Magic Initiate|Mage Armor",
+   "ad": "Mage Armor (slotsuz)",
+   "kaynak": "Magic Initiate",
+   "max": 1,
+   "yenile": "uzun"
   }
  ],
  "featler": [
@@ -410,9 +442,9 @@
   "gp": 13,
   "pp": 0
  },
- "avatar": null,
+ "avatar": "",
  "yerel": true,
- "guncellendi": "2026-09-24 06:28 UTC",
+ "guncellendi": "2026-09-25T01:36:10.449Z",
  "yapi": {
   "v": 1,
   "id": 1790210003,

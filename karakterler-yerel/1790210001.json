@@ -4,6 +4,8 @@
  "oyuncu": "",
  "tur": "Orc",
  "background": "Hermit",
+ "alignment": "",
+ "kisilik": "",
  "siniflar": [
   {
    "ad": "Fighter",
@@ -226,7 +228,7 @@
    "hasar": "1d8+2",
    "tur": "Bludgeoning",
    "menzil": "5 ft",
-   "mastery": null,
+   "mastery": "Sap",
    "ozellikler": []
   },
   {
@@ -298,6 +300,25 @@
    "ad": "Relentless Endurance",
    "kaynak": "Orc",
    "seviye": 1
+  }
+ ],
+ "kaynaklar": [
+  {
+   "id": "Fighter||Second Wind",
+   "ad": "Second Wind",
+   "kaynak": "Fighter",
+   "max": 2,
+   "yenile": "uzun",
+   "kisaBir": true,
+   "iyilestir": "kendi",
+   "zar": "1d10+1"
+  },
+  {
+   "id": "tur:Orc|Relentless Endurance",
+   "ad": "Relentless Endurance",
+   "kaynak": "Orc",
+   "max": 1,
+   "yenile": "uzun"
   }
  ],
  "featler": [
@@ -385,9 +406,9 @@
   "gp": 20,
   "pp": 0
  },
- "avatar": null,
+ "avatar": "",
  "yerel": true,
- "guncellendi": "2026-09-24 06:42 UTC",
+ "guncellendi": "2026-09-25T01:37:53.853Z",
  "yapi": {
   "v": 1,
   "id": 1790210001,
@@ -427,7 +448,7 @@
    ],
    "sinif:mastery": [
     "Greataxe",
-    "Greatsword",
+    "Flail",
     "Javelin"
    ],
    "sinif:fp:Fighting Style:1": [

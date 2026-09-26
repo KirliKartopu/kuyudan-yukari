@@ -250,7 +250,7 @@
    "tip": "",
    "kusanili": true,
    "isabet": 1,
-   "hasar": "1",
+   "hasar": "0",
    "tur": "Bludgeoning",
    "menzil": "5 ft",
    "mastery": null,
@@ -293,6 +293,15 @@
    "ad": "Versatile",
    "kaynak": "Human",
    "seviye": 1
+  }
+ ],
+ "kaynaklar": [
+  {
+   "id": "feat:Lucky|Luck Points",
+   "ad": "Luck Points",
+   "kaynak": "Lucky",
+   "max": 2,
+   "yenile": "uzun"
   }
  ],
  "featler": [
@@ -374,9 +383,9 @@
   "gp": 24,
   "pp": 0
  },
- "avatar": null,
+ "avatar": "",
  "yerel": true,
- "guncellendi": "2026-09-24 07:19 UTC",
+ "guncellendi": "2026-09-25T01:36:10.449Z",
  "yapi": {
   "v": 1,
   "id": 1790210002,
