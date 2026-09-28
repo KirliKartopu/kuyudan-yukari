@@ -60,7 +60,10 @@ function kopyaGirdi(x, hepsi, derin = 0) {
 async function bul(tur, ad, ek) {
   // "Draconic Ancestry (Black)", "Aspect of the Wilds (Owl)": seçenekli özelliğin kendisi bulunamazsa parantezsiz adıyla
   if (tur === "ozellik" && / \([^)]+\)$/.test(ad)) { const r = await bul0(tur, ad, ek); return r || bul0(tur, ad.replace(/ \([^)]+\)$/, ""), ek); }
-  return bul0(tur, ad, ek);
+  const r = await bul0(tur, ad, ek);
+  // feat'in verdiği büyü kaynak satırında "ozellik" olarak gelir (Watchers → Beast Sense, Speak with Animals): büyü ve feat içinde de ara
+  if (!r && tur === "ozellik") return (await bul0("buyu", ad)) || bul0("feat", ad);
+  return r;
 }
 async function bul0(tur, ad, ek) {
   if (tur === "skill") { const d = await cek("skills.json"); const x = sec(d.skill, ad); return x && { baslik: x.name, alt: "Skill · " + (x.ability || "").toUpperCase(), govde: girdi(x.entries) }; }
@@ -140,7 +143,7 @@ stil.textContent = `.ack-tip{position:fixed;z-index:60;max-width:min(340px,calc(
   border:1px solid var(--accent,#5A3E9E);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.28);padding:10px 12px;font-size:13.5px;line-height:1.45}
 .ack-tip h4{margin:0;font-size:16px;font-family:var(--display,serif)} .ack-tip .alt{color:var(--muted,#666);font-size:12px;margin:0 0 6px}
 .ack-tip p{margin:4px 0} .ack-tip ul{margin:4px 0;padding-left:16px} .ack-tip table{border-collapse:collapse;font-size:12px;min-width:0} .ack-tip td,.ack-tip th{padding:2px 6px;border-bottom:1px solid var(--line,#ddd)}
-.ack-tip .btn{pointer-events:none} [data-ack]{cursor:help} [data-ack].btn,[data-ack] button{cursor:pointer}`;
+.ack-tip .btn{pointer-events:none} [data-ack]{cursor:help;-webkit-touch-callout:none} [data-ack].btn,[data-ack] button{cursor:pointer}`;
 document.head.appendChild(stil);
 const tip = document.createElement("div"); tip.className = "ack-tip"; tip.hidden = true; tip.setAttribute("role", "tooltip");
 document.body.appendChild(tip);
@@ -169,6 +172,27 @@ document.addEventListener("mouseover", (e) => {
   clearTimeout(zaman); zaman = setTimeout(() => goster(el), 280);
 });
 tip.addEventListener("mouseover", () => clearTimeout(zaman));
+// dokunmatik (telefon, tablet): fare üstüne gelme yok. Uzun basış (~0,45 sn) balonu açar ve ardından gelen tıklamayı yutar
+// (skill'e dokunmak zar atıyordu, balon hiç görünmüyordu); zar/düğme olmayan yazıda (özellik, büyü adı) tek dokunuş yeter
+let basis = null, yut = false;
+const tiklanir = (el) => !!el.closest("button,a,input,select,label,[data-roll],[data-sal],[data-cond],[data-env]");
+document.addEventListener("pointerdown", (e) => {
+  if (e.pointerType !== "touch") return;
+  const el = e.target.closest && e.target.closest("[data-ack]");
+  if (!el) { if (hedef && !tip.contains(e.target)) gizle(); return; }
+  clearTimeout(basis); const x = e.clientX, y = e.clientY;
+  basis = setTimeout(() => { basis = null; yut = true; goster(el); }, 450);
+  const iptal = (m) => { if (!m || Math.hypot(m.clientX - x, m.clientY - y) > 10) { clearTimeout(basis); basis = null; } };
+  el.addEventListener("pointermove", iptal, { once: true }); el.addEventListener("pointercancel", () => iptal(), { once: true });
+}, true);
+document.addEventListener("pointerup", (e) => {
+  if (e.pointerType !== "touch") return;
+  const el = e.target.closest && e.target.closest("[data-ack]");
+  if (basis) { clearTimeout(basis); basis = null; if (el && !tiklanir(el)) goster(el); }   // kısa dokunuş: düz yazıda balon, düğmede normal tıklama
+  if (yut) setTimeout(() => { yut = false; }, 400);   // uzun basıştan sonra tıklama hiç gelmezse (Android'de contextmenu) sonraki gerçek dokunuş yutulmasın
+}, true);
+document.addEventListener("click", (e) => { if (yut) { yut = false; e.preventDefault(); e.stopPropagation(); } }, true);
+document.addEventListener("contextmenu", (e) => { if (e.target.closest && e.target.closest("[data-ack]") && hedef) e.preventDefault(); }, true);
 document.addEventListener("focusin", (e) => { const el = e.target.closest && e.target.closest("[data-ack]"); if (el) goster(el); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") gizle(); });
 document.addEventListener("scroll", gizle, true);
