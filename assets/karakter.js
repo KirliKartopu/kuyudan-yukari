@@ -259,7 +259,7 @@
       if (S.itme) h += '<button class="btn ana" data-act="it" title="Push: ' + esc(S.itme.ad) + ' 10 ft doğrudan uzağa itilir (duvarda durur; opportunity attack tetiklemez)">↦ Push ' + esc(S.itme.ad) + '</button>';
       var cl = S.cleave && S.cleave.hedefler || [];
       cl.forEach(function (x) { h += '<button class="btn ana' + modSinifi("cleave") + '" data-act="cleave" data-hedef="' + esc(x.id) + '" title="Cleave (' + esc(S.cleave.silah) + '): ilk hedefin yanındaki düşmana bir saldırı daha; yetenek bonusu hasara eklenmez, turda bir kez">🪓 Cleave → ' + esc(x.ad) + "</button>"; });
-      h += '<span class="hedef-etiket">' + (hd ? "🎯 " + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") : "🎯 hedef yok <small>(haritada token'a Ctrl+tık)</small>") + "</span>";
+      h += '<span class="hedef-etiket">' + (hd ? "🎯 " + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") : "🎯 hedef yok <small>(" + (matchMedia("(pointer: coarse)").matches ? "haritada düşmana dokun → 🎯 Hedef" : "haritada düşmana tıkla → 🎯 Hedef, ya da Ctrl+tık") + ")</small>") + "</span>";
       return h + "</div>";
     }
     function saldiriMenusu(x, y) {
