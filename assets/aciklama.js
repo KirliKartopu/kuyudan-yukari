@@ -2,6 +2,7 @@
 // Metinler sitemizde barındırılmaz; gerektiğinde 5e.tools'un kendi deposundan çekilir.
 //   tur: skill | cond | ozellik (ek: sınıf ya da tür adı) | feat | esya | buyu | mastery
 import { metin } from "./canavar.js";
+import { TR_OZET } from "./tr-ozet.js";
 
 // ?veri=... ile yerel bir kopya denenebilir (geliştirme)
 const VERI = (typeof location !== "undefined" && new URLSearchParams(location.search).get("veri")) || "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data/";
@@ -160,7 +161,8 @@ async function goster(el) {
   let v = null;
   try { v = await bul(tur, ad, ek); } catch (e) { v = null; }
   if (hedef !== el) return;
-  tip.innerHTML = v ? `<h4>${esc(v.baslik)}</h4><p class="alt">${esc(v.alt || "")}</p>${v.govde}` : `<h4>${esc(ad)}</h4><p class="alt">5e.tools'ta açıklama bulunamadı.</p>`;
+  const tr = TR_OZET[v ? v.baslik : ad] || TR_OZET[ad];   // Türkçe tek satır özet (terim İngilizce kalır)
+  tip.innerHTML = v ? `<h4>${esc(v.baslik)}</h4><p class="alt">${esc(v.alt || "")}</p>${tr ? `<p class="tr-ozet" style="color:var(--accent,#e39a6a);font-weight:600">${esc(tr)}</p>` : ""}${v.govde}` : `<h4>${esc(ad)}</h4><p class="alt">5e.tools'ta açıklama bulunamadı.</p>`;
   yerlestir(el);
 }
 function gizle() { clearTimeout(zaman); hedef = null; tip.hidden = true; }
