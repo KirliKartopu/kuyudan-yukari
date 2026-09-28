@@ -269,6 +269,23 @@
    "ozellikler": []
   }
  ],
+ "masteryler": [
+  {
+   "silah": "Greataxe",
+   "ozellik": "Cleave",
+   "var": true
+  },
+  {
+   "silah": "Flail",
+   "ozellik": "Sap",
+   "var": true
+  },
+  {
+   "silah": "Javelin",
+   "ozellik": "Slow",
+   "var": true
+  }
+ ],
  "buyu": null,
  "ozellikler": [
   {

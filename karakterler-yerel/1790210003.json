@@ -1,14 +1,14 @@
 {
  "id": 1790210003,
- "ad": "Büyücü (geçici ad)",
- "oyuncu": "",
- "tur": "Human",
- "background": "Sage",
- "alignment": "",
- "kisilik": "",
+ "ad": "Nihil Vaelorn",
+ "oyuncu": "Nihilstein",
+ "tur": "Elf (Wood Elf Lineage)",
+ "background": "Criminal",
+ "alignment": "Chaotic Neutral",
+ "kisilik": "Nihil Vaelorn sessiz, dikkatli ve çevresini sürekli gözleyen bir Wood Elf Ranger’dır. Uzun koyu saçları, keskin yüz hatları, yeşil gözleri ve yıllardır yolculuk yaptığı belli olan koyu yeşil deri zırhıyla dikkat çeker. İnsanlarla gereğinden fazla konuşmaz; kısa, sakin ve çoğu zaman alaycı cevaplar verir.\nGeçimini avcılık, iz sürme ve gerektiğinde yasa dışı işler yaparak sağlar. Otoriteye ve katı kurallara güvenmez; kişisel özgürlüğünü her şeyin üstünde tutar. Para onun için önemlidir ama birine söz verdiyse kolay kolay dönmez. Çatışmada sabırlıdır, uzaktan gözlem yapar ve doğru anı bekleyerek yayını kullanır. Gereksiz kahramanlık peşinde değildir; hayatta kalmayı, özgür kalmayı ve kendi kararlarını vermeyi önemser.",
  "siniflar": [
   {
-   "ad": "Wizard",
+   "ad": "Ranger",
    "seviye": 1,
    "subclass": null
   }
@@ -21,20 +21,20 @@
    "mod": -1
   },
   "dex": {
-   "puan": 13,
-   "mod": 1
-  },
-  "con": {
-   "puan": 15,
-   "mod": 2
-  },
-  "int": {
    "puan": 17,
    "mod": 3
   },
-  "wis": {
+  "con": {
+   "puan": 14,
+   "mod": 2
+  },
+  "int": {
    "puan": 12,
    "mod": 1
+  },
+  "wis": {
+   "puan": 14,
+   "mod": 2
   },
   "cha": {
    "puan": 10,
@@ -43,24 +43,24 @@
  },
  "saves": {
   "str": {
-   "prof": false,
-   "bonus": -1
+   "prof": true,
+   "bonus": 1
   },
   "dex": {
-   "prof": false,
-   "bonus": 1
+   "prof": true,
+   "bonus": 5
   },
   "con": {
    "prof": false,
    "bonus": 2
   },
   "int": {
-   "prof": true,
-   "bonus": 5
+   "prof": false,
+   "bonus": 1
   },
   "wis": {
-   "prof": true,
-   "bonus": 3
+   "prof": false,
+   "bonus": 2
   },
   "cha": {
    "prof": false,
@@ -72,19 +72,19 @@
    "ad": "Acrobatics",
    "yetenek": "dex",
    "prof": 0,
-   "bonus": 1
+   "bonus": 3
   },
   {
    "ad": "Animal Handling",
    "yetenek": "wis",
-   "prof": 0,
-   "bonus": 1
+   "prof": 1,
+   "bonus": 4
   },
   {
    "ad": "Arcana",
    "yetenek": "int",
-   "prof": 1,
-   "bonus": 5
+   "prof": 0,
+   "bonus": 1
   },
   {
    "ad": "Athletics",
@@ -101,14 +101,14 @@
   {
    "ad": "History",
    "yetenek": "int",
-   "prof": 1,
-   "bonus": 5
+   "prof": 0,
+   "bonus": 1
   },
   {
    "ad": "Insight",
    "yetenek": "wis",
    "prof": 1,
-   "bonus": 3
+   "bonus": 4
   },
   {
    "ad": "Intimidation",
@@ -119,26 +119,26 @@
   {
    "ad": "Investigation",
    "yetenek": "int",
-   "prof": 1,
-   "bonus": 5
+   "prof": 0,
+   "bonus": 1
   },
   {
    "ad": "Medicine",
    "yetenek": "wis",
    "prof": 0,
-   "bonus": 1
+   "bonus": 2
   },
   {
    "ad": "Nature",
    "yetenek": "int",
    "prof": 0,
-   "bonus": 3
+   "bonus": 1
   },
   {
    "ad": "Perception",
    "yetenek": "wis",
    "prof": 1,
-   "bonus": 3
+   "bonus": 4
   },
   {
    "ad": "Performance",
@@ -156,54 +156,104 @@
    "ad": "Religion",
    "yetenek": "int",
    "prof": 0,
-   "bonus": 3
+   "bonus": 1
   },
   {
    "ad": "Sleight of Hand",
    "yetenek": "dex",
-   "prof": 0,
-   "bonus": 1
+   "prof": 1,
+   "bonus": 5
   },
   {
    "ad": "Stealth",
    "yetenek": "dex",
-   "prof": 0,
-   "bonus": 1
+   "prof": 1,
+   "bonus": 5
   },
   {
    "ad": "Survival",
    "yetenek": "wis",
-   "prof": 0,
-   "bonus": 1
+   "prof": 1,
+   "bonus": 4
   }
  ],
- "pasif_perception": 13,
- "hp_max": 10,
- "ac": 11,
- "initiative": 1,
- "hiz": 30,
- "duyular": {},
+ "pasif_perception": 14,
+ "hp_max": 12,
+ "ac": 15,
+ "initiative": 5,
+ "hiz": 35,
+ "duyular": {
+  "Darkvision": 60
+ },
  "diller": [
   "Common",
-  "Draconic",
-  "Elvish"
+  "Elvish",
+  "Goblin"
  ],
  "araclar": [
-  "Calligrapher's Supplies"
+  "Thieves' Tools"
  ],
- "zirh": [],
+ "zirh": [
+  "light",
+  "medium",
+  "shield"
+ ],
  "silah": [
-  "simple"
+  "simple",
+  "martial"
  ],
  "direncler": [],
  "notlar": [],
  "saldirilar": [
   {
+   "ad": "Scimitar",
+   "tip": "Scimitar",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d6+3",
+   "tur": "Slashing",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": [
+    "Finesse",
+    "Light"
+   ]
+  },
+  {
+   "ad": "Shortsword",
+   "tip": "Shortsword",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d6+3",
+   "tur": "Piercing",
+   "menzil": "5 ft",
+   "mastery": "Vex",
+   "ozellikler": [
+    "Finesse",
+    "Light"
+   ]
+  },
+  {
+   "ad": "Longbow",
+   "tip": "Longbow",
+   "kusanili": true,
+   "isabet": 5,
+   "hasar": "1d8+3",
+   "tur": "Piercing",
+   "menzil": "150/600 ft",
+   "mastery": "Slow",
+   "ozellikler": [
+    "Ammunition",
+    "Heavy",
+    "Two-Handed"
+   ]
+  },
+  {
    "ad": "Dagger",
    "tip": "Dagger",
    "kusanili": true,
-   "isabet": 3,
-   "hasar": "1d4+1",
+   "isabet": 5,
+   "hasar": "1d4+3",
    "tur": "Piercing",
    "menzil": "20/60 ft",
    "mastery": null,
@@ -211,19 +261,6 @@
     "Finesse",
     "Light",
     "Thrown"
-   ]
-  },
-  {
-   "ad": "Quarterstaff",
-   "tip": "Quarterstaff",
-   "kusanili": true,
-   "isabet": 1,
-   "hasar": "1d6-1",
-   "tur": "Bludgeoning",
-   "menzil": "5 ft",
-   "mastery": null,
-   "ozellikler": [
-    "Versatile"
    ]
   },
   {
@@ -238,154 +275,161 @@
    "ozellikler": []
   }
  ],
+ "masteryler": [
+  {
+   "silah": "Longbow",
+   "ozellik": "Slow",
+   "var": true
+  },
+  {
+   "silah": "Shortsword",
+   "ozellik": "Vex",
+   "var": true
+  }
+ ],
  "buyu": {
-  "sinif": "Wizard",
-  "yetenek": "int",
-  "save_dc": 13,
-  "isabet": 5,
+  "sinif": "Ranger",
+  "yetenek": "wis",
+  "save_dc": 12,
+  "isabet": 4,
   "slotlar": [
    2
   ],
   "buyuler": [
    {
-    "ad": "Fire Bolt",
+    "ad": "Druidcraft",
     "seviye": 0,
     "konsantrasyon": false,
     "ritual": false,
-    "not": ""
+    "not": "Elf (Wood Elf Lineage)"
    },
    {
-    "ad": "Light",
-    "seviye": 0,
-    "konsantrasyon": false,
-    "ritual": false,
-    "not": ""
-   },
-   {
-    "ad": "Mage Hand",
-    "seviye": 0,
-    "konsantrasyon": false,
-    "ritual": false,
-    "not": ""
-   },
-   {
-    "ad": "Minor Illusion",
-    "seviye": 0,
-    "konsantrasyon": false,
-    "ritual": false,
-    "not": "Magic Initiate"
-   },
-   {
-    "ad": "Prestidigitation",
-    "seviye": 0,
-    "konsantrasyon": false,
-    "ritual": false,
-    "not": "Magic Initiate"
-   },
-   {
-    "ad": "Burning Hands",
+    "ad": "Cure Wounds",
     "seviye": 1,
     "konsantrasyon": false,
     "ritual": false,
     "not": ""
    },
    {
-    "ad": "Detect Magic",
-    "seviye": 1,
-    "konsantrasyon": true,
-    "ritual": true,
-    "not": "Spellbook: hazır değil, ritual olarak atılır (Ritual Adept)"
-   },
-   {
-    "ad": "Mage Armor",
-    "seviye": 1,
-    "konsantrasyon": false,
-    "ritual": false,
-    "not": "Magic Initiate"
-   },
-   {
-    "ad": "Magic Missile",
+    "ad": "Hail of Thorns",
     "seviye": 1,
     "konsantrasyon": false,
     "ritual": false,
     "not": ""
    },
    {
-    "ad": "Shield",
-    "seviye": 1,
-    "konsantrasyon": false,
-    "ritual": false,
-    "not": ""
-   },
-   {
-    "ad": "Sleep",
+    "ad": "Hunter's Mark",
     "seviye": 1,
     "konsantrasyon": true,
     "ritual": false,
-    "not": "Spellbook: hazır değil"
-   },
-   {
-    "ad": "Thunderwave",
-    "seviye": 1,
-    "konsantrasyon": false,
-    "ritual": false,
-    "not": ""
+    "not": "her zaman hazır"
    }
   ]
  },
  "ozellikler": [
   {
    "ad": "Spellcasting",
-   "kaynak": "Wizard",
+   "kaynak": "Ranger",
    "seviye": 1
   },
   {
-   "ad": "Ritual Adept",
-   "kaynak": "Wizard",
+   "ad": "Favored Enemy",
+   "kaynak": "Ranger",
    "seviye": 1
   },
   {
-   "ad": "Arcane Recovery",
-   "kaynak": "Wizard",
+   "ad": "Weapon Mastery",
+   "kaynak": "Ranger",
    "seviye": 1
   },
   {
-   "ad": "Resourceful",
-   "kaynak": "Human",
+   "ad": "Darkvision",
+   "kaynak": "Elf",
    "seviye": 1
   },
   {
-   "ad": "Skillful",
-   "kaynak": "Human",
+   "ad": "Elven Lineage (Wood Elf)",
+   "kaynak": "Elf",
    "seviye": 1
   },
   {
-   "ad": "Versatile",
-   "kaynak": "Human",
+   "ad": "Fey Ancestry",
+   "kaynak": "Elf",
+   "seviye": 1
+  },
+  {
+   "ad": "Keen Senses",
+   "kaynak": "Elf",
+   "seviye": 1
+  },
+  {
+   "ad": "Trance",
+   "kaynak": "Elf",
    "seviye": 1
   }
  ],
  "kaynaklar": [
   {
-   "id": "Wizard||Arcane Recovery",
-   "ad": "Arcane Recovery",
-   "kaynak": "Wizard",
-   "max": 1,
-   "yenile": "uzun"
-  },
-  {
-   "id": "feat:Magic Initiate|Mage Armor",
-   "ad": "Mage Armor (slotsuz)",
-   "kaynak": "Magic Initiate",
-   "max": 1,
-   "yenile": "uzun"
+   "id": "Ranger||Favored Enemy",
+   "ad": "Hunter's Mark (slotsuz)",
+   "kaynak": "Ranger",
+   "max": 2,
+   "yenile": "uzun",
+   "ozellik": "Favored Enemy"
   }
  ],
  "featler": [
-  "Magic Initiate",
-  "Tough"
+  "Alert"
  ],
  "envanter": [
+  {
+   "ad": "Studded Leather Armor",
+   "adet": 1,
+   "tip": "Light Armor",
+   "kusanili": true
+  },
+  {
+   "ad": "Scimitar",
+   "adet": 1,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Shortsword",
+   "adet": 1,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Longbow",
+   "adet": 1,
+   "tip": "Ranged Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Arrows (20)",
+   "adet": 1,
+   "tip": "Ammunition",
+   "kusanili": false
+  },
+  {
+   "ad": "Quiver",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Sprig of Mistletoe",
+   "adet": 1,
+   "tip": "Spellcasting Focus",
+   "kusanili": false
+  },
+  {
+   "ad": "Explorer's Pack",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
   {
    "ad": "Dagger",
    "adet": 2,
@@ -393,44 +437,26 @@
    "kusanili": true
   },
   {
-   "ad": "Quarterstaff",
+   "ad": "Thieves' Tools",
+   "adet": 1,
+   "tip": "Tool",
+   "kusanili": false
+  },
+  {
+   "ad": "Crowbar",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  },
+  {
+   "ad": "Pouch",
    "adet": 2,
-   "tip": "Melee Weapon",
-   "kusanili": true
-  },
-  {
-   "ad": "Robe",
-   "adet": 2,
    "tip": "Adventuring Gear",
    "kusanili": false
   },
   {
-   "ad": "Spellbook",
+   "ad": "Traveler's Clothes",
    "adet": 1,
-   "tip": "",
-   "kusanili": false
-  },
-  {
-   "ad": "Scholar's Pack",
-   "adet": 1,
-   "tip": "Adventuring Gear",
-   "kusanili": false
-  },
-  {
-   "ad": "Calligrapher's Supplies",
-   "adet": 1,
-   "tip": "Artisan's Tools",
-   "kusanili": false
-  },
-  {
-   "ad": "Book",
-   "adet": 1,
-   "tip": "Adventuring Gear",
-   "kusanili": false
-  },
-  {
-   "ad": "Parchment",
-   "adet": 8,
    "tip": "Adventuring Gear",
    "kusanili": false
   }
@@ -439,98 +465,80 @@
   "cp": 0,
   "sp": 0,
   "ep": 0,
-  "gp": 13,
+  "gp": 23,
   "pp": 0
  },
  "avatar": "",
  "yerel": true,
- "guncellendi": "2026-09-25T01:36:10.449Z",
+ "guncellendi": "2026-09-27T18:24:06.437Z",
  "yapi": {
   "v": 1,
   "id": 1790210003,
-  "ad": "Büyücü (geçici ad)",
-  "oyuncu": "",
+  "ad": "Nihil Vaelorn",
+  "oyuncu": "Nihilstein",
   "avatar": "",
-  "sinif": "Wizard",
+  "alignment": "Chaotic Neutral",
+  "kisilik": "Nihil Vaelorn sessiz, dikkatli ve çevresini sürekli gözleyen bir Wood Elf Ranger’dır. Uzun koyu saçları, keskin yüz hatları, yeşil gözleri ve yıllardır yolculuk yaptığı belli olan koyu yeşil deri zırhıyla dikkat çeker. İnsanlarla gereğinden fazla konuşmaz; kısa, sakin ve çoğu zaman alaycı cevaplar verir.\nGeçimini avcılık, iz sürme ve gerektiğinde yasa dışı işler yaparak sağlar. Otoriteye ve katı kurallara güvenmez; kişisel özgürlüğünü her şeyin üstünde tutar. Para onun için önemlidir ama birine söz verdiyse kolay kolay dönmez. Çatışmada sabırlıdır, uzaktan gözlem yapar ve doğru anı bekleyerek yayını kullanır. Gereksiz kahramanlık peşinde değildir; hayatta kalmayı, özgür kalmayı ve kendi kararlarını vermeyi önemser.",
+  "sinif": "Ranger",
   "seviye": 1,
-  "background": "Sage|XPHB",
-  "tur": "Human|XPHB",
+  "background": "Criminal|XPHB",
+  "tur": "Elf|XPHB",
   "yontem": "standart",
   "temel": {
-   "int": 15,
-   "con": 14,
-   "dex": 13,
-   "wis": 12,
-   "cha": 10,
-   "str": 8
+   "str": 8,
+   "dex": 15,
+   "con": 13,
+   "int": 12,
+   "wis": 14,
+   "cha": 10
   },
   "dunyalar": false,
   "secim": {
    "bg:ab": [
     "21",
-    "int",
+    "dex",
     "con"
    ],
-   "bg:feat:spab": [
-    "int"
-   ],
-   "bg:feat:sp:0": [
-    "Minor Illusion",
-    "Prestidigitation"
-   ],
-   "bg:feat:sp:1": [
-    "Mage Armor"
-   ],
-   "bg:ekip": [
-    "A"
-   ],
-   "tur:boy": [
-    "M"
+   "tur:surum": [
+    "Wood Elf Lineage"
    ],
    "tur:skill": [
     "perception"
    ],
-   "tur:feat": [
-    "Tough|XPHB"
+   "tur:spab": [
+    "wis"
    ],
    "dil": [
-    "Draconic",
-    "Elvish"
+    "Elvish",
+    "Goblin"
    ],
    "sinif:skill": [
-    "investigation",
-    "insight"
+    "survival",
+    "insight",
+    "animal handling"
    ],
-   "buyu:cantrip": [
-    "Fire Bolt",
-    "Light",
-    "Mage Hand"
-   ],
-   "buyu:kitap": [
-    "Magic Missile",
-    "Shield",
-    "Burning Hands",
-    "Thunderwave",
-    "Sleep",
-    "Detect Magic"
+   "sinif:mastery": [
+    "Longbow",
+    "Shortsword"
    ],
    "buyu:hazir": [
-    "Magic Missile",
-    "Shield",
-    "Burning Hands",
-    "Thunderwave"
+    "Cure Wounds",
+    "Hail of Thorns"
+   ],
+   "bg:ekip": [
+    "A"
    ],
    "sinif:ekip": [
     "A"
    ]
   },
   "atama": {
-   "int": 0,
-   "con": 1,
-   "dex": 2,
-   "wis": 3,
-   "cha": 4,
-   "str": 5
+   "str": 5,
+   "dex": 0,
+   "con": 2,
+   "int": 3,
+   "wis": 1,
+   "cha": 4
   }
  }
 }

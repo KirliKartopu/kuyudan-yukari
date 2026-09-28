@@ -1,11 +1,11 @@
 {
  "id": 1790210002,
- "ad": "Tilki (geçici ad)",
- "oyuncu": "",
- "tur": "Human",
- "background": "Criminal",
+ "ad": "Silen Voss",
+ "oyuncu": "Silence",
+ "tur": "Halfling",
+ "background": "Wayfarer",
  "alignment": "Neutral",
- "kisilik": "",
+ "kisilik": "Silen Voss ufak tefek, ince yapılı ve çevik bir Halfling’dir. 125 cm boyundadır ve fiziksel olarak narin görünse de hareketleri hızlı, kontrollü ve sessizdir. Siyah, hafif dağınık saçları kulaklarının üzerine düşer; koyu gözleri sürekli çevreyi tarar. Yüzünde sakin ve mesafeli bir ifade vardır, sol kaşının altında ince ve eski bir yara izi taşır. Açık teni hafif solgun görünür. Gösterişli hiçbir şey taşımaz; koyu gri ve siyaha yakın deri kıyafetler, sessiz tabanlı botlar, kısa bir pelerin ve kolay ulaşabileceği şekilde yerleştirilmiş birkaç hançer kullanır. Ancak üzerinde istisna sayılabilecek tek parça, sol bileğinde taşıdığı eski bir bilekliktir. Koyu metal ve deri halkalardan yapılmış bu bilekliğin ortasında küçük bir taş bulunur. Silen önemli bir kararın eşiğine geldiğinde, bu taşın re",
  "siniflar": [
   {
    "ad": "Rogue",
@@ -29,16 +29,16 @@
    "mod": 2
   },
   "int": {
-   "puan": 10,
-   "mod": 0
-  },
-  "wis": {
    "puan": 12,
    "mod": 1
   },
-  "cha": {
+  "wis": {
    "puan": 14,
    "mod": 2
+  },
+  "cha": {
+   "puan": 10,
+   "mod": 0
   }
  },
  "saves": {
@@ -56,15 +56,15 @@
   },
   "int": {
    "prof": true,
-   "bonus": 2
+   "bonus": 3
   },
   "wis": {
    "prof": false,
-   "bonus": 1
+   "bonus": 2
   },
   "cha": {
    "prof": false,
-   "bonus": 2
+   "bonus": 0
   }
  },
  "skills": [
@@ -78,13 +78,13 @@
    "ad": "Animal Handling",
    "yetenek": "wis",
    "prof": 0,
-   "bonus": 1
+   "bonus": 2
   },
   {
    "ad": "Arcana",
    "yetenek": "int",
    "prof": 0,
-   "bonus": 0
+   "bonus": 1
   },
   {
    "ad": "Athletics",
@@ -95,74 +95,74 @@
   {
    "ad": "Deception",
    "yetenek": "cha",
-   "prof": 1,
-   "bonus": 4
+   "prof": 0,
+   "bonus": 0
   },
   {
    "ad": "History",
    "yetenek": "int",
    "prof": 0,
-   "bonus": 0
+   "bonus": 1
   },
   {
    "ad": "Insight",
    "yetenek": "wis",
    "prof": 1,
-   "bonus": 3
+   "bonus": 4
   },
   {
    "ad": "Intimidation",
    "yetenek": "cha",
    "prof": 0,
-   "bonus": 2
+   "bonus": 0
   },
   {
    "ad": "Investigation",
    "yetenek": "int",
-   "prof": 0,
-   "bonus": 0
+   "prof": 1,
+   "bonus": 3
   },
   {
    "ad": "Medicine",
    "yetenek": "wis",
    "prof": 0,
-   "bonus": 1
+   "bonus": 2
   },
   {
    "ad": "Nature",
    "yetenek": "int",
    "prof": 0,
-   "bonus": 0
+   "bonus": 1
   },
   {
    "ad": "Perception",
    "yetenek": "wis",
-   "prof": 1,
-   "bonus": 3
+   "prof": 2,
+   "bonus": 6
   },
   {
    "ad": "Performance",
    "yetenek": "cha",
    "prof": 0,
-   "bonus": 2
+   "bonus": 0
   },
   {
    "ad": "Persuasion",
    "yetenek": "cha",
-   "prof": 1,
-   "bonus": 4
+   "prof": 0,
+   "bonus": 0
   },
   {
    "ad": "Religion",
    "yetenek": "int",
    "prof": 0,
-   "bonus": 0
+   "bonus": 1
   },
   {
    "ad": "Sleight of Hand",
    "yetenek": "dex",
-   "prof": 2,
-   "bonus": 7
+   "prof": 1,
+   "bonus": 5
   },
   {
    "ad": "Stealth",
@@ -174,18 +174,19 @@
    "ad": "Survival",
    "yetenek": "wis",
    "prof": 0,
-   "bonus": 1
+   "bonus": 2
   }
  ],
- "pasif_perception": 13,
+ "pasif_perception": 16,
  "hp_max": 10,
  "ac": 14,
- "initiative": 5,
+ "initiative": 3,
  "hiz": 30,
  "duyular": {},
  "diller": [
   "Common",
-  "Elvish",
+  "Common Sign Language",
+  "Goblin",
   "Halfling",
   "Thieves' Cant"
  ],
@@ -225,7 +226,7 @@
    "hasar": "1d6+3",
    "tur": "Piercing",
    "menzil": "5 ft",
-   "mastery": "Vex",
+   "mastery": null,
    "ozellikler": [
     "Finesse",
     "Light"
@@ -239,7 +240,7 @@
    "hasar": "1d6+3",
    "tur": "Piercing",
    "menzil": "80/320 ft",
-   "mastery": null,
+   "mastery": "Vex",
    "ozellikler": [
     "Ammunition",
     "Two-Handed"
@@ -255,6 +256,18 @@
    "menzil": "5 ft",
    "mastery": null,
    "ozellikler": []
+  }
+ ],
+ "masteryler": [
+  {
+   "silah": "Dagger",
+   "ozellik": "Nick",
+   "var": true
+  },
+  {
+   "silah": "Shortbow",
+   "ozellik": "Vex",
+   "var": true
   }
  ],
  "buyu": null,
@@ -280,18 +293,23 @@
    "seviye": 1
   },
   {
-   "ad": "Resourceful",
-   "kaynak": "Human",
+   "ad": "Brave",
+   "kaynak": "Halfling",
    "seviye": 1
   },
   {
-   "ad": "Skillful",
-   "kaynak": "Human",
+   "ad": "Halfling Nimbleness",
+   "kaynak": "Halfling",
    "seviye": 1
   },
   {
-   "ad": "Versatile",
-   "kaynak": "Human",
+   "ad": "Luck",
+   "kaynak": "Halfling",
+   "seviye": 1
+  },
+  {
+   "ad": "Naturally Stealthy",
+   "kaynak": "Halfling",
    "seviye": 1
   }
  ],
@@ -305,7 +323,6 @@
   }
  ],
  "featler": [
-  "Alert",
   "Lucky"
  ],
  "envanter": [
@@ -358,7 +375,13 @@
    "kusanili": false
   },
   {
-   "ad": "Crowbar",
+   "ad": "Playing Cards",
+   "adet": 1,
+   "tip": "",
+   "kusanili": false
+  },
+  {
+   "ad": "Bedroll",
    "adet": 1,
    "tip": "Adventuring Gear",
    "kusanili": false
@@ -385,76 +408,73 @@
  },
  "avatar": "",
  "yerel": true,
- "guncellendi": "2026-09-25T01:36:10.449Z",
+ "guncellendi": "2026-09-27T18:24:06.430Z",
  "yapi": {
   "v": 1,
   "id": 1790210002,
-  "ad": "Tilki (geçici ad)",
-  "oyuncu": "",
+  "ad": "Silen Voss",
+  "oyuncu": "Silence",
   "avatar": "",
+  "alignment": "Neutral",
+  "kisilik": "Silen Voss ufak tefek, ince yapılı ve çevik bir Halfling’dir. 125 cm boyundadır ve fiziksel olarak narin görünse de hareketleri hızlı, kontrollü ve sessizdir. Siyah, hafif dağınık saçları kulaklarının üzerine düşer; koyu gözleri sürekli çevreyi tarar. Yüzünde sakin ve mesafeli bir ifade vardır, sol kaşının altında ince ve eski bir yara izi taşır. Açık teni hafif solgun görünür. Gösterişli hiçbir şey taşımaz; koyu gri ve siyaha yakın deri kıyafetler, sessiz tabanlı botlar, kısa bir pelerin ve kolay ulaşabileceği şekilde yerleştirilmiş birkaç hançer kullanır. Ancak üzerinde istisna sayılabilecek tek parça, sol bileğinde taşıdığı eski bir bilekliktir. Koyu metal ve deri halkalardan yapılmış bu bilekliğin ortasında küçük bir taş bulunur. Silen önemli bir kararın eşiğine geldiğinde, bu taşın re",
   "sinif": "Rogue",
   "seviye": 1,
-  "background": "Criminal|XPHB",
-  "tur": "Human|XPHB",
+  "background": "Wayfarer|XPHB",
+  "tur": "Halfling|XPHB",
   "yontem": "standart",
   "temel": {
+   "str": 8,
    "dex": 15,
-   "cha": 14,
-   "con": 13,
-   "wis": 12,
-   "int": 10,
-   "str": 8
+   "con": 14,
+   "int": 12,
+   "wis": 13,
+   "cha": 10
   },
   "dunyalar": false,
   "secim": {
    "bg:ab": [
     "21",
     "dex",
-    "con"
+    "wis"
+   ],
+   "dil": [
+    "Halfling",
+    "Goblin"
+   ],
+   "sinif:skill": [
+    "perception",
+    "acrobatics",
+    "investigation",
+    "sleight of hand"
+   ],
+   "sinif:exp:1": [
+    "stealth",
+    "perception"
+   ],
+   "sinif:mastery": [
+    "Dagger",
+    "Shortbow"
+   ],
+   "etki:Rogue_Thieves_Cant:dil": [
+    "Common Sign Language"
    ],
    "bg:ekip": [
     "A"
    ],
-   "tur:boy": [
-    "M"
-   ],
-   "tur:skill": [
-    "insight"
-   ],
-   "tur:feat": [
-    "Lucky|XPHB"
-   ],
-   "dil": [
-    "Elvish",
-    "Halfling"
-   ],
-   "sinif:skill": [
-    "acrobatics",
-    "deception",
-    "perception",
-    "persuasion"
-   ],
-   "sinif:exp:1": [
-    "stealth",
-    "sleight of hand"
-   ],
-   "sinif:mastery": [
-    "Dagger",
-    "Shortsword"
-   ],
    "sinif:ekip": [
     "A"
+   ],
+   "bg:ekip:2": [
+    "Playing Cards"
    ]
   },
   "atama": {
    "dex": 0,
-   "cha": 1,
-   "con": 2,
-   "wis": 3,
-   "int": 4,
-   "str": 5
-  },
-  "alignment": "Neutral",
-  "kisilik": ""
+   "con": 1,
+   "str": 5,
+   "int": 3,
+   "wis": 2,
+   "cha": 4
+  }
  }
 }

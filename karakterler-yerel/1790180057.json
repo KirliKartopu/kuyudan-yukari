@@ -4,7 +4,7 @@
  "oyuncu": "Ender",
  "tur": "Dhampir",
  "background": "Shadowmasters Exile",
- "alignment": "",
+ "alignment": "Neutral",
  "kisilik": "",
  "siniflar": [
   {
@@ -17,24 +17,24 @@
  "prof_bonus": 2,
  "yetenekler": {
   "str": {
-   "puan": 10,
-   "mod": 0
+   "puan": 7,
+   "mod": -2
   },
   "dex": {
-   "puan": 17,
+   "puan": 16,
    "mod": 3
   },
   "con": {
-   "puan": 8,
-   "mod": -1
+   "puan": 13,
+   "mod": 1
   },
   "int": {
    "puan": 14,
    "mod": 2
   },
   "wis": {
-   "puan": 12,
-   "mod": 1
+   "puan": 14,
+   "mod": 2
   },
   "cha": {
    "puan": 14,
@@ -44,7 +44,7 @@
  "saves": {
   "str": {
    "prof": false,
-   "bonus": 0
+   "bonus": -2
   },
   "dex": {
    "prof": true,
@@ -52,7 +52,7 @@
   },
   "con": {
    "prof": false,
-   "bonus": -1
+   "bonus": 1
   },
   "int": {
    "prof": true,
@@ -60,7 +60,7 @@
   },
   "wis": {
    "prof": false,
-   "bonus": 1
+   "bonus": 2
   },
   "cha": {
    "prof": false,
@@ -78,7 +78,7 @@
    "ad": "Animal Handling",
    "yetenek": "wis",
    "prof": 0,
-   "bonus": 1
+   "bonus": 2
   },
   {
    "ad": "Arcana",
@@ -90,7 +90,7 @@
    "ad": "Athletics",
    "yetenek": "str",
    "prof": 1,
-   "bonus": 2
+   "bonus": 0
   },
   {
    "ad": "Deception",
@@ -108,7 +108,7 @@
    "ad": "Insight",
    "yetenek": "wis",
    "prof": 0,
-   "bonus": 1
+   "bonus": 2
   },
   {
    "ad": "Intimidation",
@@ -126,7 +126,7 @@
    "ad": "Medicine",
    "yetenek": "wis",
    "prof": 0,
-   "bonus": 1
+   "bonus": 2
   },
   {
    "ad": "Nature",
@@ -138,7 +138,7 @@
    "ad": "Perception",
    "yetenek": "wis",
    "prof": 1,
-   "bonus": 3
+   "bonus": 4
   },
   {
    "ad": "Performance",
@@ -174,11 +174,11 @@
    "ad": "Survival",
    "yetenek": "wis",
    "prof": 0,
-   "bonus": 1
+   "bonus": 2
   }
  ],
- "pasif_perception": 13,
- "hp_max": 7,
+ "pasif_perception": 14,
+ "hp_max": 9,
  "ac": 14,
  "initiative": 3,
  "hiz": 35,
@@ -188,6 +188,7 @@
  },
  "diller": [
   "Common",
+  "Common Sign Language",
   "Elvish",
   "Gnomish",
   "Thieves' Cant"
@@ -246,7 +247,7 @@
    "hasar": "1d6+3",
    "tur": "Piercing",
    "menzil": "80/320 ft",
-   "mastery": null,
+   "mastery": "Vex",
    "ozellikler": [
     "Ammunition",
     "Two-Handed"
@@ -256,8 +257,8 @@
    "ad": "Vampiric Bite",
    "tip": "",
    "kusanili": true,
-   "isabet": 2,
-   "hasar": "1d4-1",
+   "isabet": 0,
+   "hasar": "1d4+1",
    "tur": "Piercing",
    "menzil": "5 ft",
    "mastery": null,
@@ -267,12 +268,24 @@
    "ad": "Unarmed Strike",
    "tip": "",
    "kusanili": true,
-   "isabet": 2,
-   "hasar": "1",
+   "isabet": 0,
+   "hasar": "0",
    "tur": "Bludgeoning",
    "menzil": "5 ft",
    "mastery": null,
    "ozellikler": []
+  }
+ ],
+ "masteryler": [
+  {
+   "silah": "Dagger",
+   "ozellik": "Nick",
+   "var": true
+  },
+  {
+   "silah": "Shortbow",
+   "ozellik": "Vex",
+   "var": true
   }
  ],
  "buyu": {
@@ -473,7 +486,7 @@
  },
  "avatar": "https://prnt.sc/5QXEric_aH6z",
  "yerel": true,
- "guncellendi": "2026-09-25T08:20:55.508Z",
+ "guncellendi": "2026-09-27T19:12:55.726Z",
  "yapi": {
   "v": 1,
   "id": 1790180057,
@@ -484,13 +497,13 @@
   "seviye": 1,
   "background": "Shadowmasters Exile|FRHoF",
   "tur": "Dhampir|RHW",
-  "yontem": "standart",
+  "yontem": "zar",
   "temel": {
-   "str": 10,
-   "dex": 15,
-   "con": 8,
+   "str": 7,
+   "dex": 14,
+   "con": 13,
    "int": 13,
-   "wis": 12,
+   "wis": 14,
    "cha": 14
   },
   "dunyalar": false,
@@ -519,7 +532,7 @@
    ],
    "sinif:mastery": [
     "Dagger",
-    "Light Crossbow"
+    "Shortbow"
    ],
    "bg:ekip": [
     "A"
@@ -532,15 +545,37 @@
    ],
    "bg:feat:spab": [
     "int"
+   ],
+   "etki:Rogue_Thieves_Cant:dil": [
+    "Common Sign Language"
    ]
   },
   "atama": {
-   "dex": 0,
-   "cha": 1,
-   "int": 2,
-   "wis": 3,
-   "con": 5,
-   "str": 4
-  }
+   "str": 5,
+   "cha": 0,
+   "wis": 1,
+   "int": 4,
+   "con": 3,
+   "dex": 2
+  },
+  "zarlar": [
+   14,
+   14,
+   14,
+   13,
+   13,
+   7
+  ],
+  "zarGecmis": [
+   [
+    14,
+    14,
+    14,
+    13,
+    13,
+    7
+   ]
+  ],
+  "alignment": "Neutral"
  }
 }
