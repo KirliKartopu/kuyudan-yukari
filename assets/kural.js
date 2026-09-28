@@ -899,7 +899,7 @@ export function hesapla(Y, S, ek) {
     let isabet = m[ab] + (yet ? P : 0), hb = m[ab];
     if (menzilli && fs.has("Archery")) isabet += 2;
     if (!menzilli && !props.includes("2H") && fs.has("Dueling")) hb += 2;
-    if (props.includes("T") && fs.has("Thrown Weapon Fighting") && !menzilli) hb += 2;
+    // Thrown Weapon Fighting (+2 hasar) yalnız fırlatınca: masada saldırı niyetinde (karakter-eylem.js, bicim "firlat")
     const ms = x.mastery && x.mastery[0] ? ref(typeof x.mastery[0] === "string" ? x.mastery[0] : x.mastery[0].uid).ad : null;
     return { ad: adOver || x.name, tip: x.name, kusanili: true, isabet, hasar: zar + sgn(hb), tur: HASAR[x.dmgType] || "",
       menzil: x.range ? x.range + " ft" : props.includes("R") ? "10 ft" : "5 ft", mastery: ms && (mastery.has(x.name) || adOver) ? ms : null,
