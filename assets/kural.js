@@ -910,7 +910,8 @@ export function hesapla(Y, S, ek) {
   // seçilen ustalıklar (silah envanterde olmasa da kağıtta görünsün)
   const masteryler = [...mastery].map((ad) => { const x = esyaBul(ad), ms = x && x.mastery && x.mastery[0] ? ref(typeof x.mastery[0] === "string" ? x.mastery[0] : x.mastery[0].uid).ad : null; return { silah: ad, ozellik: ms, var: saldirilar.some((s) => s.tip === ad) }; });
   esyaStat.forEach((e) => { const x = V.esya[n(e.name)]; if (x && x.dmg1) saldirilar.push(silahSatir(x, x.name)); });
-  for (const x of tumEtki(B, "saldiri")) for (const s of x.e.saldiri) saldirilar.push({ ad: s.ad, tip: "", kusanili: true, isabet: m[s.ab] + P, hasar: s.zar + sgn(m[s.ab]), tur: s.tur, menzil: s.menzil, mastery: null, ozellikler: s.props });
+  for (const x of tumEtki(B, "saldiri")) for (const s0 of x.e.saldiri) { const s = { ...s0, ab: s0.ab === "finesse" ? (m.dex >= m.str ? "dex" : "str") : s0.ab };   // finesse: Str ya da Dex'in iyisi
+    saldirilar.push({ ad: s.ad, tip: "", kusanili: true, isabet: m[s.ab] + P, hasar: s.zar + (s.ekBonus === false ? "" : sgn(m[s.ab])), tur: s.tur, menzil: s.menzil, mastery: s.mastery || null, ozellikler: s.props }); }
   // Unarmed Strike: seçeneklerden ortalaması en yüksek olanı
   const ua = [{ zar: null, ab: "str" }];
   if (monk) ua.push({ zar: monk, ab: m.dex > m.str ? "dex" : "str" });

@@ -70,6 +70,7 @@ export const ETKI = {
   "Ranger|Gloom Stalker|Umbral Sight": { duyuEk: { Darkvision: 60 } },
   "Ranger|Gloom Stalker|Iron Mind": { saveProf: ["wis"], saveYedek: ["int", "cha"] },
   "Ranger|Winter Walker|Frigid Explorer": { direnc: ["Cold"] },
+  "Ranger|Hunter|Hunter's Prey": { secenek: { baslik: "Hunter's Prey (Short / Long Rest'te değiştirilebilir)", liste: [["Colossus Slayer", "isabette hedef yaralıysa +1d8, turda bir"], ["Horde Breaker", "turda bir, ilk hedefin 5 ft yanındaki başka yaratığa aynı silahla bir saldırı daha"]] } },
   // Rogue
   "Rogue||Thieves' Cant": { dilSec: 1 },   // 2024: "Thieves' Cant and one other language of your choice"
   "Rogue||Slippery Mind": { saveProf: ["wis", "cha"] },
@@ -80,6 +81,8 @@ export const ETKI = {
   "sec:Bhaal": { direnc: ["Poison"] },
   "sec:Myrkul": { direnc: ["Necrotic"] },
   "Rogue|Phantom|Ghost Walk": { not: "Ghost Walk: Fly 10 (hover)" },
+  "Rogue|Soulknife|Psychic Blades": { saldiri: [   // 1d6'lık bıçak özelliğin eşya kartından (Psychic Blade|XPHB) gelir
+    { ad: "Psychic Blade (ikinci, Bonus Action)", zar: "1d4", tur: "Psychic", menzil: "60/120 ft", ab: "finesse", props: ["Finesse", "Thrown"], mastery: "Vex" } ] },
   // Sorcerer
   "Sorcerer|Draconic|Draconic Resilience": { hp: { seviye: 1 }, ac: { taban: ["dex", "cha"], kosul: "zirhsiz" } },
   "Sorcerer|Draconic|Elemental Affinity": { direncSec: ["Acid", "Cold", "Fire", "Lightning", "Poison"] },
