@@ -109,7 +109,9 @@
                         : "<b>d" + f + " " + kalan + "/" + K.hd[f] + "</b>";
           }).join("") + (kisa ? ' <small class="dinlenme">☕ Short Rest</small>' : "") + "</div>";
       }
-      if (S.hp <= 0) bolum += '<div style="margin-top:8px"><b>Death Saves</b> · başarı ' + S.ds.s + "/3 · başarısızlık " + S.ds.f + '/3 <button class="btn" data-act="ds">Death Save at</button></div>';
+      // 0 HP (UX 3): ölü / stabil karakterde Death Save düğmesi yok
+      if (S.hp <= 0) bolum += '<div style="margin-top:8px"><b>Death Saves</b> · başarı ' + S.ds.s + "/3 · başarısızlık " + S.ds.f + "/3 " +
+        (S.ds.f >= 3 ? '<b class="olu-not">☠ Öldü</b>' : S.ds.s >= 3 ? "<b>💤 Stabil</b>" : '<button class="btn" data-act="ds">Death Save at</button>') + "</div>";
       h += '<section class="box savas"><h2>Savaş</h2><div class="vitals">' +
         '<div class="vital"><b>' + c.ac + "</b><small>AC</small></div>" +
         '<button class="vital" data-roll="init"><b>' + sgn(c.initiative) + "</b><small>Initiative</small></button>" +
@@ -251,7 +253,7 @@
     function saldiriSatiri() {
       var v = varsayilanSilah(), hd = o.hedef && o.hedef.al && o.hedef.al(), sw = sayac(C, "Second Wind");
       var h = '<div class="saldir-satir">';
-      if (v) h += '<span class="saldir-grup"><button class="btn saldir' + modSinifi("saldir") + '" data-act="saldir" title="Tık: saldır · sağ tık: avantaj / dezavantaj (bir atış) · ▾: silah seç">⚔ ' + esc(v.at.ad) + (v.bicim ? " (" + BICIM[v.bicim] + ")" : "") +
+      if (v) h += '<span class="saldir-grup"><button class="btn saldir' + modSinifi("saldir") + '" data-act="saldir"' + (S.hp <= 0 ? " disabled" : "") + ' title="Tık: saldır · sağ tık: avantaj / dezavantaj (bir atış) · ▾: silah seç">⚔ ' + esc(v.at.ad) + (v.bicim ? " (" + BICIM[v.bicim] + ")" : "") +
         " <small>" + sgn(v.at.isabet) + "</small></button>" + '<button class="btn saldir-sec" data-act="saldir-menu" title="Silah seç" aria-label="Silah seç">▾</button></span>';
       if (sw) { var swk = sw.max - (kul()[sw.id] || 0), swNeden = swk <= 0 ? " · kullanım kalmadı" : S.hp <= 0 ? " · 0 HP'de kullanılamaz" : S.hp >= C.hp_max ? " · HP dolu (boşa harcanmasın diye kapalı)" : "";
         h += '<button class="btn" data-act="sw" title="Second Wind: Bonus Action, ' + esc(sw.zar) + ' HP. Short Rest\'te 1, Long Rest\'te hepsi geri gelir' + swNeden + '"' + (swNeden ? " disabled" : "") + ">Second Wind " + swk + "/" + sw.max + "</button>"; }
