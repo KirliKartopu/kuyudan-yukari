@@ -133,7 +133,7 @@
       });
       h += "</ul></section>";
       var hd = o.hedef && o.hedef.al && o.hedef.al();
-      if (!SUNUCU) h += '<section class="box span2" data-sekme="atk" data-etiket="Saldırı"><h2>Saldırılar' + (hd ? ' <small style="color:var(--muted);font-family:var(--body);font-size:14px">→ ' + esc(hd.ad) + (hd.ac != null ? " (AC " + hd.ac + ")" : "") + "</small>" : "") + "</h2>";
+      if (!SUNUCU) h += '<section class="box span2" data-sekme="atk" data-etiket="Saldırı"><h2>Saldırılar' + (hd ? ' <small style="color:var(--muted);font-family:var(--body);font-size:14px">→ ' + esc(hd.ad) + (hd.ac != null && !o.oyuncu ? " (AC " + hd.ac + ")" : "") + "</small>" : "") + "</h2>";
       if (!SUNUCU && !c.saldirilar.length) h += '<p class="feat">Silah yok.</p>';
       if (!SUNUCU) c.saldirilar.forEach(function (a, i) {
         h += '<div class="atk"><span class="n" data-ack="esya|' + esc(a.ad) + "|" + esc(a.tip || "") + '">' + esc(a.ad) + (a.kusanili ? "" : ' <small style="font-weight:400;color:var(--muted)">(çantada)</small>') + "</span>" +
