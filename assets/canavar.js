@@ -35,16 +35,17 @@ const norm = (s) => String(s || "").toLocaleLowerCase("tr").normalize("NFKD").re
 export async function ara(q, limit = 40, tumDunyalar = false) {
   const p = await paketOku(); if (!p) return [];
   const n = norm(q).trim(); if (!n) return [];
-  const bas = [], ic = [];
+  // sıra: tam eşleşme, baştan, sözcük başından, içinde; her birinde 2024 kaynakları önce, sonra kısa ad
+  // (UX 2: "goblin"de Goblin Boss başta, Goblin 8. sıradaydı; eski sıralama 2024'ü öne alırken eşleşme derecesini bozuyordu)
+  const l = [];
   for (const m of p.canavarlar) {
     if (m.dunya && !tumDunyalar) continue; // başka dünyalar sadece istenirse
     const a = norm(m.name);
-    if (a.startsWith(n)) bas.push(m); else if (a.includes(n)) ic.push(m);
-    if (bas.length >= limit) break;
+    const d = a === n ? 0 : a.startsWith(n) ? 1 : a.includes(" " + n) || a.includes("(" + n) ? 2 : a.includes(n) ? 3 : -1;
+    if (d >= 0) l.push([d, m]);
   }
-  // 2024 kaynakları öne
   const yeni = (m) => (/^X|FRAiF|FRHoF|DrDe/.test(m.source) ? 0 : 1);
-  return bas.concat(ic).sort((x, y) => yeni(x) - yeni(y)).slice(0, limit);
+  return l.sort((x, y) => x[0] - y[0] || yeni(x[1]) - yeni(y[1]) || x[1].name.length - y[1].name.length).slice(0, limit).map((x) => x[1]);
 }
 export async function bul(ad, kaynak) {
   const p = await paketOku(); if (!p) return null;
