@@ -907,6 +907,8 @@ export function hesapla(Y, S, ek) {
   };
   envanter.forEach((e) => { const x = esyaBul(e.ad); if (x && x.weapon && x.dmg1) saldirilar.push(Object.assign(silahSatir(x), { kusanili: e.kusanili })); });
   saldirilar.sort((a, b) => b.kusanili - a.kusanili);
+  // seçilen ustalıklar (silah envanterde olmasa da kağıtta görünsün)
+  const masteryler = [...mastery].map((ad) => { const x = esyaBul(ad), ms = x && x.mastery && x.mastery[0] ? ref(typeof x.mastery[0] === "string" ? x.mastery[0] : x.mastery[0].uid).ad : null; return { silah: ad, ozellik: ms, var: saldirilar.some((s) => s.tip === ad) }; });
   esyaStat.forEach((e) => { const x = V.esya[n(e.name)]; if (x && x.dmg1) saldirilar.push(silahSatir(x, x.name)); });
   for (const x of tumEtki(B, "saldiri")) for (const s of x.e.saldiri) saldirilar.push({ ad: s.ad, tip: "", kusanili: true, isabet: m[s.ab] + P, hasar: s.zar + sgn(m[s.ab]), tur: s.tur, menzil: s.menzil, mastery: null, ozellikler: s.props });
   // Unarmed Strike: seçeneklerden ortalaması en yüksek olanı
@@ -966,7 +968,7 @@ export function hesapla(Y, S, ek) {
     saves, skills, pasif_perception: 10 + perc.bonus, hp_max: hp, ac, initiative: init, hiz, duyular,
     diller: [...diller].sort(), araclar: [...araclar_].sort(), zirh: [...zirh], silah: c.startingProficiencies.weapons.concat(ekSilahProf(B)).map(etiketsiz),
     direncler: [...direnc].sort(), notlar,
-    saldirilar, buyu, ozellikler: ozel, kaynaklar: kaynakHesapla(B, S, Y, m, P, ozel), featler: B.featler.map((x) => x.f.name),
+    saldirilar, masteryler, buyu, ozellikler: ozel, kaynaklar: kaynakHesapla(B, S, Y, m, P, ozel), featler: B.featler.map((x) => x.f.name),
     envanter, para, avatar: Y.avatar || null, yerel: true,
     guncellendi: new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC", yapi: Y,
   };
