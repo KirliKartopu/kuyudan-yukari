@@ -127,7 +127,7 @@
           '<button class="sv' + (s.prof ? " prof" : "") + '" data-roll="sv-' + a + '" title="' + AB[a] + ' saving throw">Save ' + sgn(s.bonus) + "</button></div>";
       });
       h += "</div></section>";
-      h += '<section class="box" data-sekme="skill" data-etiket="Skills"><h2>Skills</h2><ul class="rows">';
+      h += '<section class="box" data-sekme="skill" data-etiket="Skills"><h2>Skills</h2><p class="gosterge"><span class="dot p2"></span> Expertise · <span class="dot p1"></span> Proficient · <span class="dot p0"></span> yok · satıra bas: zar at</p><ul class="rows">';
       c.skills.forEach(function (s, i) {
         h += '<li><button data-roll="sk-' + i + '" data-ack="skill|' + esc(s.ad) + '"><span class="dot p' + s.prof + '" title="' + (s.prof === 2 ? "Expertise" : s.prof ? "Proficient" : "") + '"></span><span>' + esc(s.ad) + '<span class="ab-tag">' + s.yetenek.toUpperCase() + '</span></span><span class="num">' + sgn(s.bonus) + "</span></button></li>";
       });
