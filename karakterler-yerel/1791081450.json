@@ -1,0 +1,503 @@
+{
+ "id": 1791081450,
+ "ad": "Zayne Ruhan",
+ "oyuncu": "Ender",
+ "tur": "Human",
+ "background": "Genie Touched",
+ "alignment": "Chaotic Neutral",
+ "kisilik": "",
+ "siniflar": [
+  {
+   "ad": "Monk",
+   "seviye": 1,
+   "subclass": null
+  }
+ ],
+ "seviye": 1,
+ "prof_bonus": 2,
+ "yetenekler": {
+  "str": {
+   "puan": 13,
+   "mod": 1
+  },
+  "dex": {
+   "puan": 19,
+   "mod": 4
+  },
+  "con": {
+   "puan": 15,
+   "mod": 2
+  },
+  "int": {
+   "puan": 10,
+   "mod": 0
+  },
+  "wis": {
+   "puan": 17,
+   "mod": 3
+  },
+  "cha": {
+   "puan": 13,
+   "mod": 1
+  }
+ },
+ "saves": {
+  "str": {
+   "prof": true,
+   "bonus": 3
+  },
+  "dex": {
+   "prof": true,
+   "bonus": 6
+  },
+  "con": {
+   "prof": false,
+   "bonus": 2
+  },
+  "int": {
+   "prof": false,
+   "bonus": 0
+  },
+  "wis": {
+   "prof": false,
+   "bonus": 3
+  },
+  "cha": {
+   "prof": false,
+   "bonus": 1
+  }
+ },
+ "skills": [
+  {
+   "ad": "Acrobatics",
+   "yetenek": "dex",
+   "prof": 1,
+   "bonus": 6
+  },
+  {
+   "ad": "Animal Handling",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 3
+  },
+  {
+   "ad": "Arcana",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Athletics",
+   "yetenek": "str",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Deception",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "History",
+   "yetenek": "int",
+   "prof": 1,
+   "bonus": 2
+  },
+  {
+   "ad": "Insight",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 3
+  },
+  {
+   "ad": "Intimidation",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Investigation",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Medicine",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 3
+  },
+  {
+   "ad": "Nature",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Perception",
+   "yetenek": "wis",
+   "prof": 1,
+   "bonus": 5
+  },
+  {
+   "ad": "Performance",
+   "yetenek": "cha",
+   "prof": 0,
+   "bonus": 1
+  },
+  {
+   "ad": "Persuasion",
+   "yetenek": "cha",
+   "prof": 1,
+   "bonus": 3
+  },
+  {
+   "ad": "Religion",
+   "yetenek": "int",
+   "prof": 0,
+   "bonus": 0
+  },
+  {
+   "ad": "Sleight of Hand",
+   "yetenek": "dex",
+   "prof": 0,
+   "bonus": 4
+  },
+  {
+   "ad": "Stealth",
+   "yetenek": "dex",
+   "prof": 1,
+   "bonus": 6
+  },
+  {
+   "ad": "Survival",
+   "yetenek": "wis",
+   "prof": 0,
+   "bonus": 3
+  }
+ ],
+ "pasif_perception": 15,
+ "hp_max": 10,
+ "ac": 17,
+ "initiative": 4,
+ "hiz": 30,
+ "duyular": {},
+ "diller": [
+  "Common",
+  "Dwarvish",
+  "Elvish"
+ ],
+ "araclar": [
+  "Calligrapher's Supplies",
+  "Glassblower's Tools"
+ ],
+ "zirh": [],
+ "silah": [
+  "simple",
+  "Martial weapons that have the Light property",
+  "improvised"
+ ],
+ "direncler": [],
+ "notlar": [],
+ "saldirilar": [
+  {
+   "ad": "Spear",
+   "tip": "Spear",
+   "kusanili": true,
+   "isabet": 6,
+   "hasar": "1d6+4",
+   "tur": "Piercing",
+   "menzil": "20/60 ft",
+   "mastery": null,
+   "ozellikler": [
+    "Thrown",
+    "Versatile"
+   ]
+  },
+  {
+   "ad": "Dagger",
+   "tip": "Dagger",
+   "kusanili": true,
+   "isabet": 6,
+   "hasar": "1d6+4",
+   "tur": "Piercing",
+   "menzil": "20/60 ft",
+   "mastery": null,
+   "ozellikler": [
+    "Finesse",
+    "Light",
+    "Thrown"
+   ]
+  },
+  {
+   "ad": "Unarmed Strike",
+   "tip": "",
+   "kusanili": true,
+   "isabet": 6,
+   "hasar": "1d6+4",
+   "tur": "Bludgeoning",
+   "menzil": "5 ft",
+   "mastery": null,
+   "ozellikler": []
+  }
+ ],
+ "masteryler": [],
+ "buyu": {
+  "sinif": "Human",
+  "yetenek": "wis",
+  "save_dc": 13,
+  "isabet": 5,
+  "slotlar": [],
+  "buyuler": [
+   {
+    "ad": "Message",
+    "seviye": 0,
+    "konsantrasyon": false,
+    "ritual": false,
+    "not": "Magic Initiate"
+   },
+   {
+    "ad": "Shocking Grasp",
+    "seviye": 0,
+    "konsantrasyon": false,
+    "ritual": false,
+    "not": "Magic Initiate"
+   },
+   {
+    "ad": "False Life",
+    "seviye": 1,
+    "konsantrasyon": false,
+    "ritual": false,
+    "not": "Magic Initiate"
+   }
+  ]
+ },
+ "ozellikler": [
+  {
+   "ad": "Martial Arts",
+   "kaynak": "Monk",
+   "seviye": 1
+  },
+  {
+   "ad": "Unarmored Defense",
+   "kaynak": "Monk",
+   "seviye": 1
+  },
+  {
+   "ad": "Resourceful",
+   "kaynak": "Human",
+   "seviye": 1
+  },
+  {
+   "ad": "Skillful",
+   "kaynak": "Human",
+   "seviye": 1
+  },
+  {
+   "ad": "Versatile",
+   "kaynak": "Human",
+   "seviye": 1
+  }
+ ],
+ "kaynaklar": [
+  {
+   "id": "feat:Magic Initiate|False Life",
+   "ad": "False Life (slotsuz)",
+   "kaynak": "Magic Initiate",
+   "max": 1,
+   "yenile": "uzun"
+  }
+ ],
+ "featler": [
+  "Magic Initiate",
+  "Tavern Brawler"
+ ],
+ "envanter": [
+  {
+   "ad": "Spear",
+   "adet": 1,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Dagger",
+   "adet": 5,
+   "tip": "Melee Weapon",
+   "kusanili": true
+  },
+  {
+   "ad": "Calligrapher's Supplies",
+   "adet": 1,
+   "tip": "",
+   "kusanili": false
+  },
+  {
+   "ad": "Explorer's Pack",
+   "adet": 1,
+   "tip": "Adventuring Gear",
+   "kusanili": false
+  }
+ ],
+ "para": {
+  "cp": 0,
+  "sp": 0,
+  "ep": 0,
+  "gp": 61,
+  "pp": 0
+ },
+ "avatar": "",
+ "yerel": true,
+ "guncellendi": "2026-10-04T04:01:45.476Z",
+ "yapi": {
+  "v": 1,
+  "id": 1791081450,
+  "ad": "Zayne Ruhan",
+  "oyuncu": "ender",
+  "avatar": "",
+  "alignment": "Chaotic Neutral",
+  "kisilik": "",
+  "sinif": "Monk",
+  "seviye": 1,
+  "background": "Genie Touched|FRHoF",
+  "tur": "Human|XPHB",
+  "yontem": "zar",
+  "temel": {
+   "str": 13,
+   "dex": 18,
+   "con": 15,
+   "int": 10,
+   "wis": 15,
+   "cha": 13
+  },
+  "dunyalar": false,
+  "secim": {
+   "bg:feat:spab": [
+    "wis"
+   ],
+   "bg:ab": [
+    "21",
+    "wis",
+    "dex"
+   ],
+   "dil": [
+    "Elvish",
+    "Dwarvish"
+   ],
+   "tur:boy": [
+    "M"
+   ],
+   "tur:skill": [
+    "acrobatics"
+   ],
+   "tur:feat": [
+    "Tavern Brawler|XPHB"
+   ],
+   "sinif:skill": [
+    "stealth",
+    "history"
+   ],
+   "sinif:tool": [
+    "Calligrapher's Supplies"
+   ],
+   "bg:feat:sp:0": [
+    "Message",
+    "Shocking Grasp"
+   ],
+   "bg:feat:sp:1": [
+    "False Life"
+   ],
+   "bg:ekip": [
+    "B"
+   ],
+   "sinif:ekip": [
+    "A"
+   ],
+   "sinif:ekip:2": [
+    "Calligrapher's Supplies"
+   ]
+  },
+  "atama": {
+   "dex": 0,
+   "wis": 1,
+   "int": 5,
+   "cha": 3,
+   "con": 2,
+   "str": 4
+  },
+  "zarlar": [
+   18,
+   15,
+   15,
+   13,
+   13,
+   10
+  ],
+  "zarGecmis": [
+   [
+    16,
+    15,
+    13,
+    12,
+    12,
+    9
+   ],
+   [
+    14,
+    13,
+    13,
+    10,
+    10,
+    9
+   ],
+   [
+    16,
+    15,
+    15,
+    11,
+    7,
+    6
+   ],
+   [
+    18,
+    15,
+    15,
+    14,
+    13,
+    11
+   ],
+   [
+    16,
+    15,
+    14,
+    13,
+    11,
+    10
+   ],
+   [
+    14,
+    14,
+    13,
+    11,
+    10,
+    9
+   ],
+   [
+    15,
+    13,
+    13,
+    12,
+    12,
+    11
+   ],
+   [
+    18,
+    15,
+    15,
+    13,
+    13,
+    10
+   ]
+  ]
+ }
+}
