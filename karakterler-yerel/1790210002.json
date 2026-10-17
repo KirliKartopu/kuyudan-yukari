@@ -9,11 +9,11 @@
  "siniflar": [
   {
    "ad": "Rogue",
-   "seviye": 1,
+   "seviye": 2,
    "subclass": null
   }
  ],
- "seviye": 1,
+ "seviye": 2,
  "prof_bonus": 2,
  "yetenekler": {
   "str": {
@@ -178,7 +178,7 @@
   }
  ],
  "pasif_perception": 16,
- "hp_max": 10,
+ "hp_max": 17,
  "ac": 14,
  "initiative": 3,
  "hiz": 30,
@@ -291,6 +291,11 @@
    "ad": "Weapon Mastery",
    "kaynak": "Rogue",
    "seviye": 1
+  },
+  {
+   "ad": "Cunning Action",
+   "kaynak": "Rogue",
+   "seviye": 2
   },
   {
    "ad": "Brave",
@@ -408,7 +413,7 @@
  },
  "avatar": "",
  "yerel": true,
- "guncellendi": "2026-09-27T18:24:06.430Z",
+ "guncellendi": "2026-10-05T00:20:40.988Z",
  "yapi": {
   "v": 1,
   "id": 1790210002,
@@ -418,7 +423,7 @@
   "alignment": "Neutral",
   "kisilik": "Silen Voss ufak tefek, ince yapılı ve çevik bir Halfling’dir. 125 cm boyundadır ve fiziksel olarak narin görünse de hareketleri hızlı, kontrollü ve sessizdir. Siyah, hafif dağınık saçları kulaklarının üzerine düşer; koyu gözleri sürekli çevreyi tarar. Yüzünde sakin ve mesafeli bir ifade vardır, sol kaşının altında ince ve eski bir yara izi taşır. Açık teni hafif solgun görünür. Gösterişli hiçbir şey taşımaz; koyu gri ve siyaha yakın deri kıyafetler, sessiz tabanlı botlar, kısa bir pelerin ve kolay ulaşabileceği şekilde yerleştirilmiş birkaç hançer kullanır. Ancak üzerinde istisna sayılabilecek tek parça, sol bileğinde taşıdığı eski bir bilekliktir. Koyu metal ve deri halkalardan yapılmış bu bilekliğin ortasında küçük bir taş bulunur. Silen önemli bir kararın eşiğine geldiğinde, bu taşın re",
   "sinif": "Rogue",
-  "seviye": 1,
+  "seviye": 2,
   "background": "Wayfarer|XPHB",
   "tur": "Halfling|XPHB",
   "yontem": "standart",

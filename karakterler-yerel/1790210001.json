@@ -9,11 +9,11 @@
  "siniflar": [
   {
    "ad": "Fighter",
-   "seviye": 1,
+   "seviye": 2,
    "subclass": null
   }
  ],
- "seviye": 1,
+ "seviye": 2,
  "prof_bonus": 2,
  "yetenekler": {
   "str": {
@@ -178,7 +178,7 @@
   }
  ],
  "pasif_perception": 13,
- "hp_max": 13,
+ "hp_max": 22,
  "ac": 16,
  "initiative": 1,
  "hiz": 30,
@@ -304,6 +304,16 @@
    "seviye": 1
   },
   {
+   "ad": "Action Surge",
+   "kaynak": "Fighter",
+   "seviye": 2
+  },
+  {
+   "ad": "Tactical Mind",
+   "kaynak": "Fighter",
+   "seviye": 2
+  },
+  {
    "ad": "Resourceful",
    "kaynak": "Human (takas)",
    "seviye": 1
@@ -328,7 +338,14 @@
    "yenile": "uzun",
    "kisaBir": true,
    "iyilestir": "kendi",
-   "zar": "1d10+1"
+   "zar": "1d10+2"
+  },
+  {
+   "id": "Fighter||Action Surge",
+   "ad": "Action Surge",
+   "kaynak": "Fighter",
+   "max": 1,
+   "yenile": "kisa"
   },
   {
    "id": "tur:Orc|Relentless Endurance",
@@ -425,15 +442,15 @@
  },
  "avatar": "",
  "yerel": true,
- "guncellendi": "2026-09-25T01:37:53.853Z",
+ "guncellendi": "2026-10-05T00:20:49.025Z",
  "yapi": {
   "v": 1,
   "id": 1790210001,
   "ad": "Brakk",
-  "oyuncu": "",
+  "oyuncu": "Rasim",
   "avatar": "",
   "sinif": "Fighter",
-  "seviye": 1,
+  "seviye": 2,
   "background": "Hermit|XPHB",
   "tur": "Orc|XPHB",
   "yontem": "standart",

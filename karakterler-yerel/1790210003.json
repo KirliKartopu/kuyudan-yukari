@@ -9,11 +9,11 @@
  "siniflar": [
   {
    "ad": "Ranger",
-   "seviye": 1,
+   "seviye": 2,
    "subclass": null
   }
  ],
- "seviye": 1,
+ "seviye": 2,
  "prof_bonus": 2,
  "yetenekler": {
   "str": {
@@ -137,8 +137,8 @@
   {
    "ad": "Perception",
    "yetenek": "wis",
-   "prof": 1,
-   "bonus": 4
+   "prof": 2,
+   "bonus": 6
   },
   {
    "ad": "Performance",
@@ -177,8 +177,8 @@
    "bonus": 4
   }
  ],
- "pasif_perception": 14,
- "hp_max": 12,
+ "pasif_perception": 16,
+ "hp_max": 20,
  "ac": 15,
  "initiative": 5,
  "hiz": 35,
@@ -188,7 +188,9 @@
  "diller": [
   "Common",
   "Elvish",
-  "Goblin"
+  "Goblin",
+  "Sylvan",
+  "Undercommon"
  ],
  "araclar": [
   "Thieves' Tools"
@@ -237,7 +239,7 @@
    "ad": "Longbow",
    "tip": "Longbow",
    "kusanili": true,
-   "isabet": 5,
+   "isabet": 7,
    "hasar": "1d8+3",
    "tur": "Piercing",
    "menzil": "150/600 ft",
@@ -311,6 +313,13 @@
     "not": ""
    },
    {
+    "ad": "Goodberry",
+    "seviye": 1,
+    "konsantrasyon": false,
+    "ritual": false,
+    "not": ""
+   },
+   {
     "ad": "Hail of Thorns",
     "seviye": 1,
     "konsantrasyon": false,
@@ -341,6 +350,16 @@
    "ad": "Weapon Mastery",
    "kaynak": "Ranger",
    "seviye": 1
+  },
+  {
+   "ad": "Deft Explorer",
+   "kaynak": "Ranger",
+   "seviye": 2
+  },
+  {
+   "ad": "Fighting Style",
+   "kaynak": "Ranger",
+   "seviye": 2
   },
   {
    "ad": "Darkvision",
@@ -379,7 +398,8 @@
   }
  ],
  "featler": [
-  "Alert"
+  "Alert",
+  "Archery"
  ],
  "envanter": [
   {
@@ -470,7 +490,7 @@
  },
  "avatar": "",
  "yerel": true,
- "guncellendi": "2026-09-27T18:24:06.437Z",
+ "guncellendi": "2026-10-15T13:08:50.431Z",
  "yapi": {
   "v": 1,
   "id": 1790210003,
@@ -480,7 +500,7 @@
   "alignment": "Chaotic Neutral",
   "kisilik": "Nihil Vaelorn sessiz, dikkatli ve çevresini sürekli gözleyen bir Wood Elf Ranger’dır. Uzun koyu saçları, keskin yüz hatları, yeşil gözleri ve yıllardır yolculuk yaptığı belli olan koyu yeşil deri zırhıyla dikkat çeker. İnsanlarla gereğinden fazla konuşmaz; kısa, sakin ve çoğu zaman alaycı cevaplar verir.\nGeçimini avcılık, iz sürme ve gerektiğinde yasa dışı işler yaparak sağlar. Otoriteye ve katı kurallara güvenmez; kişisel özgürlüğünü her şeyin üstünde tutar. Para onun için önemlidir ama birine söz verdiyse kolay kolay dönmez. Çatışmada sabırlıdır, uzaktan gözlem yapar ve doğru anı bekleyerek yayını kullanır. Gereksiz kahramanlık peşinde değildir; hayatta kalmayı, özgür kalmayı ve kendi kararlarını vermeyi önemser.",
   "sinif": "Ranger",
-  "seviye": 1,
+  "seviye": 2,
   "background": "Criminal|XPHB",
   "tur": "Elf|XPHB",
   "yontem": "standart",
@@ -523,13 +543,24 @@
    ],
    "buyu:hazir": [
     "Cure Wounds",
-    "Hail of Thorns"
+    "Hail of Thorns",
+    "Goodberry"
    ],
    "bg:ekip": [
     "A"
    ],
    "sinif:ekip": [
     "A"
+   ],
+   "sinif:exp:2": [
+    "perception"
+   ],
+   "sinif:fp:Fighting Style:2": [
+    "Archery|XPHB"
+   ],
+   "etki:Ranger_Deft_Explorer:dil": [
+    "Undercommon",
+    "Sylvan"
    ]
   },
   "atama": {

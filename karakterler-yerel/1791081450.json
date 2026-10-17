@@ -9,11 +9,11 @@
  "siniflar": [
   {
    "ad": "Monk",
-   "seviye": 1,
+   "seviye": 2,
    "subclass": null
   }
  ],
- "seviye": 1,
+ "seviye": 2,
  "prof_bonus": 2,
  "yetenekler": {
   "str": {
@@ -178,10 +178,10 @@
   }
  ],
  "pasif_perception": 15,
- "hp_max": 10,
+ "hp_max": 17,
  "ac": 17,
  "initiative": 4,
- "hiz": 30,
+ "hiz": 40,
  "duyular": {},
  "diller": [
   "Common",
@@ -285,6 +285,21 @@
    "seviye": 1
   },
   {
+   "ad": "Monk's Focus",
+   "kaynak": "Monk",
+   "seviye": 2
+  },
+  {
+   "ad": "Unarmored Movement",
+   "kaynak": "Monk",
+   "seviye": 2
+  },
+  {
+   "ad": "Uncanny Metabolism",
+   "kaynak": "Monk",
+   "seviye": 2
+  },
+  {
    "ad": "Resourceful",
    "kaynak": "Human",
    "seviye": 1
@@ -301,6 +316,23 @@
   }
  ],
  "kaynaklar": [
+  {
+   "id": "Monk||Monk's Focus",
+   "ad": "Focus Points",
+   "kaynak": "Monk",
+   "max": 2,
+   "yenile": "kisa",
+   "ozellik": "Monk's Focus",
+   "havuz": true,
+   "birim": "puan"
+  },
+  {
+   "id": "Monk||Uncanny Metabolism",
+   "ad": "Uncanny Metabolism",
+   "kaynak": "Monk",
+   "max": 1,
+   "yenile": "uzun"
+  },
   {
    "id": "feat:Magic Initiate|False Life",
    "ad": "False Life (slotsuz)",
@@ -348,7 +380,7 @@
  },
  "avatar": "",
  "yerel": true,
- "guncellendi": "2026-10-04T04:01:45.476Z",
+ "guncellendi": "2026-10-05T00:22:33.628Z",
  "yapi": {
   "v": 1,
   "id": 1791081450,
@@ -358,7 +390,7 @@
   "alignment": "Chaotic Neutral",
   "kisilik": "",
   "sinif": "Monk",
-  "seviye": 1,
+  "seviye": 2,
   "background": "Genie Touched|FRHoF",
   "tur": "Human|XPHB",
   "yontem": "zar",
